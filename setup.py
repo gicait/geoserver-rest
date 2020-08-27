@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="geoserver-rest-python", # Replace with your own username
-    version="0.0.1",
+    version="0.1.0",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for GeoServer rest API",
@@ -22,6 +22,7 @@ setuptools.setup(
     ],
     install_requires = [
         'pycurl ~= 7.43',
+        'seaborn ~= 0.10.1',
     ],
     python_requires='>=3.6',
 )

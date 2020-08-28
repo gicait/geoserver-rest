@@ -1,7 +1,9 @@
 import  pycurl
 import os
 import io
+import requests
 from .Style import coverage_style_xml
+from .Calculation_gdal import raster_value
 
 #call back class for read the data
 class DataProvider(object):
@@ -146,35 +148,19 @@ class Geoserver:
             return "Error:%s"%str(e)
 
 
-    def apply_style(self, layer_name, style_name,workspace, content_type='text/xml'):
-        """
-        publishing a raster file to geoserver
-        the coverage store will be created automatically as the same name as the raster layer name. 
-        input parameters: the parameters connecting geoserver (user,password, url and workspace name),the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
-        """
 
-        try:
-            c = pycurl.Curl()
-            style_xml="<layer><defaultStyle><name>{0}</name></defaultStyle></layer>".format(style_name)
-            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
-            c.setopt(c.URL, '{0}/rest/layers/{1}:{2}'.format(self.service_url, workspace, layer_name))
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: {}".format(content_type)])
-            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
-            c.setopt(pycurl.READFUNCTION,DataProvider(style_xml).read_cb)
-            #c.setopt(pycurl.CUSTOMREQUEST, "PUT")
-            c.setopt(pycurl.PUT, 1)
-            c.perform()
-            c.close()
-        except Exception as e:
-            return 'Error: {}'.format(e)
-
-    def create_coveragestyle(self, name, workspace, cmap_type='values', ncolors=7):
+    def create_coveragestyle(self, raster_path, workspace, cmap_type='values'):
         '''
+        The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster. 
         Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determins the number of class, min for minimum value of the raster, max for the max value of raster
         '''
         try:
-            coverage_style_xml(cmap_type, ncolors)
+            raster = raster_value(raster_path)
+            N = raster['N']
+            min = raster['min']
+            name = raster['file_name']
+            coverage_style_xml(cmap_type, N, min)
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
 
             # create the xml file for associated style 
@@ -202,3 +188,46 @@ class Geoserver:
 
         except Exception as e:
             return 'Error: {}'.format(e)
+
+
+
+    # def create_featurestyle()
+    def apply_style(self, layer_name, style_name, workspace, content_type='text/xml'):
+        """
+        publishing a raster file to geoserver
+        the coverage store will be created automatically as the same name as the raster layer name. 
+        input parameters: the parameters connecting geoserver (user,password, url and workspace name),the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
+        """
+
+        try:
+            c = pycurl.Curl()
+            style_xml="<layer><defaultStyle><name>{0}</name></defaultStyle></layer>".format(style_name)
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, '{0}/rest/layers/{1}:{2}'.format(self.service_url, workspace, layer_name))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type: {}".format(content_type)])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION,DataProvider(style_xml).read_cb)
+            #c.setopt(pycurl.CUSTOMREQUEST, "PUT")
+            c.setopt(pycurl.PUT, 1)
+            c.perform()
+            c.close()
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+
+
+    def test(self, workspace, datastore):
+        c = pycurl.Curl()
+        c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+        print('{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, datastore))
+        c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, datastore))
+        c.setopt(pycurl.HTTPHEADER, ['content-type:application/json'])
+        c.perform()
+        c.close()
+
+
+    def test2(self, workspace, datastore):
+        headers = {'content-type': 'application/json'}
+        r = requests.get('{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, datastore), auth=(self.username, self.password), headers=headers)
+        print(r.json())
+

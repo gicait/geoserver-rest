@@ -147,7 +147,44 @@ class Geoserver:
         except Exception as e:
             return "Error:%s"%str(e)
 
+    def upload_coveragestyle(self, path, workspace):
+        '''
+        The name of the style file will be, sld_name:workspace
+        This function will create the style file in a specified workspace. 
+        Inputs: path to the sld_file, workspace, 
+        '''
+        try:
+            name = os.path.basename(path)
+            file_size = os.path.getsize(path)
+            f = name.split('.')
+            if len(f)>0:
+                name = f[0]
 
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
+
+            # create the xml file for associated style 
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace))
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:application/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, name))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
+            c.setopt(pycurl.READFUNCTION,FileReader(open(path, 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE,file_size)
+            c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
 
     def create_coveragestyle(self, raster_path, workspace, cmap_type='values'):
         '''
@@ -192,7 +229,7 @@ class Geoserver:
 
 
     # def create_featurestyle()
-    def apply_style(self, layer_name, style_name, workspace, content_type='text/xml'):
+    def publish_style(self, layer_name, style_name, workspace, content_type='text/xml'):
         """
         publishing a raster file to geoserver
         the coverage store will be created automatically as the same name as the raster layer name. 

@@ -39,11 +39,11 @@ geo.create_featurestore(store='geo_data', workspace='demo', db='postgres', host=
 geo.publish_featurestore(workspace='demo', store='geo_data', pg_table='geodata_table_name')
 ```
 
-##### Create Coverage Style based on the raster and publish style
+##### Create Coverage Style based on the raster and apply style
 It is use to create the style file for **raster data**.
 
 ```python
 #Style name will be the same as the raster_file_name
 geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', workspace='demo')
-geo.apply_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
+geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
 ```

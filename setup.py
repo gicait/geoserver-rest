@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="geoserver-rest-python", # Replace with your own username
-    version="0.4.1",
+    version="0.4.3",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for GeoServer rest API",
@@ -14,7 +14,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/iamtekson/geoserver-rest-python",
-    packages=['geoserver-rest'],
+    packages=['geo'],
     keywords=['geoserver', 'geoserver-rest', 'geoserver-rest-python'],
     classifiers=[
         "Programming Language :: Python :: 3",

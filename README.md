@@ -16,6 +16,7 @@ This library is used for creating workspace, coveragestore, featurestore, styles
 This step is used to initialize the library. It takes parameters as geoserver url, username, password.
 
 ```python
+from geo.Geoserver import Geoserver
 geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='geoserver')
 ```
 

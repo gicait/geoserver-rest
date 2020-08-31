@@ -2,7 +2,7 @@ import  pycurl
 import os
 import io
 import requests
-from .Style import coverage_style_xml
+from .Style import coverage_style_xml, outline_only_xml
 from .Calculation_gdal import raster_value
 
 #call back class for read the data
@@ -198,6 +198,48 @@ class Geoserver:
             min = raster['min']
             name = raster['file_name']
             coverage_style_xml(cmap_type, N, min)
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
+
+            # create the xml file for associated style 
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace))
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, name))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
+            c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))
+            c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+            # remove temporary style created style file 
+            os.remove('style.sld')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+
+
+    def create_faeturestyle(self,  workspace, data_type='polygon', cmap_type='values'):
+        '''
+        The name of the style file will be, rasterName:workspace
+        This function will dynamically create the style file for raster. 
+        Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determins the number of class, min for minimum value of the raster, max for the max value of raster
+        '''
+        try:
+            name = ''
+            if data_type=='polygon':
+                outline_only_xml()
+                name= ''
+
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
 
             # create the xml file for associated style 

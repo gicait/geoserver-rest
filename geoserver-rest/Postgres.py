@@ -5,11 +5,12 @@ db_name = 'geonode_data'
 
 
 class Db:
-    def __init__(self, dbname=None, user='postgres', password='admin', host='localhost'):
+    def __init__(self, dbname=None, user='postgres', password='admin', host='localhost', port=5432):
         self.dbname = dbname
         self.user = user
         self.password = password
         self.host = host
+        self.port = port
 
         try:
             self.conn = connect(
@@ -26,6 +27,7 @@ class Db:
             self.conn = None
 
 
+    # get the columns names inside database
     def get_columns_names(self, table):
         columns = []
         col_cursor = self.conn.cursor()
@@ -47,6 +49,8 @@ class Db:
 
         return columns
 
+
+    # get the distinct values of specific column
     def get_all_values(self, table, column, distinct=True):
         values = []
         col_cursor = self.conn.cursor()
@@ -69,3 +73,21 @@ class Db:
             print ("get_columns_names ERROR:", err)
 
         return values
+
+
+    #create the schema based on the given name
+    def create_schema(self, name, dbname='postgres'):
+        try: 
+            n = name.split(' ')
+            if len(n)>0:
+                name = name.replace(' ', '_')
+            cursor = self.conn.cursor()
+
+            sql = f'''CREATE SCHEMA {name}'''
+            cursor.execute(sql)
+            self.conn.commit()
+
+            print('Schema create successfully')
+        
+        except Exception as err:
+            print('Schema create error: ', err)

@@ -42,7 +42,7 @@ def coverage_style_xml(cmap_type, ncolor=7, min=0):
         f.write(style)
 
 
-def outline_only_xml(hex_code='#3579b1'):
+def outline_only_xml(outline_color='#3579b1', fill_color='#fff'):
     style = '''
             <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <NamedLayer>
@@ -65,7 +65,7 @@ def outline_only_xml(hex_code='#3579b1'):
                 </UserStyle>
             </NamedLayer>
             </StyledLayerDescriptor>
-            '''.format(hex_code)
+            '''.format(outline_color)
 
     with open('style.sld', 'w') as f:
         f.write(style)

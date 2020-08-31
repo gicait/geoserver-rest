@@ -39,7 +39,15 @@ geo.create_featurestore(store='geo_data', workspace='demo', db='postgres', host=
 geo.publish_featurestore(workspace='demo', store='geo_data', pg_table='geodata_table_name')
 ```
 
-##### Create Coverage Style based on the raster and apply style
+##### Upload style and publish it
+It is use for uploading **SLD** files and publish style
+```python
+geo.upload_coveragestyle(path=r'path\to\sld\file.sld', workspace='demo')
+geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo')
+```
+
+
+##### Create Coverage Style based on the raster (Dynamic) and apply style
 It is use to create the style file for **raster data**.
 
 ```python

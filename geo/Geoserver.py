@@ -83,7 +83,10 @@ class Geoserver:
             c.setopt(pycurl.HTTPHEADER, ["Content-type:{}".format(content_type) ])
             c.setopt(pycurl.READFUNCTION,FileReader(open(path, 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE,file_size)
-            c.setopt(pycurl.POST, 1)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
             c.setopt(pycurl.UPLOAD, 1)
             c.perform()
             c.close()
@@ -147,7 +150,7 @@ class Geoserver:
         except Exception as e:
             return "Error:%s"%str(e)
 
-    def upload_coveragestyle(self, path, workspace):
+    def upload_coveragestyle(self, path, workspace, overwrite=False):
         '''
         The name of the style file will be, sld_name:workspace
         This function will create the style file in a specified workspace. 
@@ -169,7 +172,11 @@ class Geoserver:
             c.setopt(pycurl.HTTPHEADER, ['Content-type:application/xml'])
             c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
             c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            c.setopt(pycurl.POST, 1)
+
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
             c.perform()
 
             # upload the style file
@@ -186,7 +193,7 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
-    def create_coveragestyle(self, raster_path, workspace, cmap_type='values'):
+    def create_coveragestyle(self, raster_path, workspace, cmap_type='values', overwrite=False):
         '''
         The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster. 
@@ -207,7 +214,10 @@ class Geoserver:
             c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
             c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
             c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            c.setopt(pycurl.POST, 1)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
             c.perform()
 
             # upload the style file
@@ -215,7 +225,10 @@ class Geoserver:
             c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
             c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))
-            c.setopt(pycurl.POST, 1)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
             c.setopt(pycurl.UPLOAD, 1)
             c.perform()
             c.close()
@@ -228,17 +241,17 @@ class Geoserver:
 
 
 
-    def create_faeturestyle(self,  workspace, data_type='polygon', cmap_type='values'):
+    def create_featurestyle(self, column_name, workspace, color_or_ramp, geom_type='polygon', outline_color='#3579b1', overwrite=False):
         '''
-        The name of the style file will be, rasterName:workspace
-        This function will dynamically create the style file for raster. 
-        Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determins the number of class, min for minimum value of the raster, max for the max value of raster
+        Dynamically create the style for postgis geometry
+        The data type must be point, line or polygon
+        Inputs: column_name (based on which column style should be generated), workspace, 
+        color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         '''
         try:
-            name = ''
-            if data_type=='polygon':
-                outline_only_xml()
-                name= ''
+            name = column_name
+            if geom_type=='polygon':
+                outline_only_xml(outline_color, color_or_ramp)
 
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
 
@@ -249,6 +262,10 @@ class Geoserver:
             c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
             c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
             c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
             c.setopt(pycurl.POST, 1)
             c.perform()
 
@@ -257,7 +274,10 @@ class Geoserver:
             c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
             c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))
-            c.setopt(pycurl.POST, 1)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
             c.setopt(pycurl.UPLOAD, 1)
             c.perform()
             c.close()

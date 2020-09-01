@@ -55,7 +55,7 @@ class Geoserver:
             return 'Error: {}'.format(e)
 
 
-    def create_coveragestore(self, path, workspace, lyr_name=None, file_type='GeoTIFF', content_type='image/tiff', overwrite=False):
+    def create_coveragestore(self, path, workspace=None, lyr_name=None, file_type='GeoTIFF', content_type='image/tiff', overwrite=False):
         """
         created the coveragestore, data will uploaded to the server
         the name parameter will be the name of coveragestore (coveragestore name will be assigned as the file name incase of not providing name parameter) 
@@ -75,7 +75,10 @@ class Geoserver:
                 file_name = os.path.basename(path)
                 f=file_name.split(".")
                 if len(f)>0:
-                    file_name=f[0]  
+                    file_name=f[0] 
+
+            if workspace is None:
+                workspace = 'default' 
 
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password)    
             file_type=file_type.lower()
@@ -94,13 +97,16 @@ class Geoserver:
             return 'Error: {}'.format(e)
         
         
-    def create_featurestore(self, store, workspace, db, host='localhost', port=5432, schema='public', pg_user='postgres', pg_password='admin'):
+    def create_featurestore(self, store, workspace=None, db='postgres', host='localhost', port=5432, schema='public', pg_user='postgres', pg_password='admin'):
         """
         Postgis store for connecting postgres with geoserver
         After creating feature store, you need to publish it
         Input parameters:specify the store name you want to be created, the postgis database parameters including host, port, database name, schema, user and password, 
         """
         try:
+            if workspace is None:
+                workspace = 'default' 
+
             c = pycurl.Curl()
             #connect with geoserver
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password) 
@@ -129,12 +135,15 @@ class Geoserver:
             return "Error:%s"%str(e)
 
 
-    def publish_featurestore(self, workspace, store, pg_table):
+    def publish_featurestore(self, store, pg_table, workspace=None):
         """
         Only user for postgis vector data
         input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
         """
         try:
+            if workspace is None:
+                workspace = 'default' 
+
             c = pycurl.Curl()
             layer_xml="<featureType><name>{0}</name></featureType>".format(pg_table)
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
@@ -150,7 +159,7 @@ class Geoserver:
         except Exception as e:
             return "Error:%s"%str(e)
 
-    def upload_coveragestyle(self, path, workspace, overwrite=False):
+    def upload_coveragestyle(self, path, workspace=None, overwrite=False):
         '''
         The name of the style file will be, sld_name:workspace
         This function will create the style file in a specified workspace. 
@@ -162,13 +171,17 @@ class Geoserver:
             f = name.split('.')
             if len(f)>0:
                 name = f[0]
-
+            
+            url = '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace)
+            if workspace is None:
+                workspace = 'default' 
+                url = '{0}/rest/styles'.format(self.service_url)
+                
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
-
             # create the xml file for associated style 
             c = pycurl.Curl()
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
-            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace))
+            c.setopt(c.URL, url)
             c.setopt(pycurl.HTTPHEADER, ['Content-type:application/xml'])
             c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
             c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
@@ -178,13 +191,16 @@ class Geoserver:
             else:
                 c.setopt(pycurl.POST, 1)
             c.perform()
-
+            
             # upload the style file
-            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, name))
+            c.setopt(c.URL, '{0}/{1}'.format(url, name))
             c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
             c.setopt(pycurl.READFUNCTION,FileReader(open(path, 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE,file_size)
-            c.setopt(pycurl.POST, 1)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
             c.setopt(pycurl.UPLOAD, 1)
             c.perform()
             c.close()

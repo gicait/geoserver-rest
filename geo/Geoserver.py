@@ -257,7 +257,7 @@ class Geoserver:
 
 
 
-    def create_featurestyle(self, column_name, workspace, color_or_ramp, geom_type='polygon', outline_color='#3579b1', overwrite=False):
+    def create_featurestyle(self, column_name, workspace, color, geom_type='polygon', outline_color='#3579b1', overwrite=False):
         '''
         Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
@@ -267,7 +267,7 @@ class Geoserver:
         try:
             name = column_name
             if geom_type=='polygon':
-                outline_only_xml(outline_color, color_or_ramp)
+                outline_only_xml(outline_color, color)
 
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
 
@@ -304,6 +304,54 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
+
+    def create_outline_featurestyle(self, style_name, color='#3579b1', geom_type='polygon', workspace=None, overwrite=False):
+        '''
+        Dynamically create the style for postgis geometry
+        The data type must be point, line or polygon
+        Inputs: column_name (based on which column style should be generated), workspace, 
+        color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
+        '''
+        try:
+            outline_only_xml(color, geom_type)
+
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(style_name,style_name+'.sld')
+            
+            url = '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace)
+            if workspace is None:
+                url = '{0}/rest/styles'.format(self.service_url)
+
+            # create the xml file for associated style 
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, url)
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/{1}'.format(url, style_name))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
+            c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+            # remove temporary style created style file 
+            os.remove('style.sld')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
 
 
     # def create_featurestyle()

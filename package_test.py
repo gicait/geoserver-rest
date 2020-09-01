@@ -1,5 +1,6 @@
 from geo.Geoserver import Geoserver
 from geo.Postgres import Db
+from geo.Style import catagorize_xml
 
 geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='geoserver')
 pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
@@ -10,7 +11,7 @@ pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
 # geo.apply_style('country', 'polygon', 'try')
 # geo.upload_coveragestyle(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='try', overwrite=True)
 # geo.upload_coveragestyle(r'C:\Users\tek\Downloads\capitals.sld', 'try')
-geo.create_outline_featurestyle('try', geom_type='polygon', workspace='try', overwrite=True)
+# geo.create_outline_featurestyle('try', geom_type='polygon', workspace='try', overwrite=True)
 
 # geo.create_coveragestyle(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', 'try')
 # geo.test2('try', 'try_feature')
@@ -18,3 +19,4 @@ geo.create_outline_featurestyle('try', geom_type='polygon', workspace='try', ove
 # print(pg.get_columns_names('zones'))
 # print(pg.get_all_values('zones', 'zone_'))
 # pg.create_schema('kamal kshetri')
+catagorize_xml('kamal', [1,2,3,4,5,6,7], num_of_class=30, geom_type='line')

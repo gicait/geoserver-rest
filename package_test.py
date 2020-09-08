@@ -16,7 +16,7 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-geo.create_coveragestyle(style_name='agri', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', overwrite=True)
+# geo.create_coveragestyle(style_name='agri', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', overwrite=True)
 
 
 '''
@@ -34,6 +34,7 @@ Feature styles
 """
 # geo.create_outline_featurestyle('demo', geom_type='polygon', workspace='demo', overwrite=True)
 # catagorize_xml('kamal', [1,2,3,4,5,6,7], num_of_class=30, geom_type='line')
+# geo.create_catagorized_featurestyle('kamal2', [1,2,3,4,5,6,7], workspace='demo')
 
 '''
 Postgres

@@ -2,7 +2,7 @@ import  pycurl
 import os
 import io
 import requests
-from .Style import coverage_style_xml, outline_only_xml
+from .Style import coverage_style_xml, outline_only_xml, catagorize_xml
 from .Calculation_gdal import raster_value
 
 #call back class for read the data
@@ -286,7 +286,7 @@ class Geoserver:
 
 
 
-    def create_catagorized_featurestyle(self, column_name, class_name, workspace=None, color_ramp='tab20', geom_type='polygon', outline_color='#3579b1', overwrite=False):
+    def create_catagorized_featurestyle(self, column_name, column_distinct_values, workspace=None, color_ramp='tab20', geom_type='polygon', outline_color='#3579b1', overwrite=False):
         '''
         Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
@@ -294,11 +294,9 @@ class Geoserver:
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         '''
         try:
-            if geom_type=='polygon':
-                # outline_only_xml(outline_color, color)
-                pass
+            catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
 
-            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(column_name,column_name+'.sld')
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(column_name, column_name+'.sld')
 
             # create the xml file for associated style 
             c = pycurl.Curl()
@@ -315,7 +313,7 @@ class Geoserver:
             c.perform()
 
             # upload the style file
-            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, name))
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, column_name))
             c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
             c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))
@@ -328,7 +326,7 @@ class Geoserver:
             c.close()
 
             # remove temporary style created style file 
-            os.remove('style.sld')
+            # os.remove('style.sld')
 
         except Exception as e:
             return 'Error: {}'.format(e)

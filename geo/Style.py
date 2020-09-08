@@ -107,8 +107,9 @@ def outline_only_xml(color, geom_type='polygon'):
 
             
 
-def catagorize_xml(column_name, values, color_ramp='tab20', num_of_class=5, geom_type='polygon'):
-    palette = sns.color_palette(color_ramp, int(num_of_class))
+def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
+    N = len(values)
+    palette = sns.color_palette(color_ramp, int(N))
     palette_hex = [rgb2hex(i) for i in palette]
     rule = ''
     for value, color in zip(values, palette_hex):
@@ -185,9 +186,17 @@ def catagorize_xml(column_name, values, color_ramp='tab20', num_of_class=5, geom
             return
 
     style = '''
-        <FeatureTypeStyle>
-            {}
-        </FeatureTypeStyle>
+            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <NamedLayer>
+                        <se:Name>Layer name</se:Name>
+                        <UserStyle>
+                        <se:Name>Layer name</se:Name>
+                        <FeatureTypeStyle>
+                            {}
+                        </FeatureTypeStyle>
+                        </UserStyle>
+                    </NamedLayer>
+                </StyledLayerDescriptor>
         '''.format(rule)
 
     with open('style.sld', 'w') as f:

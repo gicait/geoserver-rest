@@ -97,7 +97,7 @@ class Geoserver:
             return 'Error: {}'.format(e)
         
         
-    def create_featurestore(self, store, workspace=None, db='postgres', host='localhost', port=5432, schema='public', pg_user='postgres', pg_password='admin'):
+    def create_featurestore(self, store_name, workspace=None, db='postgres', host='localhost', port=5432, schema='public', pg_user='postgres', pg_password='admin', overwrite=False):
         """
         Postgis store for connecting postgres with geoserver
         After creating feature store, you need to publish it
@@ -125,7 +125,7 @@ class Geoserver:
             '<passwd>{6}</passwd>'\
             '<dbtype>postgis</dbtype>'\
             '</connectionParameters>'\
-            '</dataStore>'.format(store,host,port,db,schema,pg_user,pg_password)
+            '</dataStore>'.format(store_name,host,port,db,schema,pg_user,pg_password)
             c.setopt(pycurl.POSTFIELDSIZE, len(database_connection))
             c.setopt(pycurl.READFUNCTION,DataProvider(database_connection).read_cb)
             c.setopt(pycurl.POST, 1)
@@ -133,6 +133,16 @@ class Geoserver:
             c.close()
         except Exception as e:
             return "Error:%s"%str(e)
+
+    def get_featurestore(self, store_name, workspace='default'):
+        url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, store_name)
+        r = requests.get(url, auth=(self.username, self.password))
+        print(r)
+        r_dict = r.json()
+        connectionParameters = [i for i in r_dict['dataStore']['connectionParameters']['entry']]
+        print(connectionParameters)
+        return connectionParameters
+
 
 
     def publish_featurestore(self, store, pg_table, workspace=None):
@@ -159,7 +169,7 @@ class Geoserver:
         except Exception as e:
             return "Error:%s"%str(e)
 
-    def upload_coveragestyle(self, path, workspace=None, overwrite=False):
+    def upload_style(self, path, workspace=None, overwrite=False):
         '''
         The name of the style file will be, sld_name:workspace
         This function will create the style file in a specified workspace. 
@@ -209,7 +219,24 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
-    def create_coveragestyle(self, raster_path, workspace, cmap_type='values', overwrite=False):
+    def get_featuretypes(self, workspace=None, store_name=None):
+        url = '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes.json'.format(self.service_url, workspace, store_name)
+        r = requests.get(url, auth=(self.username, self.password))
+        r_dict = r.json()
+        features = [i['name'] for i in r_dict['featureTypes']['featureType']]
+        return features
+
+
+    def get_feature_attribute(self, feature_type_name, workspace=None, store_name=None):
+        url = '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes/{3}.json'.format(self.service_url, workspace, store_name, feature_type_name)
+        r = requests.get(url, auth=(self.username, self.password))
+        print(r)
+        r_dict = r.json()
+        attribute = [i['name'] for i in r_dict['featureType']['attributes']['attribute']]
+        return attribute
+
+
+    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn', cmap_type='range', overwrite=False):
         '''
         The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster. 
@@ -219,9 +246,11 @@ class Geoserver:
             raster = raster_value(raster_path)
             N = raster['N']
             min = raster['min']
-            name = raster['file_name']
-            coverage_style_xml(cmap_type, N, min)
-            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
+            print(raster)
+            if style_name is None:
+                style_name = raster['file_name']
+            coverage_style_xml(color_ramp, style_name, cmap_type, N, min)
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(style_name,style_name+'.sld')
 
             # create the xml file for associated style 
             c = pycurl.Curl()
@@ -237,7 +266,7 @@ class Geoserver:
             c.perform()
 
             # upload the style file
-            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, name))
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, style_name))
             c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
             c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))
@@ -257,7 +286,7 @@ class Geoserver:
 
 
 
-    def create_featurestyle(self, column_name, workspace, color, geom_type='polygon', outline_color='#3579b1', overwrite=False):
+    def create_catagorized_featurestyle(self, column_name, class_name, workspace=None, color_ramp='tab20', geom_type='polygon', outline_color='#3579b1', overwrite=False):
         '''
         Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
@@ -265,11 +294,11 @@ class Geoserver:
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         '''
         try:
-            name = column_name
             if geom_type=='polygon':
-                outline_only_xml(outline_color, color)
+                # outline_only_xml(outline_color, color)
+                pass
 
-            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(name,name+'.sld')
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(column_name,column_name+'.sld')
 
             # create the xml file for associated style 
             c = pycurl.Curl()
@@ -308,9 +337,8 @@ class Geoserver:
     def create_outline_featurestyle(self, style_name, color='#3579b1', geom_type='polygon', workspace=None, overwrite=False):
         '''
         Dynamically create the style for postgis geometry
-        The data type must be point, line or polygon
-        Inputs: column_name (based on which column style should be generated), workspace, 
-        color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
+        The geometry type must be point, line or polygon
+        Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
         '''
         try:
             outline_only_xml(color, geom_type)
@@ -377,20 +405,4 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
-
-
-    def test(self, workspace, datastore):
-        c = pycurl.Curl()
-        c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
-        print('{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, datastore))
-        c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, datastore))
-        c.setopt(pycurl.HTTPHEADER, ['content-type:application/json'])
-        c.perform()
-        c.close()
-
-
-    def test2(self, workspace, datastore):
-        headers = {'content-type': 'application/json'}
-        r = requests.get('{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, datastore), auth=(self.username, self.password), headers=headers)
-        print(r.json())
 

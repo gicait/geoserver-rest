@@ -3,11 +3,10 @@ import os
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
-def coverage_style_xml(cmap_type, ncolor=7, min=0):
-    palette = sns.color_palette('RdYlGn', int(ncolor))
+def coverage_style_xml(color_ramp, style_name, cmap_type, ncolor=5, min=0):
+    palette = sns.color_palette(color_ramp, int(ncolor))
     palette_hex = [rgb2hex(i) for i in palette]
     style_append = ''
-    cmap_type = 'values'
     for i, color in enumerate(palette_hex):
         style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
             color, min+i, min+i)
@@ -18,7 +17,7 @@ def coverage_style_xml(cmap_type, ncolor=7, min=0):
         <sld:FeatureTypeConstraint/>
         </sld:LayerFeatureConstraints>
         <sld:UserStyle>
-        <sld:Name>Name of the layer</sld:Name>
+        <sld:Name>{2}</sld:Name>
         <sld:FeatureTypeStyle>
             <sld:Rule>
             <sld:RasterSymbolizer>
@@ -27,8 +26,8 @@ def coverage_style_xml(cmap_type, ncolor=7, min=0):
                     <sld:SourceChannelName>1</sld:SourceChannelName>
                 </sld:GrayChannel>
                 </sld:ChannelSelection>
-                <sld:ColorMap type="{}">
-                    {}
+                <sld:ColorMap type="{0}">
+                    {1}
                 </sld:ColorMap>
             </sld:RasterSymbolizer>
             </sld:Rule>
@@ -36,7 +35,7 @@ def coverage_style_xml(cmap_type, ncolor=7, min=0):
         </sld:UserStyle>
     </UserLayer>
     </StyledLayerDescriptor>
-    """.format(cmap_type, style_append)
+    """.format(cmap_type, style_append, style_name)
 
     with open('style.sld', 'w') as f:
         f.write(style)
@@ -108,7 +107,7 @@ def outline_only_xml(color, geom_type='polygon'):
 
             
 
-def catagorize_xml(propertyName, values, color_ramp='tab20', num_of_class=5, geom_type='polygon'):
+def catagorize_xml(column_name, values, color_ramp='tab20', num_of_class=5, geom_type='polygon'):
     palette = sns.color_palette(color_ramp, int(num_of_class))
     palette_hex = [rgb2hex(i) for i in palette]
     rule = ''
@@ -136,7 +135,7 @@ def catagorize_xml(propertyName, values, color_ramp='tab20', num_of_class=5, geo
                     </Graphic>
                 </PointSymbolizer>
                 </Rule>
-            '''.format(propertyName, value, color)
+            '''.format(column_name, value, color)
         
         elif geom_type=='line':
             rule += '''
@@ -155,7 +154,7 @@ def catagorize_xml(propertyName, values, color_ramp='tab20', num_of_class=5, geo
                         </Stroke>
                     </LineSymbolizer>
                 </Rule>
-            '''.format(propertyName, value, color)
+            '''.format(column_name, value, color)
 
         elif geom_type=='polygon':
             rule += '''
@@ -179,7 +178,7 @@ def catagorize_xml(propertyName, values, color_ramp='tab20', num_of_class=5, geo
                     </PolygonSymbolizer>
                 </Rule>
 
-            '''.format(propertyName, value, color, '#000000')
+            '''.format(column_name, value, color, '#000000')
 
         else:
             print('Error: Invalid geometry type')

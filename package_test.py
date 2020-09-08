@@ -2,21 +2,42 @@ from geo.Geoserver import Geoserver
 from geo.Postgres import Db
 from geo.Style import catagorize_xml
 
+'''
+Connection
+'''
 geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='geoserver')
 pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
-# geo.create_workspace('try')
-# geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='try', overwrite=False)
-# geo.create_featurestore('try_feature', 'try', 'tajikistan', '203.159.29.40', pg_password='Pxfd#f%Ar')
-# geo.publish_featurestore('try', 'try_feature', 'country')
-# geo.apply_style('country', 'polygon', 'try')
-# geo.upload_coveragestyle(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='try', overwrite=True)
-# geo.upload_coveragestyle(r'C:\Users\tek\Downloads\capitals.sld', 'try')
-# geo.create_outline_featurestyle('try', geom_type='polygon', workspace='try', overwrite=True)
+# geo.create_workspace('demo')
 
-# geo.create_coveragestyle(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', 'try')
-# geo.test2('try', 'try_feature')
 
+'''
+Coverage (raster)
+'''
+# geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
+# geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
+# geo.publish_style('agri_final_proj', 'dem', 'demo')
+geo.create_coveragestyle(style_name='agri', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', overwrite=True)
+
+
+'''
+Features (vector)
+'''
+# geo.create_featurestore(store_name='fdemo', workspace='demo')
+# geo.publish_featurestore('fdemo','zones','demo')
+# a = geo.get_featuretypes(workspace='demo', store_name='fdemo')
+# a= geo.get_feature_attribute(feature_type_name='jamoat-db', workspace='demo', store_name='fdemo')
+# a= geo.get_featurestore('fdemo', 'demo')
+# print(a)
+
+"""
+Feature styles
+"""
+# geo.create_outline_featurestyle('demo', geom_type='polygon', workspace='demo', overwrite=True)
+# catagorize_xml('kamal', [1,2,3,4,5,6,7], num_of_class=30, geom_type='line')
+
+'''
+Postgres
+'''
 # print(pg.get_columns_names('zones'))
 # print(pg.get_all_values('zones', 'zone_'))
 # pg.create_schema('kamal kshetri')
-catagorize_xml('kamal', [1,2,3,4,5,6,7], num_of_class=30, geom_type='line')

@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="geoserver-rest-python", # Replace with your own username
-    version="0.6.0",
+    name="geoserver-rest-python", 
+    version="0.6.1",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for GeoServer rest API",

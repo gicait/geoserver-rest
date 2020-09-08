@@ -43,7 +43,7 @@ geo.publish_featurestore(workspace='demo', store='geo_data', pg_table='geodata_t
 ##### Upload style and publish it
 It is use for uploading **SLD** files and publish style
 ```python
-geo.upload_coveragestyle(path=r'path\to\sld\file.sld', workspace='demo')
+geo.upload_style(path=r'path\to\sld\file.sld', workspace='demo')
 geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo')
 ```
 
@@ -53,6 +53,6 @@ It is use to create the style file for **raster data**.
 
 ```python
 #Style name will be the same as the raster_file_name
-geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', workspace='demo')
+geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn')
 geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
 ```

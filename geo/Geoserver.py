@@ -326,7 +326,7 @@ class Geoserver:
             c.close()
 
             # remove temporary style created style file 
-            # os.remove('style.sld')
+            os.remove('style.sld')
 
         except Exception as e:
             return 'Error: {}'.format(e)

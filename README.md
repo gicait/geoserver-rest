@@ -49,7 +49,7 @@ geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name',
 
 
 ##### Create Coverage Style based on the raster (Dynamic) and apply style
-It is use to create the style file for **raster data**.
+It is use to create the style file for **raster data**. You can get the color_ramp name from [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html).
 
 ```python
 #Style name will be the same as the raster_file_name

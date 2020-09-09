@@ -134,18 +134,8 @@ class Geoserver:
         except Exception as e:
             return "Error:%s"%str(e)
 
-    def get_featurestore(self, store_name, workspace='default'):
-        url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, store_name)
-        r = requests.get(url, auth=(self.username, self.password))
-        print(r)
-        r_dict = r.json()
-        connectionParameters = [i for i in r_dict['dataStore']['connectionParameters']['entry']]
-        print(connectionParameters)
-        return connectionParameters
 
-
-
-    def publish_featurestore(self, store, pg_table, workspace=None):
+    def publish_featurestore(self, store_name, pg_table, workspace=None):
         """
         Only user for postgis vector data
         input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
@@ -158,7 +148,7 @@ class Geoserver:
             layer_xml="<featureType><name>{0}</name></featureType>".format(pg_table)
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
             #connecting with the specified store in geoserver
-            c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes'.format(self.service_url, workspace, store))
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes'.format(self.service_url, workspace, store_name))
             c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
             c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
             c.setopt(pycurl.READFUNCTION,DataProvider(layer_xml).read_cb)

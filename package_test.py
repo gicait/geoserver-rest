@@ -1,12 +1,12 @@
 from geo.Geoserver import Geoserver
 from geo.Postgres import Db
-from geo.Style import catagorize_xml
+from geo.Style import catagorize_xml, classified_xml
 
 '''
 Connection
 '''
 geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='geoserver')
-pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
+# pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
 # geo.create_workspace('demo')
 
 
@@ -16,7 +16,7 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-geo.create_coveragestyle(style_name='agri2', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', cmap_type='values', overwrite=True)
+# geo.create_coveragestyle(style_name='agri2', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', cmap_type='values', overwrite=True)
 
 
 '''
@@ -55,3 +55,9 @@ India geoserver
 # # geo.create_workspace('MOSDAC')
 
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\flood_alert.tif', workspace='MOSDAC')
+
+
+'''
+others
+'''
+classified_xml('test', 'kamal', [4,5,3,12], color_ramp='hot')

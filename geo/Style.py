@@ -222,44 +222,36 @@ def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
 
 
 def classified_xml(style_name, column_name, values, color_ramp, geom_type='polygon'):
-    N = len(values)
+    max_value = max(values) 
+    min_value = min(values)
+    diff = max_value- min_value
+    N = 5
+    interval = diff/5
     palette = sns.color_palette(color_ramp, int(N))
     palette_hex = [rgb2hex(i) for i in palette]
+    # interval = N/4
+    # color_values = [{value: color} for value, color in zip(values, palette_hex)]
+    # print(color_values)
     rule = ''
-    for i, value, color in zip(values, palette_hex):
-
+    for i, color in enumerate(palette_hex):
         print(i)
-
-        # greater = '''
-        #         <ogc:PropertyIsGreaterThan>
-        #                 <ogc:PropertyName>{0}</ogc:PropertyName>
-        #                 <ogc:Literal>36089389.88710001111030579</ogc:Literal>
-        #             </ogc:PropertyIsGreaterThan>
-        #         '''
-
-        # less = '''
-        #         <ogc:PropertyIsLessThanOrEqualTo>
-        #                 <ogc:PropertyName>{0}</ogc:PropertyName>
-        #                 <ogc:Literal>76042934.05079999566078186</ogc:Literal>
-        #             </ogc:PropertyIsLessThanOrEqualTo>
-        #         '''
 
 
         rule += '''
             <se:Rule>
                 <se:Name>{1}</se:Name>
                 <se:Description>
-                    <se:Title>{1}</se:Title>
+                    <se:Title>{4}</se:Title>
                 </se:Description>
                 <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
                     <ogc:And>
                     <ogc:PropertyIsGreaterThan>
                         <ogc:PropertyName>{0}</ogc:PropertyName>
-                        <ogc:Literal>36089389.88710001111030579</ogc:Literal>
+                        <ogc:Literal>{5}</ogc:Literal>
                     </ogc:PropertyIsGreaterThan>
                     <ogc:PropertyIsLessThanOrEqualTo>
                         <ogc:PropertyName>{0}</ogc:PropertyName>
-                        <ogc:Literal>76042934.05079999566078186</ogc:Literal>
+                        <ogc:Literal>{4}</ogc:Literal>
                     </ogc:PropertyIsLessThanOrEqualTo>
                     </ogc:And>
                 </ogc:Filter>
@@ -275,21 +267,21 @@ def classified_xml(style_name, column_name, values, color_ramp, geom_type='polyg
                 </se:PolygonSymbolizer>
             </se:Rule>
 
-        '''.format(column_name, value, color, '#000000')
+        '''.format(column_name, style_name, color, '#000000', min_value+interval*i, min_value+interval*(i+1))
 
     style = '''
-            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <NamedLayer>
-                        <se:Name>Layer name</se:Name>
-                        <UserStyle>
-                        <se:Name>Layer name</se:Name>
-                        <FeatureTypeStyle>
-                            {}
-                        </FeatureTypeStyle>
-                        </UserStyle>
-                    </NamedLayer>
-                </StyledLayerDescriptor>
-        '''.format(rule)
+            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ogc="http://www.opengis.net/ogc" version="1.1.0" xmlns:se="http://www.opengis.net/se" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd">
+                <NamedLayer>
+                    <se:Name>{0}</se:Name>
+                    <UserStyle>
+                    <se:Name>{0}</se:Name>
+                        <se:FeatureTypeStyle>
+                            {1}
+                        </se:FeatureTypeStyle>
+                    </UserStyle>
+                </NamedLayer>
+            </StyledLayerDescriptor>
+        '''.format(style_name, rule)
 
     with open('style.sld', 'w') as f:
         f.write(style)

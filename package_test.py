@@ -16,7 +16,7 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-# geo.create_coveragestyle(style_name='agri', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', overwrite=True)
+geo.create_coveragestyle(style_name='agri2', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', overwrite=True)
 
 
 '''
@@ -40,5 +40,18 @@ Feature styles
 Postgres
 '''
 # print(pg.get_columns_names('zones'))
-# print(pg.get_all_values('zones', 'zone_'))
+# print(pg.get_all_values('zones', 'shape_area'))
 # pg.create_schema('kamal kshetri')
+# a = pg.get_columns_names('jamoat-db')
+# print(a)
+# a = pg.get_all_values('jamoat-db', 'shape_area')[5]
+# print(a)
+
+
+'''
+India geoserver
+'''
+# geo = Geoserver('http://dss.geoinfo.ait.ac.th/geoserver')
+# # geo.create_workspace('MOSDAC')
+
+# geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\flood_alert.tif', workspace='MOSDAC')

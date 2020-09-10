@@ -4,6 +4,7 @@ import io
 import requests
 from .Style import coverage_style_xml, outline_only_xml, catagorize_xml
 from .Calculation_gdal import raster_value
+from .Postgres import Db
 
 #call back class for read the data
 class DataProvider(object):
@@ -235,11 +236,12 @@ class Geoserver:
         try:
             raster = raster_value(raster_path)
             N = raster['N']
+            if cmap_type == 'range':
+                N = 5
             min = raster['min']
-            print(raster)
             if style_name is None:
                 style_name = raster['file_name']
-            coverage_style_xml(color_ramp, style_name, cmap_type, N, min)
+            coverage_style_xml(color_ramp, style_name, cmap_type, min, N)
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(style_name,style_name+'.sld')
 
             # create the xml file for associated style 

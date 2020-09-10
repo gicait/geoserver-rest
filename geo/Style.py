@@ -3,7 +3,7 @@ import os
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
-def coverage_style_xml(color_ramp, style_name, cmap_type, ncolor=5, min=0):
+def coverage_style_xml(color_ramp, style_name, cmap_type,  min=0, ncolor=5):
     palette = sns.color_palette(color_ramp, int(ncolor))
     palette_hex = [rgb2hex(i) for i in palette]
     style_append = ''
@@ -184,6 +184,81 @@ def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
         else:
             print('Error: Invalid geometry type')
             return
+
+    style = '''
+            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <NamedLayer>
+                        <se:Name>Layer name</se:Name>
+                        <UserStyle>
+                        <se:Name>Layer name</se:Name>
+                        <FeatureTypeStyle>
+                            {}
+                        </FeatureTypeStyle>
+                        </UserStyle>
+                    </NamedLayer>
+                </StyledLayerDescriptor>
+        '''.format(rule)
+
+    with open('style.sld', 'w') as f:
+        f.write(style)
+
+
+
+def classified_xml(style_name, column_name, values, color_ramp, geom_type='polygon'):
+    N = len(values)
+    palette = sns.color_palette(color_ramp, int(N))
+    palette_hex = [rgb2hex(i) for i in palette]
+    rule = ''
+    for i, value, color in zip(values, palette_hex):
+
+        print(i)
+
+        # greater = '''
+        #         <ogc:PropertyIsGreaterThan>
+        #                 <ogc:PropertyName>{0}</ogc:PropertyName>
+        #                 <ogc:Literal>36089389.88710001111030579</ogc:Literal>
+        #             </ogc:PropertyIsGreaterThan>
+        #         '''
+
+        # less = '''
+        #         <ogc:PropertyIsLessThanOrEqualTo>
+        #                 <ogc:PropertyName>{0}</ogc:PropertyName>
+        #                 <ogc:Literal>76042934.05079999566078186</ogc:Literal>
+        #             </ogc:PropertyIsLessThanOrEqualTo>
+        #         '''
+
+
+        rule += '''
+            <se:Rule>
+                <se:Name>{1}</se:Name>
+                <se:Description>
+                    <se:Title>{1}</se:Title>
+                </se:Description>
+                <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+                    <ogc:And>
+                    <ogc:PropertyIsGreaterThan>
+                        <ogc:PropertyName>{0}</ogc:PropertyName>
+                        <ogc:Literal>36089389.88710001111030579</ogc:Literal>
+                    </ogc:PropertyIsGreaterThan>
+                    <ogc:PropertyIsLessThanOrEqualTo>
+                        <ogc:PropertyName>{0}</ogc:PropertyName>
+                        <ogc:Literal>76042934.05079999566078186</ogc:Literal>
+                    </ogc:PropertyIsLessThanOrEqualTo>
+                    </ogc:And>
+                </ogc:Filter>
+                <se:PolygonSymbolizer>
+                    <se:Fill>
+                    <se:SvgParameter name="fill">{2}</se:SvgParameter>
+                    </se:Fill>
+                    <se:Stroke>
+                    <se:SvgParameter name="stroke">{3}</se:SvgParameter>
+                    <se:SvgParameter name="stroke-width">1</se:SvgParameter>
+                    <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+                    </se:Stroke>
+                </se:PolygonSymbolizer>
+            </se:Rule>
+
+        '''.format(column_name, value, color, '#000000')
 
     style = '''
             <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

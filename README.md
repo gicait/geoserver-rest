@@ -71,5 +71,4 @@ It is use for creating the style for point, line, polygon dynamically. Currently
 ```python
 geo.create_outline_featurestyle(style_name='new_style' color="#3579b1" geom_type='polygon', workspace='demo')
 geo.create_catagorized_featurestyle(column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo', color_ramp='tab20', geom_type='polygon', outline_color='#000000')
-
 ```

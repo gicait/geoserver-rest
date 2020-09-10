@@ -55,9 +55,9 @@ class Db:
         values = []
         col_cursor = self.conn.cursor()
         if distinct:
-            all_values_str = '''SELECT DISTINCT "{0}" FROM {1};'''.format(column, table)
+            all_values_str = '''SELECT DISTINCT "{0}" FROM "{1}";'''.format(column, table)
 
-        all_values_str = '''SELECT "{0}" FROM {1};'''.format(column, table)
+        all_values_str = '''SELECT "{0}" FROM "{1}";'''.format(column, table)
 
         try:
             sql_object = sql.SQL(all_values_str).format(sql.Identifier(column), sql.Identifier(table))

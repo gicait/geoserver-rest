@@ -3,13 +3,30 @@ import os
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
-def coverage_style_xml(color_ramp, style_name, cmap_type,  min=0, ncolor=5):
-    palette = sns.color_palette(color_ramp, int(ncolor))
-    palette_hex = [rgb2hex(i) for i in palette]
-    style_append = ''
-    for i, color in enumerate(palette_hex):
-        style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
-            color, min+i, min+i)
+def coverage_style_xml(color_ramp, style_name, cmap_type,  min, max):
+    Num = max - min
+
+    if cmap_type == 'ramp':
+        N = 5
+        palette = sns.color_palette(color_ramp, int(N))
+        palette_hex = [rgb2hex(i) for i in palette]
+        style_append = ''
+        interval = Num/4
+
+        for i, color in enumerate(palette_hex):
+            style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
+                color, min+interval*i, min+interval*i)
+
+    else:
+        N = Num+1
+        palette = sns.color_palette(color_ramp, int(N))
+        palette_hex = [rgb2hex(i) for i in palette]
+        style_append = ''
+
+        for i, color in enumerate(palette_hex):
+            style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
+                color, min+i, min+i)
+
     style = """
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" version="1.0.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:sld="http://www.opengis.net/sld">
     <UserLayer>

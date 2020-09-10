@@ -227,7 +227,7 @@ class Geoserver:
         return attribute
 
 
-    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn', cmap_type='range', overwrite=False):
+    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn', cmap_type='ramp', overwrite=False):
         '''
         The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster. 
@@ -235,13 +235,11 @@ class Geoserver:
         '''
         try:
             raster = raster_value(raster_path)
-            N = raster['N']
-            if cmap_type == 'range':
-                N = 5
             min = raster['min']
+            max = raster['max']
             if style_name is None:
                 style_name = raster['file_name']
-            coverage_style_xml(color_ramp, style_name, cmap_type, min, N)
+            coverage_style_xml(color_ramp, style_name, cmap_type, min, max)
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(style_name,style_name+'.sld')
 
             # create the xml file for associated style 

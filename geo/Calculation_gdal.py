@@ -13,7 +13,8 @@ def raster_value(path):
         N = srcband.GetMaximum()- srcband.GetMinimum() + 1
         N = int(N)
         min = int(srcband.GetMinimum())
-        result = {'N': N, 'min':min, 'file_name':file_name}
+        max = int(srcband.GetMaximum())
+        result = {'N': N, 'min':min, 'max':max, 'file_name':file_name}
         return result
 
     else:

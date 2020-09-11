@@ -1,12 +1,12 @@
 from geo.Geoserver import Geoserver
 from geo.Postgres import Db
-from geo.Style import catagorize_xml
+from geo.Style import catagorize_xml, classified_xml
 
 '''
 Connection
 '''
 geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='geoserver')
-pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
+# pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
 # geo.create_workspace('demo')
 
 
@@ -16,7 +16,7 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-geo.create_coveragestyle(style_name='agri', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', overwrite=True)
+# geo.create_coveragestyle(style_name='agri2', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', cmap_type='values', overwrite=True)
 
 
 '''
@@ -34,10 +34,30 @@ Feature styles
 """
 # geo.create_outline_featurestyle('demo', geom_type='polygon', workspace='demo', overwrite=True)
 # catagorize_xml('kamal', [1,2,3,4,5,6,7], num_of_class=30, geom_type='line')
+# geo.create_catagorized_featurestyle('kamal2', [1,2,3,4,5,6,7], workspace='demo')
 
 '''
 Postgres
 '''
 # print(pg.get_columns_names('zones'))
-# print(pg.get_all_values('zones', 'zone_'))
+# print(pg.get_all_values('zones', 'shape_area'))
 # pg.create_schema('kamal kshetri')
+# a = pg.get_columns_names('jamoat-db')
+# print(a)
+# a = pg.get_all_values('jamoat-db', 'shape_area')[5]
+# print(a)
+
+
+'''
+India geoserver
+'''
+# geo = Geoserver('http://dss.geoinfo.ait.ac.th/geoserver')
+# # geo.create_workspace('MOSDAC')
+
+# geo.create_coveragestore(path=r'C:\Users\tek\Downloads\flood_alert.tif', workspace='India')
+
+
+'''
+others
+'''
+# classified_xml('test', 'kamal', [4,5,3,12], color_ramp='hot')

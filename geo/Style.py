@@ -3,13 +3,30 @@ import os
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
-def coverage_style_xml(color_ramp, style_name, cmap_type, ncolor=5, min=0):
-    palette = sns.color_palette(color_ramp, int(ncolor))
-    palette_hex = [rgb2hex(i) for i in palette]
-    style_append = ''
-    for i, color in enumerate(palette_hex):
-        style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
-            color, min+i, min+i)
+def coverage_style_xml(color_ramp, style_name, cmap_type,  min, max):
+    Num = max - min
+
+    if cmap_type == 'ramp':
+        N = 5
+        palette = sns.color_palette(color_ramp, int(N))
+        palette_hex = [rgb2hex(i) for i in palette]
+        style_append = ''
+        interval = Num/4
+
+        for i, color in enumerate(palette_hex):
+            style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
+                color, min+interval*i, min+interval*i)
+
+    else:
+        N = Num+1
+        palette = sns.color_palette(color_ramp, int(N))
+        palette_hex = [rgb2hex(i) for i in palette]
+        style_append = ''
+
+        for i, color in enumerate(palette_hex):
+            style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
+                color, min+i, min+i)
+
     style = """
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" version="1.0.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:sld="http://www.opengis.net/sld">
     <UserLayer>
@@ -107,8 +124,9 @@ def outline_only_xml(color, geom_type='polygon'):
 
             
 
-def catagorize_xml(column_name, values, color_ramp='tab20', num_of_class=5, geom_type='polygon'):
-    palette = sns.color_palette(color_ramp, int(num_of_class))
+def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
+    N = len(values)
+    palette = sns.color_palette(color_ramp, int(N))
     palette_hex = [rgb2hex(i) for i in palette]
     rule = ''
     for value, color in zip(values, palette_hex):
@@ -185,10 +203,85 @@ def catagorize_xml(column_name, values, color_ramp='tab20', num_of_class=5, geom
             return
 
     style = '''
-        <FeatureTypeStyle>
-            {}
-        </FeatureTypeStyle>
+            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <NamedLayer>
+                        <se:Name>Layer name</se:Name>
+                        <UserStyle>
+                        <se:Name>Layer name</se:Name>
+                        <FeatureTypeStyle>
+                            {}
+                        </FeatureTypeStyle>
+                        </UserStyle>
+                    </NamedLayer>
+                </StyledLayerDescriptor>
         '''.format(rule)
+
+    with open('style.sld', 'w') as f:
+        f.write(style)
+
+
+
+def classified_xml(style_name, column_name, values, color_ramp, geom_type='polygon'):
+    max_value = max(values) 
+    min_value = min(values)
+    diff = max_value- min_value
+    N = 5
+    interval = diff/5
+    palette = sns.color_palette(color_ramp, int(N))
+    palette_hex = [rgb2hex(i) for i in palette]
+    # interval = N/4
+    # color_values = [{value: color} for value, color in zip(values, palette_hex)]
+    # print(color_values)
+    rule = ''
+    for i, color in enumerate(palette_hex):
+        print(i)
+
+
+        rule += '''
+            <se:Rule>
+                <se:Name>{1}</se:Name>
+                <se:Description>
+                    <se:Title>{4}</se:Title>
+                </se:Description>
+                <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+                    <ogc:And>
+                    <ogc:PropertyIsGreaterThan>
+                        <ogc:PropertyName>{0}</ogc:PropertyName>
+                        <ogc:Literal>{5}</ogc:Literal>
+                    </ogc:PropertyIsGreaterThan>
+                    <ogc:PropertyIsLessThanOrEqualTo>
+                        <ogc:PropertyName>{0}</ogc:PropertyName>
+                        <ogc:Literal>{4}</ogc:Literal>
+                    </ogc:PropertyIsLessThanOrEqualTo>
+                    </ogc:And>
+                </ogc:Filter>
+                <se:PolygonSymbolizer>
+                    <se:Fill>
+                    <se:SvgParameter name="fill">{2}</se:SvgParameter>
+                    </se:Fill>
+                    <se:Stroke>
+                    <se:SvgParameter name="stroke">{3}</se:SvgParameter>
+                    <se:SvgParameter name="stroke-width">1</se:SvgParameter>
+                    <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+                    </se:Stroke>
+                </se:PolygonSymbolizer>
+            </se:Rule>
+
+        '''.format(column_name, style_name, color, '#000000', min_value+interval*i, min_value+interval*(i+1))
+
+    style = '''
+            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ogc="http://www.opengis.net/ogc" version="1.1.0" xmlns:se="http://www.opengis.net/se" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd">
+                <NamedLayer>
+                    <se:Name>{0}</se:Name>
+                    <UserStyle>
+                    <se:Name>{0}</se:Name>
+                        <se:FeatureTypeStyle>
+                            {1}
+                        </se:FeatureTypeStyle>
+                    </UserStyle>
+                </NamedLayer>
+            </StyledLayerDescriptor>
+        '''.format(style_name, rule)
 
     with open('style.sld', 'w') as f:
         f.write(style)

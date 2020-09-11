@@ -2,8 +2,9 @@ import  pycurl
 import os
 import io
 import requests
-from .Style import coverage_style_xml, outline_only_xml
+from .Style import coverage_style_xml, outline_only_xml, catagorize_xml, classified_xml
 from .Calculation_gdal import raster_value
+from .Postgres import Db
 
 #call back class for read the data
 class DataProvider(object):
@@ -134,18 +135,8 @@ class Geoserver:
         except Exception as e:
             return "Error:%s"%str(e)
 
-    def get_featurestore(self, store_name, workspace='default'):
-        url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, store_name)
-        r = requests.get(url, auth=(self.username, self.password))
-        print(r)
-        r_dict = r.json()
-        connectionParameters = [i for i in r_dict['dataStore']['connectionParameters']['entry']]
-        print(connectionParameters)
-        return connectionParameters
 
-
-
-    def publish_featurestore(self, store, pg_table, workspace=None):
+    def publish_featurestore(self, store_name, pg_table, workspace=None):
         """
         Only user for postgis vector data
         input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
@@ -158,7 +149,7 @@ class Geoserver:
             layer_xml="<featureType><name>{0}</name></featureType>".format(pg_table)
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
             #connecting with the specified store in geoserver
-            c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes'.format(self.service_url, workspace, store))
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes'.format(self.service_url, workspace, store_name))
             c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
             c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
             c.setopt(pycurl.READFUNCTION,DataProvider(layer_xml).read_cb)
@@ -236,7 +227,7 @@ class Geoserver:
         return attribute
 
 
-    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn', cmap_type='range', overwrite=False):
+    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn', cmap_type='ramp', overwrite=False):
         '''
         The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster. 
@@ -244,12 +235,11 @@ class Geoserver:
         '''
         try:
             raster = raster_value(raster_path)
-            N = raster['N']
             min = raster['min']
-            print(raster)
+            max = raster['max']
             if style_name is None:
                 style_name = raster['file_name']
-            coverage_style_xml(color_ramp, style_name, cmap_type, N, min)
+            coverage_style_xml(color_ramp, style_name, cmap_type, min, max)
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(style_name,style_name+'.sld')
 
             # create the xml file for associated style 
@@ -286,7 +276,7 @@ class Geoserver:
 
 
 
-    def create_catagorized_featurestyle(self, column_name, class_name, workspace=None, color_ramp='tab20', geom_type='polygon', outline_color='#3579b1', overwrite=False):
+    def create_catagorized_featurestyle(self, style_name, column_name, column_distinct_values, workspace=None, color_ramp='tab20', geom_type='polygon', outline_color='#3579b1', overwrite=False):
         '''
         Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
@@ -294,11 +284,9 @@ class Geoserver:
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         '''
         try:
-            if geom_type=='polygon':
-                # outline_only_xml(outline_color, color)
-                pass
+            catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
 
-            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(column_name,column_name+'.sld')
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(style_name, style_name+'.sld')
 
             # create the xml file for associated style 
             c = pycurl.Curl()
@@ -315,7 +303,7 @@ class Geoserver:
             c.perform()
 
             # upload the style file
-            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, name))
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, column_name))
             c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
             c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))
@@ -364,6 +352,52 @@ class Geoserver:
 
             # upload the style file
             c.setopt(c.URL, '{0}/{1}'.format(url, style_name))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
+            c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+            # remove temporary style created style file 
+            os.remove('style.sld')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+
+    def create_classified_featurestyle(self, style_name, column_name, column_distinct_values, workspace=None, color_ramp='tab20', geom_type='polygon', outline_color='#3579b1', overwrite=False):
+        '''
+        Dynamically create the style for postgis geometry
+        The data type must be point, line or polygon
+        Inputs: column_name (based on which column style should be generated), workspace, 
+        color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
+        '''
+        try:
+            classified_xml(style_name, column_name, column_distinct_values, color_ramp, geom_type='polygon')
+
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(column_name, column_name+'.sld')
+
+            # create the xml file for associated style 
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace))
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, column_name))
             c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml" ])
             c.setopt(pycurl.READFUNCTION,FileReader(open('style.sld', 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE,os.path.getsize('style.sld'))

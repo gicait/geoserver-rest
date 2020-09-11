@@ -1,12 +1,14 @@
-# Documentation
-
 ### Installation
-```bash
-pip install wheel
-pip install pipwin
-pipwin install gdal
+The `geoserver-rest` package is useful for the management for geospatial data in [GeoServer](http://geoserver.org/). The package is usefull for the creating, updating and deleting geoserver workspaces, stores, layers, and style files. For installation of this package following package should be installed first,
 
-pip install geoserver-rest-python
+###### Dependencies
+1. [Gdal](https://gdal.org/) 
+2. [Pycurl](http://pycurl.io/)
+
+The `geoserver-rest` package can be installed with pip, if all the dependencies are installed already
+
+```bash
+pip install geoserver-rest
 ```
 
 ### How to use
@@ -22,26 +24,33 @@ geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='g
 
 ##### Create workspace
 ```python
-geo.create_workspace('demo')
+geo.create_workspace(workspace='demo')
 ```
 
 ##### Create coveragestore
-It is helpful for publishing the **raster data** to the geoserver
+It is helpful for publishing the **raster data** to the geoserver. Here if you didn't to pass the `lyr_name` parameter, it will take the raster file name as the layer name. 
 
 ```python
-geo.create_coveragestore(path=r'path\to\raster\file.tif', workspace='demo')
+geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', workspace='demo')
+```
+
+If the layername already exist in geoserver you can pass another parameter `overwrite=True`,
+
+```python
+geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', workspace='demo' overwrite=True)
 ```
 
 ##### Create featurestore and publish layer
-It is use for connecting the **PostGIS** with geoserver and publish this as a layer. It is only use for **vector data**
+It is use for connecting the **PostGIS** with geoserver and publish this as a layer. It is only useful for **vector data**. The postgres connection parameters should be pass in the parameters. For publish the PostGIS tables, the pg_table parameter represent the `table name in postgres`
 
 ```python
-geo.create_featurestore(store='geo_data', workspace='demo', db='postgres', host='localhost', pg_user='postgres', pg_password='admin')
-geo.publish_featurestore(workspace='demo', store='geo_data', pg_table='geodata_table_name')
+geo.create_featurestore(store_name='geo_data', workspace='demo', db='postgres', host='localhost', pg_user='postgres', pg_password='admin')
+geo.publish_featurestore(workspace='demo', store_name='geo_data', pg_table='geodata_table_name')
 ```
 
 ##### Upload style and publish it
-It is use for uploading **SLD** files and publish style
+It is use for uploading **SLD** files and publish style. If the style name already exist, you can pass the parameter `overwrite=True` to overwrite it. The name of the style will be name of the uploaded file name.
+
 ```python
 geo.upload_style(path=r'path\to\sld\file.sld', workspace='demo')
 geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo')
@@ -49,10 +58,61 @@ geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name',
 
 
 ##### Create Coverage Style based on the raster (Dynamic) and apply style
-It is use to create the style file for **raster data**.
+It is use to create the style file for **raster data**. You can get the `color_ramp` name from [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html). By default `color_ramp='RdYlGn'` (red to green color ramp).
 
 ```python
 #Style name will be the same as the raster_file_name
 geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn')
 geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
 ```
+
+For generate the style for classified raster you can pass the another parameter called `cmap_type='values'` as,
+
+```python
+geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn', cmap_type='values')
+```
+
+| Option      | Type    | Default   | Description                                                                                                                                     |
+| ----------- | ------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| style_name      | string  | file_name | This is optional field. If you didn't pass the style_name parameter, then it will take the raster file name as the default name of style in geoserver          |
+| raster_path      | path  | None | path to the raster file                                                            |
+| workspace | string | None      | The name of the workspace                                                                                                                          |
+| color_ramp  | string  | RdYlGn   | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
+| cmap_type      | string | ramp     | By default the continuous style will be generated, If you want to generate the style for classified raster then pass the parameter `color_ramp='values'`                                                                                        |
+| overwrite | boolean  | False     | For overwrite the previous style file in geoserver                              |
+
+
+##### Create featur style
+It is use for creating the style for point, line, polygon dynamically. Currently it supports three different type of feature styles,
+
+1. Outline featurestyle: For creating the style which have only boundary color not the fill style
+2. Catagorized featurestyle: For creating catagorized dataset
+3. Classified featurestyle: Classify the input data and style it: (For now only support for polygon geometry)
+
+```python
+geo.create_outline_featurestyle(style_name='new_style' color="#3579b1" geom_type='polygon', workspace='demo')
+geo.create_catagorized_featurestyle(style_name='name_of_style', column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo')
+geo.create_classified_featurestyle(style_name='name_of_style' column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo')
+```
+
+**Note:** 
+* The geom_type must be `point` or `line` or `polygon`
+* The `color_ramp` name can be get from [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html).
+
+###### The options for creating catagorized/classified featurestyle are as follows,
+| Option      | Type    | Default   | Description                                                                                                                                     |
+| ----------- | ------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| style_name      | string  | None | The name of the style file in geoserver         |
+| column_name      | string  | None | The name of the column, based on which the style will be generated                                                   |
+| column_distinct_values | list/array | None      | The column distinct values based on which the style will be applied/classified                                                                                                                          |
+|workspace | string | None | The name of the workspace
+| color_ramp  | string  | RdYlGn   | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
+| geom_type      | string | polygon     | The geometry type, Available options are `point`, `line`, `polygon` .                |
+
+| outline_color | color hex value | '#3579b1' | The outline color of the polygon/line |
+| overwrite | boolean  | False     | For overwrite the previous style file in geoserver                              |
+
+
+
+### Acknowledgements
+Created and managed by [Tek Bahadur Kshetri](http://tekkshetri.com.np/) for the project Spatial Disaster Support System (SDSS).

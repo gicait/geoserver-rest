@@ -9,14 +9,13 @@ geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='g
 # pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
 # geo.create_workspace('demo')
 
-
 '''
 Coverage (raster)
 '''
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-# geo.create_coveragestyle(style_name='agri2', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='twilight_shifted', cmap_type='values', overwrite=True)
+# geo.create_coveragestyle(style_name='agri2', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='try', color_ramp='terrain_r', cmap_type='values')
 
 
 '''
@@ -46,6 +45,16 @@ Postgres
 # print(a)
 # a = pg.get_all_values('jamoat-db', 'shape_area')[5]
 # print(a)
+
+'''
+Delete request
+'''
+# geo.delete_workspace(workspace='demo')
+# geo.delete_layer(layer_name='agri_final_proj', workspace='try')
+# geo.delete_featurestore(featurestore_name='ftry', workspace='try')
+# geo.delete_coveragestore(coveragestore_name='agri_final_proj', workspace='try')
+# geo.delete_style(style_name='kamal2', workspace='demo')
+
 
 
 '''

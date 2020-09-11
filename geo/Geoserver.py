@@ -440,3 +440,61 @@ class Geoserver:
             return 'Error: {}'.format(e)
 
 
+
+    def delete_workspace(self, workspace):
+        try:
+            url = '{0}/rest/workspaces/{1}'.format(self.service_url, workspace)
+            r = requests.delete(url, auth=(self.username, self.password))
+            print('Status code: {0}'.format(r.status_code))
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+
+
+    def delete_layer(self, layer_name, workspace=None):
+        try:
+            if workspace is None:
+                url = '{0}/rest/layers/{1}'.format(self.service_url, layer_name)
+            else:
+                url = '{0}/rest/workspaces/{1}/layers/{2}'.format(self.service_url, workspace, layer_name)
+            r = requests.delete(url, auth=(self.username, self.password))
+            print('Status code: {0}'.format(r.status_code))
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+
+
+    def delete_featurestore(self, featurestore_name, workspace):
+        try:
+            url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(self.service_url, workspace, featurestore_name)
+            r = requests.delete(url, auth=(self.username, self.password))
+            print('Status code: {0}'.format(r.status_code))
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    
+
+    def delete_coveragestore(self, coveragestore_name, workspace):
+        try:
+            url = '{0}/rest/workspaces/{1}/coveragestores/{2}'.format(self.service_url, workspace, coveragestore_name)
+            r = requests.delete(url, auth=(self.username, self.password))
+            print('Status code: {0}'.format(r.status_code))
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+
+    def delete_style(self, style_name, workspace=None):
+        try:
+            if workspace is None:
+                url = '{0}/rest/styles/{1}'.format(self.service_url, style_name)
+            
+            else:
+                url = '{0}/rest/workspaces/{1}/styles/{2}'.format(self.service_url, workspace, style_name)
+            r = requests.delete(url, auth=(self.username, self.password))
+            print('Status code: {0}'.format(r.status_code))
+
+        except Exception as e:
+            return 'Error: {}'.format(e)

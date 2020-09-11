@@ -108,10 +108,26 @@ geo.create_classified_featurestyle(style_name='name_of_style' column_name='name_
 |workspace | string | None | The name of the workspace
 | color_ramp  | string  | RdYlGn   | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
 | geom_type      | string | polygon     | The geometry type, Available options are `point`, `line`, `polygon` .                |
-
 | outline_color | color hex value | '#3579b1' | The outline color of the polygon/line |
 | overwrite | boolean  | False     | For overwrite the previous style file in geoserver                              |
 
+##### Some of the delete request examples
+```python
+# delete workspace 
+geo.delete_workspace(workspace='demo')
+
+# delete layer
+geo.delete_layer(layer_name='agri_final_proj', workspace='demo')
+
+# delete feature store, i.e. remove postgresql connection
+geo.delete_featurestore(featurestore_name='ftry', workspace='demo')
+
+# delete coveragestore, i.e. delete raster store
+geo.delete_coveragestore(coveragestore_name='agri_final_proj', workspace='demo')
+
+# delete style file
+geo.delete_style(style_name='kamal2', workspace='demo')
+```
 
 
 ### Acknowledgements

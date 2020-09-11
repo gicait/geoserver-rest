@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="geoserver-rest", 
-    version="0.5.1",
+    version="0.6.0",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for GeoServer rest API",
@@ -15,7 +15,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/iamtekson/geoserver-rest-python",
     packages=['geo'],
-    keywords=['geoserver', 'rest geoserver', 'python', 'geoserver python', 'python geoserver', 'geoserver rest', 'geoserver-rest', 'geoserver-rest-python'],
+    keywords=['geoserver', 'geoserver-rest', 'python geoserver', 'geoserver api', 'api', 'rest geoserver', 'python', 'geoserver python', 'geoserver rest', 'geoserver-rest-python'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

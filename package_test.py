@@ -54,10 +54,10 @@ India geoserver
 # geo = Geoserver('http://dss.geoinfo.ait.ac.th/geoserver')
 # # geo.create_workspace('MOSDAC')
 
-# geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\flood_alert.tif', workspace='MOSDAC')
+# geo.create_coveragestore(path=r'C:\Users\tek\Downloads\flood_alert.tif', workspace='India')
 
 
 '''
 others
 '''
-classified_xml('test', 'kamal', [4,5,3,12], color_ramp='hot')
+# classified_xml('test', 'kamal', [4,5,3,12], color_ramp='hot')

@@ -1,5 +1,5 @@
 ### Installation
-The `geoserver-rest` package is useful for the management for geospatial data in [GeoServer](http://geoserver.org/). The package is usefull for the creating, updating and deleting geoserver workspaces, stores, layers, and style files. For installation of this package following package should be installed first,
+The `geoserver-rest` package is useful for the management for geospatial data in [GeoServer](http://geoserver.org/). The package is useful for the creating, updating and deleting geoserver workspaces, stores, layers, and style files. For installation of this package following package should be installed first,
 
 ###### Dependencies
 1. [Gdal](https://gdal.org/) 

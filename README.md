@@ -131,4 +131,4 @@ geo.delete_style(style_name='kamal2', workspace='demo')
 
 
 ### Acknowledgements
-Created and managed by [Tek Bahadur Kshetri](http://tekkshetri.com.np/) for the project Spatial Disaster Support System (SDSS).
+Created and managed by [Tek Bahadur Kshetri](http://tekkshetri.com.np/)

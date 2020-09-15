@@ -52,9 +52,8 @@ Delete request
 '''
 # geo.delete_workspace(workspace='demo')
 # geo.delete_layer(layer_name='agri_final_proj', workspace='demo')
-geo.delete_featurestore(featurestore_name='feature_store', workspace='sdss')
-geo.delete_coveragestore(
-    coveragestore_name='agri_final_proj', workspace='GeoInformatics_Center')
+# geo.delete_featurestore(featurestore_name='feature_store', workspace='demo')
+# geo.delete_coveragestore(coveragestore_name='store_name', workspace='demo')
 # geo.delete_style(style_name='kamal2', workspace='demo')
 
 

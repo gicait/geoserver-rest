@@ -5,7 +5,8 @@ from geo.Style import catagorize_xml, classified_xml
 '''
 Connection
 '''
-geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='geoserver')
+geo = Geoserver('http://localhost:8080/geoserver',
+                username='admin', password='geoserver')
 # pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
 # geo.create_workspace('demo')
 
@@ -51,8 +52,9 @@ Delete request
 '''
 # geo.delete_workspace(workspace='demo')
 # geo.delete_layer(layer_name='agri_final_proj', workspace='demo')
-# geo.delete_featurestore(featurestore_name='fdemo', workspace='demo')
-# geo.delete_coveragestore(coveragestore_name='agri_final_proj', workspace='demo')
+geo.delete_featurestore(featurestore_name='feature_store', workspace='sdss')
+geo.delete_coveragestore(
+    coveragestore_name='agri_final_proj', workspace='GeoInformatics_Center')
 # geo.delete_style(style_name='kamal2', workspace='demo')
 
 

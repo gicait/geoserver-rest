@@ -256,7 +256,6 @@ class Geoserver:
         url = '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes/{3}.json'.format(
             self.service_url, workspace, store_name, feature_type_name)
         r = requests.get(url, auth=(self.username, self.password))
-        print(r)
         r_dict = r.json()
         attribute = [i['name']
                      for i in r_dict['featureType']['attributes']['attribute']]
@@ -264,7 +263,14 @@ class Geoserver:
 
         return attribute
 
-    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn', cmap_type='ramp', overwrite=False):
+    def get_featurestore(self, store_name, workspace):
+        url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
+            self.service_url, workspace, store_name)
+        r = requests.get(url, auth=(self.username, self.password))
+        r_dict = r.json()
+        return r_dict['dataStore']
+
+    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', overwrite=False):
         '''
         The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster. 
@@ -506,13 +512,15 @@ class Geoserver:
 
     def delete_layer(self, layer_name, workspace=None):
         try:
+            payload = {'recurse': 'true'}
             if workspace is None:
                 url = '{0}/rest/layers/{1}'.format(
                     self.service_url, layer_name)
             else:
                 url = '{0}/rest/workspaces/{1}/layers/{2}'.format(
                     self.service_url, workspace, layer_name)
-            r = requests.delete(url, auth=(self.username, self.password))
+            r = requests.delete(url, auth=(
+                self.username, self.password), params=payload)
             print('Status code: {0}, delete layer'.format(r.status_code))
 
         except Exception as e:

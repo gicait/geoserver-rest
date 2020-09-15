@@ -16,7 +16,13 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-# geo.create_coveragestyle(style_name='agri2', raster_path=r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', color_ramp='terrain_r', cmap_type='values')
+color_ramp = {
+    'value1': '#ffff55',
+    'value2': '#505050',
+    'value3': '#404040'
+}
+geo.create_coveragestyle(style_name='demo', raster_path=r'D:\_Tek\1. tajikistan\1. data\C_EAR\a_Agriculture\agri_final_proj.tif',
+                         workspace='demo', cmap_type='values', overwrite=True)
 
 
 '''

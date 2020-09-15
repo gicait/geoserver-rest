@@ -1,11 +1,11 @@
-import  pycurl
+import pycurl
 import os
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
+
 def coverage_style_xml(color_ramp, style_name, cmap_type,  min, max):
     Num = max - min
-
     if cmap_type == 'ramp':
         N = 5
         palette = sns.color_palette(color_ramp, int(N))
@@ -18,14 +18,32 @@ def coverage_style_xml(color_ramp, style_name, cmap_type,  min, max):
                 color, min+interval*i, min+interval*i)
 
     else:
-        N = Num+1
-        palette = sns.color_palette(color_ramp, int(N))
-        palette_hex = [rgb2hex(i) for i in palette]
-        style_append = ''
+        cmap_type = 'values'
+        if type(color_ramp) is list:
+            N = len(color_ramp)
 
-        for i, color in enumerate(palette_hex):
-            style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
-                color, min+i, min+i)
+            style_append = ''
+            for i, color in enumerate(color_ramp):
+                style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
+                    color, min+i, min+i)
+
+        elif type(color_ramp) is dict:
+            N = len(color_ramp)
+
+            style_append = ''
+            for key, value, i in zip(color_ramp.keys(), color_ramp.values(), range(N)):
+                style_append += '<sld:ColorMapEntry color="{}" label=" {}" quantity="{}"/>'.format(
+                    value, key, min+i)
+
+        else:
+            N = Num+1
+            palette = sns.color_palette(color_ramp, int(N))
+            palette_hex = [rgb2hex(i) for i in palette]
+            style_append = ''
+
+            for i, color in enumerate(palette_hex):
+                style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
+                    color, min+i, min+i)
 
     style = """
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" version="1.0.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:sld="http://www.opengis.net/sld">
@@ -59,7 +77,7 @@ def coverage_style_xml(color_ramp, style_name, cmap_type,  min, max):
 
 
 def outline_only_xml(color, geom_type='polygon'):
-    if geom_type=='point':
+    if geom_type == 'point':
         symbolizer = '''
             <PointSymbolizer>
                 <Graphic>
@@ -74,7 +92,7 @@ def outline_only_xml(color, geom_type='polygon'):
             </PointSymbolizer>
         '''.format(color)
 
-    elif geom_type=='line':
+    elif geom_type == 'line':
         symbolizer = '''
                 <LineSymbolizer>
                     <Stroke>
@@ -84,7 +102,7 @@ def outline_only_xml(color, geom_type='polygon'):
                 </LineSymbolizer>
             '''.format(color)
 
-    elif geom_type=='polygon':
+    elif geom_type == 'polygon':
         symbolizer = '''
                 <PolygonSymbolizer>
                     <Fill>
@@ -96,7 +114,7 @@ def outline_only_xml(color, geom_type='polygon'):
                     </Stroke>
                 </PolygonSymbolizer>
             '''.format(color)
-    
+
     else:
         print('Error: Invalid geometry type')
         return
@@ -118,11 +136,9 @@ def outline_only_xml(color, geom_type='polygon'):
             </StyledLayerDescriptor>
             '''.format(symbolizer)
 
-
     with open('style.sld', 'w') as f:
         f.write(style)
 
-            
 
 def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
     N = len(values)
@@ -130,8 +146,8 @@ def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
     palette_hex = [rgb2hex(i) for i in palette]
     rule = ''
     for value, color in zip(values, palette_hex):
-        if geom_type=='point':
-            rule +='''
+        if geom_type == 'point':
+            rule += '''
                 <Rule>
                 <Name>{0}</Name>
                 <Title>{1}</Title>
@@ -154,8 +170,8 @@ def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
                 </PointSymbolizer>
                 </Rule>
             '''.format(column_name, value, color)
-        
-        elif geom_type=='line':
+
+        elif geom_type == 'line':
             rule += '''
                 <Rule>
                     <Name>{1}</Name>
@@ -174,7 +190,7 @@ def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
                 </Rule>
             '''.format(column_name, value, color)
 
-        elif geom_type=='polygon':
+        elif geom_type == 'polygon':
             rule += '''
                 <Rule>
                     <Name>{0}</Name>
@@ -220,11 +236,10 @@ def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
         f.write(style)
 
 
-
 def classified_xml(style_name, column_name, values, color_ramp, geom_type='polygon'):
-    max_value = max(values) 
+    max_value = max(values)
     min_value = min(values)
-    diff = max_value- min_value
+    diff = max_value - min_value
     N = 5
     interval = diff/5
     palette = sns.color_palette(color_ramp, int(N))
@@ -235,7 +250,6 @@ def classified_xml(style_name, column_name, values, color_ramp, geom_type='polyg
     rule = ''
     for i, color in enumerate(palette_hex):
         print(i)
-
 
         rule += '''
             <se:Rule>

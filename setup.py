@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="geoserver-rest", 
-    version="1.0.3",
+    name="geoserver-rest",
+    version="1.1.1",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for GeoServer rest API",
@@ -15,13 +15,14 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/iamtekson/geoserver-rest-python",
     packages=['geo'],
-    keywords=['geoserver-rest-python', 'geoserver rest', 'python geoserver', 'geoserver api', 'api', 'rest geoserver', 'python', 'geoserver python', 'geoserver rest'],
+    keywords=['geoserver-rest-python', 'geoserver rest', 'python geoserver', 'geoserver api',
+              'api', 'rest geoserver', 'python', 'geoserver python', 'geoserver rest'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires = [
+    install_requires=[
         'pycurl ~= 7.43',
         'seaborn ~= 0.10.1',
         'gdal',

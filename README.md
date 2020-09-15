@@ -1,8 +1,10 @@
 ### Installation
+
 The `geoserver-rest` package is useful for the management for geospatial data in [GeoServer](http://geoserver.org/). The package is useful for the creating, updating and deleting geoserver workspaces, stores, layers, and style files. For installation of this package, following packages should be installed first:
 
 ###### Dependencies
-1. [GDAL](https://gdal.org/) 
+
+1. [GDAL](https://gdal.org/)
 2. [Pycurl](http://pycurl.io/)
 
 The `geoserver-rest` package can be installed with pip, if all the dependencies are installed already.
@@ -12,9 +14,11 @@ pip install geoserver-rest
 ```
 
 ### How to use
+
 This library is used for creating workspace, coveragestore, featurestore, styles. Some of the examples are shown below.
 
 ##### Initialize the library
+
 This step is used to initialize the library. It takes parameters as geoserver url, username, password.
 
 ```python
@@ -23,12 +27,14 @@ geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='g
 ```
 
 ##### Create workspace
+
 ```python
 geo.create_workspace(workspace='demo')
 ```
 
 ##### Create coveragestore
-It is helpful for publishing the **raster data** to the geoserver. Here if you don't pass the `lyr_name` parameter, it will take the raster file name as the layer name. 
+
+It is helpful for publishing the **raster data** to the geoserver. Here if you don't pass the `lyr_name` parameter, it will take the raster file name as the layer name.
 
 ```python
 geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', workspace='demo')
@@ -41,6 +47,7 @@ geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', work
 ```
 
 ##### Create featurestore and publish layer
+
 It is used for connecting the **PostGIS** with geoserver and publish this as a layer. It is only useful for **vector data**. The postgres connection parameters should be passed as the parameters. For publishing the PostGIS tables, the pg_table parameter represent the `table name in postgres`
 
 ```python
@@ -49,6 +56,7 @@ geo.publish_featurestore(workspace='demo', store_name='geo_data', pg_table='geod
 ```
 
 ##### Upload style and publish it
+
 It is used for uploading **SLD** files and publish style. If the style name already exists, you can pass the parameter `overwrite=True` to overwrite it. The name of the style will be name of the uploaded file name.
 
 ```python
@@ -56,13 +64,39 @@ geo.upload_style(path=r'path\to\sld\file.sld', workspace='demo')
 geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo')
 ```
 
-
 ##### Create Coverage Style based on the raster (Dynamic) and apply style
+
 It is used to create the style file for **raster data**. You can get the `color_ramp` name from [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html). By default `color_ramp='RdYlGn'` (red to green color ramp).
 
 ```python
 #Style name will be the same as the raster_file_name
 geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn')
+geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
+```
+
+**Note:** If you have your own custom color and the custom label, you can pass the `values:color` pair as below to generate the map with dynamic legend,
+
+```python
+c_ramp = {
+    'label 1 value': '#ffff55',
+    'label 2 value': '#505050',
+    'label 3 value': '#404040',
+    'label 4 value': '#333333'
+}
+geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff',
+                            style_name='style_2',
+                            workspace='demo',
+                            color_ramp=c_ramp,
+                            cmap_type='values')
+
+# you can also pass this list of color if you have your custom colors for the color_ramp
+'''
+geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff',
+                            style_name='style_3',
+                            workspace='demo',
+                            color_ramp=[#ffffff, #453422,  #f0f0f0, #aaaaaa],
+                            cmap_type='values')
+'''
 geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
 ```
 
@@ -72,17 +106,17 @@ For generating the style for classified raster, you can pass the another paramet
 geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn', cmap_type='values')
 ```
 
-| Option      | Type    | Default   | Description                                                                                                                                     |
-| ----------- | ------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| style_name      | string  | file_name | This is optional field. If you don't pass the style_name parameter, then it will take the raster file name as the default name of style in geoserver          |
-| raster_path      | path  | None | path to the raster file                                                            |
-| workspace | string | None      | The name of the workspace                                                                                                                          |
-| color_ramp  | string  | RdYlGn   | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
-| cmap_type      | string | ramp     | By default the continuous style will be generated, If you want to generate the style for classified raster then pass the parameter `color_ramp='values'`                                                                                        |
-| overwrite | boolean  | False     | For overwriting the previous style file in geoserver                              |
-
+| Option      | Type    | Default   | Description                                                                                                                                               |
+| ----------- | ------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| style_name  | string  | file_name | This is optional field. If you don't pass the style_name parameter, then it will take the raster file name as the default name of style in geoserver      |
+| raster_path | path    | None      | path to the raster file                                                                                                                                   |
+| workspace   | string  | None      | The name of the workspace                                                                                                                                 |
+| color_ramp  | string  | RdYlGn    | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
+| cmap_type   | string  | ramp      | By default the continuous style will be generated, If you want to generate the style for classified raster then pass the parameter `color_ramp='values'`  |
+| overwrite   | boolean | False     | For overwriting the previous style file in geoserver                                                                                                      |
 
 ##### Create featur style
+
 It is used for creating the style for point, line and polygon dynamically. Currently, it supports three different types of feature styles,
 
 1. Outline featurestyle: For creating the style which have only boundary color but not the fill style
@@ -95,25 +129,28 @@ geo.create_catagorized_featurestyle(style_name='name_of_style', column_name='nam
 geo.create_classified_featurestyle(style_name='name_of_style' column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo')
 ```
 
-**Note:** 
-* The geom_type must be either`point`,`line` or `polygon`. 
-* The `color_ramp` name can be obtained from [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html).
+**Note:**
+
+- The geom_type must be either`point`,`line` or `polygon`.
+- The `color_ramp` name can be obtained from [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html).
 
 ###### The options for creating catagorized/classified featurestyle are as follows,
-| Option      | Type    | Default   | Description                                                                                                                                     |
-| ----------- | ------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| style_name      | string  | None | The name of the style file in geoserver         |
-| column_name      | string  | None | The name of the column, based on which the style will be generated                                                   |
-| column_distinct_values | list/array | None      | The column distinct values based on which the style will be applied/classified                                                                                                                          |
-|workspace | string | None | The name of the workspace
-| color_ramp  | string  | RdYlGn   | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
-| geom_type      | string | polygon     | The geometry type, available options are `point`, `line` or `polygon`               |
-| outline_color | color hex value | '#3579b1' | The outline color of the polygon/line |
-| overwrite | boolean  | False     | For overwriting the previous style file in geoserver                              |
+
+| Option                 | Type            | Default   | Description                                                                                                                                               |
+| ---------------------- | --------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| style_name             | string          | None      | The name of the style file in geoserver                                                                                                                   |
+| column_name            | string          | None      | The name of the column, based on which the style will be generated                                                                                        |
+| column_distinct_values | list/array      | None      | The column distinct values based on which the style will be applied/classified                                                                            |
+| workspace              | string          | None      | The name of the workspace                                                                                                                                 |
+| color_ramp             | string          | RdYlGn    | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
+| geom_type              | string          | polygon   | The geometry type, available options are `point`, `line` or `polygon`                                                                                     |
+| outline_color          | color hex value | '#3579b1' | The outline color of the polygon/line                                                                                                                     |
+| overwrite              | boolean         | False     | For overwriting the previous style file in geoserver                                                                                                      |
 
 ##### Some of the delete request examples
+
 ```python
-# delete workspace 
+# delete workspace
 geo.delete_workspace(workspace='demo')
 
 # delete layer
@@ -130,6 +167,7 @@ geo.delete_style(style_name='kamal2', workspace='demo')
 ```
 
 ##### Automation process
+
 The following code will first convert all the `.rst` data format inside `C:\Users\gic\Desktop\etlIa\` folder, into `tiff` format and then upload all the `tiff` files to the GeoServer.
 
 ```python
@@ -152,4 +190,5 @@ for rst in rst_files:
 ```
 
 ### Acknowledgements
+
 Created and managed by [Tek Bahadur Kshetri](http://tekkshetri.com.np/) for the activites of Geoinformatics Center of Asian Institute of Technology, Thailand.

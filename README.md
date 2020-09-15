@@ -106,14 +106,14 @@ For generating the style for classified raster, you can pass the another paramet
 geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn', cmap_type='values')
 ```
 
-| Option      | Type    | Default   | Description                                                                                                                                               |
-| ----------- | ------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| style_name  | string  | file_name | This is optional field. If you don't pass the style_name parameter, then it will take the raster file name as the default name of style in geoserver      |
-| raster_path | path    | None      | path to the raster file                                                                                                                                   |
-| workspace   | string  | None      | The name of the workspace                                                                                                                                 |
-| color_ramp  | string  | RdYlGn    | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
-| cmap_type   | string  | ramp      | By default the continuous style will be generated, If you want to generate the style for classified raster then pass the parameter `color_ramp='values'`  |
-| overwrite   | boolean | False     | For overwriting the previous style file in geoserver                                                                                                      |
+| Option      | Type               | Default   | Description                                                                                                                                               |
+| ----------- | ------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| style_name  | string             | file_name | This is optional field. If you don't pass the style_name parameter, then it will take the raster file name as the default name of style in geoserver      |
+| raster_path | path               | None      | path to the raster file                                                                                                                                   |
+| workspace   | string             | None      | The name of the workspace                                                                                                                                 |
+| color_ramp  | string, list, dict | RdYlGn    | The color ramp name. The name of the color ramp can be found here in [matplotlib colormaps](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) |
+| cmap_type   | string             | ramp      | By default the continuous style will be generated, If you want to generate the style for classified raster then pass the parameter `color_ramp='values'`  |
+| overwrite   | boolean            | False     | For overwriting the previous style file in geoserver                                                                                                      |
 
 ##### Create featur style
 

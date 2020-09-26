@@ -82,6 +82,3 @@ Web-platforms are designed to access services or data [@Demmer:2007]. It should 
 I would like to acknowledge Er. Rabin Ojha for his valuable contribution in documentation.
 
 # References
-
-$$
-$$

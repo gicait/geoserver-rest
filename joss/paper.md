@@ -41,20 +41,32 @@ The geoserver-rest is written in a class-based structure. It can get/create/upda
 from geo.Geoserver import Geoserver
 
 # initialize geoserver
-geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='geoserver')
+geo = Geoserver('http://localhost:8080/geoserver',
+                username='admin',
+                password='geoserver')
 
 #create workspace
 geo.create_workspace(workspace='demo')
 
 #upload raster data: create store and layer at same time inside demo workspace
-geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', workspace='demo')
+geo.create_coveragestore(lyr_name='layer1'
+                          path=r'path\to\raster\file.tif',
+                          workspace='demo')
 
 #update raster data (replace the existing one)
-geo.create_coveragestore(lyr_name='layer1' path=r'new\path\to\raster\file.tif', workspace='demo', overwrite=True)
+geo.create_coveragestore(lyr_name='layer1'
+                          path=r'new\path\to\raster\file.tif',
+                          workspace='demo',
+                          overwrite=True)
 
 #create style file dynamically and apply it to the required layer
-geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn')
-geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
+geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff',
+                          style_name='style_1',
+                          workspace='demo',
+                          color_ramp='RdYiGn')
+geo.publish_style(layer_name='geoserver_layer_name',
+                  style_name='raster_file_name',
+                  workspace='demo')
 
 #delete layer and store
 geo.delete_layer(layer_name='layer1', workspace='demo')

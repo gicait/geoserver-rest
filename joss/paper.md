@@ -31,9 +31,11 @@ The geoserver is the open-source server written in java that allows the user to 
 
 # Summary
 
-The geoserver-rest package is useful for the management for geospatial data in GeoServer. It is applicable for creating, updating and deleting geoserver workspaces, stores, layers, and style files. It has four dependencies, gdal [@gdal], pycurl [@pycurl], psycopg2 [@psycopg2] and seaborn [@seaborn].
+The geoserver-rest package is useful for the management for geospatial data in geoserver. It has a comprehensive scope for the web application, mobile application, cloud-based applications development. The geoserver-rest makes it possible to share and manipulate the data between any client-server pair. The geoserver-rest is applicable for creating, updating and deleting geoserver workspaces, stores, layers, and style files.
 
-The geoserver-rest is written in a class-based structure. It can get/create/update/delete the required geospatial data by passing some parameters in the class methods. Additionally, it supports the dynamic styling fo the raster as well as vector layers. This option makes cartographer life easier for styling their maps and share in the web. The documentation of the project is available in `Python Package Index` [@gsrest].
+By default, the geoserver have grey color style. The layer needs to visualize appropriately so that more people can read it easily. it will be more readable if it has proper styling file. The style file can be generated manually from writing the script or with the help of Quantum GIS (QGIS). Generated SLD file needed to be manually uploaded to the geoserver and link it to the layer [@Stefano:2017]. Here comes the use of geoserver-rest for automation of this process. The geoserver-rest can dynamically create the SLD file based on the uploaded geospatial data. The style file can be categorized or graduated type. In the case of the raster, it will read the raster data type and get the maximum and minimum value and create the style file based on the user need but for the vector data type the user has to assign based on which column he/she wants to generate the SLD file. The generated SLD file can be linked to the specific layer to publish the new design.
+
+The geoserver-rest has four dependencies, gdal [@gdal], pycurl [@pycurl], psycopg2 [@psycopg2] and seaborn [@seaborn]. The full documentation of the project is available in `Python Package Index` [@gsrest].
 
 # Sample code
 

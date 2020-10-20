@@ -267,8 +267,13 @@ class Geoserver:
         url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
             self.service_url, workspace, store_name)
         r = requests.get(url, auth=(self.username, self.password))
-        r_dict = r.json()
-        return r_dict['dataStore']
+        try:
+            r_dict = r.json()
+            return r_dict['dataStore']
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
 
     def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', overwrite=False):
         '''

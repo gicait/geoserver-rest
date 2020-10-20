@@ -91,3 +91,17 @@ class Db:
         
         except Exception as err:
             print('Schema create error: ', err)
+           
+    def delete_table(self, name, dbname='postgres'):
+        try:
+            cursor = self.conn.cursor()
+
+            sql = f'''DROP TABLE IF EXITS {name} CASCADE;'''
+            cursor.execute(sql)
+            self.conn.commit()
+
+            print('{} table droped successfully.'.format(name))
+
+        except Exception as err:
+            print('Delete table error: ', err)
+

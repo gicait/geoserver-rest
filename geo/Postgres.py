@@ -29,12 +29,11 @@ class Db:
     # get the columns names inside database
 
     def get_columns_names(self, table):
-        columns = []
-        col_cursor = self.conn.cursor()
-        col_names_str = "SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE "
-        col_names_str += "table_name = '{}';".format(table)
-
         try:
+            columns = []
+            col_cursor = self.conn.cursor()
+            col_names_str = "SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE "
+            col_names_str += "table_name = '{}';".format(table)
             sql_object = sql.SQL(col_names_str).format(sql.Identifier(table))
 
             col_cursor.execute(sql_object)
@@ -44,24 +43,22 @@ class Db:
                 columns += [tup[0]]
             col_cursor.close()
 
+            return columns
+
         except Exception as err:
             print("get_columns_names ERROR:", err)
 
-        return columns
-
-    # get the distinct values of specific column
-
-    def get_all_values(self, table, column, distinct=True):
-        values = []
-        col_cursor = self.conn.cursor()
-        if distinct:
-            all_values_str = '''SELECT DISTINCT "{0}" FROM "{1}" ORDER BY "{0}";'''.format(
-                column, table)
-
-        all_values_str = '''SELECT "{0}" FROM "{1}" ORDER BY "{0}";'''.format(
-            column, table)
-
+    def get_all_values(self, column, table, schema, distinct=True):
         try:
+            values = []
+            col_cursor = self.conn.cursor()
+            if distinct:
+                all_values_str = '''SELECT DISTINCT "{0}" FROM "{2}"."{1}" ORDER BY "{0}";'''.format(
+                    column, table, schema)
+            else:
+                all_values_str = '''SELECT "{0}" FROM "{2}"."{1}" ORDER BY "{0}";'''.format(
+                    column, table, schema)
+
             sql_object = sql.SQL(all_values_str).format(
                 sql.Identifier(column), sql.Identifier(table))
 
@@ -72,10 +69,10 @@ class Db:
                 values += [tup[0]]
             col_cursor.close()
 
+            return values
+
         except Exception as err:
             print("get_columns_names ERROR:", err)
-
-        return values
 
     # create the schema based on the given name
 
@@ -86,7 +83,7 @@ class Db:
                 name = name.replace(' ', '_')
             cursor = self.conn.cursor()
 
-            sql = f'''CREATE SCHEMA {name}'''
+            sql = f'''CREATE SCHEMA IF NOT EXISTS {name}'''
             cursor.execute(sql)
             self.conn.commit()
             cursor.close()
@@ -95,6 +92,40 @@ class Db:
 
         except Exception as err:
             print('Schema create error: ', err)
+
+    # create new column in table
+
+    def create_column(self, col_name, table, schema, col_datatype='varchar'):
+        try:
+            cursor = self.conn.cursor()
+            sql = '''ALTER TABLE "{3}"."{0}" ADD {1} {2}'''.format(
+                table, col_name, col_datatype, schema)
+            cursor.execute(sql)
+            self.conn.commit()
+            cursor.close()
+            print('create column successful')
+
+        except Exception as err:
+            print('Create column error: ', err)
+
+    # update column
+
+    def update_column(self, column, value, table, schema, where_col, where_val):
+        try:
+            cursor = self.conn.cursor()
+            sql = '''
+            UPDATE "{0}"."{1}" SET "{2}"='{3}' WHERE "{4}"='{5}'
+            '''.format(
+                schema, table, column, value, where_col, where_val)
+            cursor.execute(sql)
+            self.conn.commit()
+            cursor.close()
+            print('update table successful')
+
+        except Exception as err:
+            print('update table error: ', err)
+
+    # delete table
 
     def delete_table(self, table_name, schema, dbname='postgres'):
         try:

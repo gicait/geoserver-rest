@@ -157,7 +157,11 @@ class Geoserver:
             c.setopt(pycurl.POSTFIELDSIZE, len(database_connection))
             c.setopt(pycurl.READFUNCTION, DataProvider(
                 database_connection).read_cb)
-            c.setopt(pycurl.POST, 1)
+
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
             c.perform()
             c.close()
         except Exception as e:
@@ -273,7 +277,6 @@ class Geoserver:
 
         except Exception as e:
             return 'Error: {}'.format(e)
-
 
     def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', overwrite=False):
         '''

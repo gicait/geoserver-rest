@@ -47,6 +47,7 @@ class Db:
 
         except Exception as err:
             print("get_columns_names ERROR:", err)
+            col_cursor.rollback()
 
     def get_all_values(self, column, table, schema, distinct=True):
         try:
@@ -73,6 +74,7 @@ class Db:
 
         except Exception as err:
             print("get_columns_names ERROR:", err)
+            col_cursor.rollback()
 
     # create the schema based on the given name
 
@@ -92,13 +94,14 @@ class Db:
 
         except Exception as err:
             print('Schema create error: ', err)
+            cursor.rollback()
 
     # create new column in table
 
     def create_column(self, col_name, table, schema, col_datatype='varchar'):
         try:
             cursor = self.conn.cursor()
-            sql = '''ALTER TABLE "{3}"."{0}" ADD {1} {2}'''.format(
+            sql = '''ALTER TABLE "{3}"."{0}" ADD IF NOT EXISTS "{1}" {2}'''.format(
                 table, col_name, col_datatype, schema)
             cursor.execute(sql)
             self.conn.commit()
@@ -107,6 +110,7 @@ class Db:
 
         except Exception as err:
             print('Create column error: ', err)
+            cursor.rollback()
 
     # update column
 
@@ -124,6 +128,7 @@ class Db:
 
         except Exception as err:
             print('update table error: ', err)
+            cursor.rollback()
 
     # delete table
 
@@ -140,3 +145,4 @@ class Db:
 
         except Exception as err:
             print('Delete table error: ', err)
+            cursor.rollback()

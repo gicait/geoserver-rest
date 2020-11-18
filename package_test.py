@@ -21,8 +21,8 @@ color_ramp = {
     'value2': '#505050',
     'value3': '#404040'
 }
-geo.create_coveragestyle(style_name='demo', raster_path=r'D:\_Tek\1. tajikistan\1. data\C_EAR\a_Agriculture\agri_final_proj.tif',
-                         workspace='demo', cmap_type='values', overwrite=True)
+geo.create_coveragestyle(style_name='demo', raster_path=r'C:\Users\GIC\Downloads\NDVI_20201104.tif',
+                         workspace='demo', color_ramp='RdYlGn')
 
 
 '''

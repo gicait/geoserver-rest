@@ -16,6 +16,40 @@ The `geoserver-rest` package can be installed with pip, if all the dependencies 
 pip install geoserver-rest
 ```
 
+###### Windows Installation
+
+In windows, the gdal and pycurl dependencies can be install using `pipwin`,
+
+```shell
+pip install pipwin
+pipwin refresh
+pipwin install gdal
+pipwin install pycurl
+```
+
+Now you can install the library using `pip install command`,
+
+```shell
+pip install geoserver-rest
+```
+
+### Ubuntu Installation
+
+In ubuntu, The gdal and pycurl dependencies can be install using following method,
+
+```shell
+sudo add-apt-repository ppa:ubuntugis/ppa
+sudo apt update -y; sudo apt upgrade -y;
+sudo apt install gdal-bin libgdal-dev python3-pycurl
+pip3 install pygdal=="`gdal-config --version`.*"
+```
+
+Now the `geoserver-rest` library can be installed using pip install command,
+
+```shell
+pip3 install geoserver-rest
+```
+
 ### How to use
 
 This library is used for creating workspace, coveragestore, featurestore, styles. Some of the examples are shown below.
@@ -42,6 +76,8 @@ It is helpful for publishing the **raster data** to the geoserver. Here if you d
 ```python
 geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', workspace='demo')
 ```
+
+**Note: ** If your raster is not loading correctly, please make sure you assign the coordinate system for your raster file.
 
 If the layername already exists in geoserver, you can pass another parameter `overwrite=True`,
 
@@ -191,6 +227,10 @@ for rst in rst_files:
     gdal.Translate(tiff, src)
     geo.create_coveragestore(lyr_name=file_name, path=tiff, workspace='geonode')    #, overwrite=True
 ```
+
+### Contribution
+
+Geoserver-rest is the open source library written in python and contributors are needed to keep this library moving forward. Any kind of contributions are welcome.
 
 ### Acknowledgements
 

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="geoserver-rest",
-    version="1.2.0",
+    version="1.2.3",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for GeoServer rest API",
@@ -23,10 +23,10 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'pycurl ~= 7.43',
-        'seaborn ~= 0.10.1',
+        'pycurl',
+        'seaborn',
         'gdal',
-        'psycopg2 ~=2.8',
+        'psycopg2',
     ],
     python_requires='>=3.6',
 )

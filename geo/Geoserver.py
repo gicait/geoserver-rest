@@ -75,10 +75,30 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
+    def get_workspace(self,workspace):
+        '''
+        get name  workspace if exist
+        Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}.json'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            if r.status_code is 200:
+                return r.json()['workspace']['name']
+            else:
+                return None
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+
     def create_coveragestore(self, path, workspace=None, lyr_name=None, file_type='GeoTIFF', content_type='image/tiff', overwrite=False):
         """
         created the coveragestore, data will uploaded to the server
-        the name parameter will be the name of coveragestore (coveragestore name will be assigned as the file name incase of not providing name parameter) 
+        the name parameter will be the name of coveragestore (coveragestore name will be assigned as the file name incase of not providing name parameter)
         the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
         """
 
@@ -127,7 +147,7 @@ class Geoserver:
         """
         Postgis store for connecting postgres with geoserver
         After creating feature store, you need to publish it
-        Input parameters:specify the store name you want to be created, the postgis database parameters including host, port, database name, schema, user and password, 
+        Input parameters:specify the store name you want to be created, the postgis database parameters including host, port, database name, schema, user and password,
         """
         try:
             if workspace is None:
@@ -196,8 +216,8 @@ class Geoserver:
     def upload_style(self, path, workspace=None, overwrite=False):
         '''
         The name of the style file will be, sld_name:workspace
-        This function will create the style file in a specified workspace. 
-        Inputs: path to the sld_file, workspace, 
+        This function will create the style file in a specified workspace.
+        Inputs: path to the sld_file, workspace,
         '''
         try:
             name = os.path.basename(path)
@@ -281,7 +301,7 @@ class Geoserver:
     def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', overwrite=False):
         '''
         The name of the style file will be, rasterName:workspace
-        This function will dynamically create the style file for raster. 
+        This function will dynamically create the style file for raster.
         Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determins the number of class, min for minimum value of the raster, max for the max value of raster
         '''
         try:
@@ -334,7 +354,7 @@ class Geoserver:
         '''
         Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
-        Inputs: column_name (based on which column style should be generated), workspace, 
+        Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         '''
         try:
@@ -436,7 +456,7 @@ class Geoserver:
         '''
         Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
-        Inputs: column_name (based on which column style should be generated), workspace, 
+        Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         '''
         try:
@@ -488,7 +508,7 @@ class Geoserver:
     def publish_style(self, layer_name, style_name, workspace, content_type='text/xml'):
         """
         publishing a raster file to geoserver
-        the coverage store will be created automatically as the same name as the raster layer name. 
+        the coverage store will be created automatically as the same name as the raster layer name.
         input parameters: the parameters connecting geoserver (user,password, url and workspace name),the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
         """
 

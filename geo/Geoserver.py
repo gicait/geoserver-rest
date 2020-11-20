@@ -75,7 +75,7 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
-    def get_name_workspace(self,workspace):
+    def get_workspace(self,workspace):
         '''
         get name  workspace if exist
         Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
@@ -86,7 +86,6 @@ class Geoserver:
                 self.service_url, workspace)
             r = requests.get(url, auth=(
                 self.username, self.password), params=payload)
-            print('Status code: {0}, Get worksapce '.format(r.status_code))
             if r.status_code is 200:
                 return r.json()['workspace']['name']
             else:

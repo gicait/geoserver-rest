@@ -212,6 +212,49 @@ class Geoserver:
 
         except Exception as e:
             return "Error:%s" % str(e)
+        
+        
+    def publish_featurestore_sqlview(self, store_name, name, sql, keyColumn,geoName,geoType, workspace=None):
+        try:
+            if workspace is None:
+                workspace = 'default'
+            c = pycurl.Curl()
+            layer_xml = """<featureType>
+            <name>{0}</name>
+            <enabled>true</enabled>
+            <namespace>
+            <name>{5}</name>
+            </namespace>
+            <title>{0}</title>
+            <srs>EPSG:4326</srs>
+            <metadata>
+            <entry key="JDBC_VIRTUAL_TABLE"> 
+            <virtualTable>
+            <name>{0}</name>
+            <sql>{1}</sql>
+            <escapeSql>true</escapeSql>
+            <keyColumn>{2}</keyColumn>
+            <geometry>
+            <name>{3}</name>
+            <type>{4}</type>
+            <srid>4326</srid>
+            </geometry>
+            </virtualTable>
+            </entry>
+            </metadata>
+            </featureType>""".format(name,sql,keyColumn,geoName,geoType,workspace)
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            # connecting with the specified store in geoserver
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes'.format(
+                self.service_url, workspace, store_name))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
+            c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(layer_xml).read_cb)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+            c.close()
+        except Exception as e:
+            return "Error:%s" % str(e)
 
     def upload_style(self, path, workspace=None, overwrite=False):
         '''

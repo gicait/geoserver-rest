@@ -75,7 +75,7 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
-    def get_workspace(self,workspace):
+    def get_workspace(self, workspace):
         '''
         get name  workspace if exist
         Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
@@ -93,7 +93,6 @@ class Geoserver:
 
         except Exception as e:
             return 'Error: {}'.format(e)
-
 
     def create_coveragestore(self, path, workspace=None, lyr_name=None, file_type='GeoTIFF', content_type='image/tiff', overwrite=False):
         """
@@ -213,19 +212,20 @@ class Geoserver:
         except Exception as e:
             return "Error:%s" % str(e)
 
-    def upload_style(self, path, workspace=None, overwrite=False):
+    def upload_style(self, path, name=None, workspace=None, overwrite=False):
         '''
         The name of the style file will be, sld_name:workspace
         This function will create the style file in a specified workspace.
         Inputs: path to the sld_file, workspace,
         '''
         try:
-            name = os.path.basename(path)
-            file_size = os.path.getsize(path)
-            f = name.split('.')
-            if len(f) > 0:
-                name = f[0]
+            if name is None:
+                name = os.path.basename(path)
+                f = name.split('.')
+                if len(f) > 0:
+                    name = f[0]
 
+            file_size = os.path.getsize(path)
             url = '{0}/rest/workspaces/{1}/styles'.format(
                 self.service_url, workspace)
             if workspace is None:

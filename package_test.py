@@ -16,13 +16,13 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-color_ramp = {
-    'value1': '#ffff55',
-    'value2': '#505050',
-    'value3': '#404040'
-}
-geo.create_coveragestyle(style_name='demo', raster_path=r'C:\Users\GIC\Downloads\NDVI_20201104.tif',
-                         workspace='demo', color_ramp='RdYlGn')
+# color_ramp = {
+#     'value1': '#ffff55',
+#     'value2': '#505050',
+#     'value3': '#404040'
+# }
+# geo.create_coveragestyle(style_name='demo', raster_path=r'C:\Users\GIC\Downloads\NDVI_20201104.tif',
+#                          workspace='demo', color_ramp='RdYlGn')
 
 
 '''
@@ -33,6 +33,14 @@ Features (vector)
 # a = geo.get_featuretypes(workspace='demo', store_name='fdemo')
 # a= geo.get_feature_attribute(feature_type_name='jamoat-db', workspace='demo', store_name='fdemo')
 # a= geo.get_featurestore('fdemo', 'demo')
+# store_name = 'geoinformatics_center'
+# name = 'sql_view_test'
+# sql = 'select id, geom, "BU" from geoinformatics_center.exp_ear'
+# keyColumn = 'BU'
+# workspace = 'geoinformatics_center'
+# geo.delete_layer(name, workspace=workspace)
+# a = geo.publish_featurestore_sqlview(
+#     store_name, name, sql, key_column=keyColumn, geom_name='geom', geom_type='Geometry', workspace='geoinformatics_center')
 # print(a)
 
 """

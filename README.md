@@ -60,7 +60,7 @@ This step is used to initialize the library. It takes parameters as geoserver ur
 
 ```python
 from geo.Geoserver import Geoserver
-geo = Geoserver('http://localhost:8080/geoserver', username='admin', password='geoserver')
+geo = Geoserver('http://127.0.0.1:8080/geoserver', username='admin', password='geoserver')
 ```
 
 ##### Create workspace
@@ -74,7 +74,7 @@ geo.create_workspace(workspace='demo')
 It is helpful for publishing the **raster data** to the geoserver. Here if you don't pass the `lyr_name` parameter, it will take the raster file name as the layer name.
 
 ```python
-geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', workspace='demo')
+geo.create_coveragestore(lyr_name='layer1', path=r'path\to\raster\file.tif', workspace='demo')
 ```
 
 **Note: ** If your raster is not loading correctly, please make sure you assign the coordinate system for your raster file.
@@ -82,7 +82,7 @@ geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', work
 If the layername already exists in geoserver, you can pass another parameter `overwrite=True`,
 
 ```python
-geo.create_coveragestore(lyr_name='layer1' path=r'path\to\raster\file.tif', workspace='demo' overwrite=True)
+geo.create_coveragestore(lyr_name='layer1', path=r'path\to\raster\file.tif', workspace='demo', overwrite=True)
 ```
 
 ##### Create featurestore and publish layer

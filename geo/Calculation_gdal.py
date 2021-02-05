@@ -1,5 +1,8 @@
 import os
-import gdal
+try:
+    from osgeo import gdal
+except:
+    import gdal
 
 
 def raster_value(path):

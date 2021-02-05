@@ -75,7 +75,7 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
-    def get_workspace(self,workspace):
+    def get_workspace(self, workspace):
         '''
         get name  workspace if exist
         Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
@@ -86,14 +86,13 @@ class Geoserver:
                 self.service_url, workspace)
             r = requests.get(url, auth=(
                 self.username, self.password), params=payload)
-            if r.status_code is 200:
+            if r.status_code == 200:
                 return r.json()['workspace']['name']
             else:
                 return None
 
         except Exception as e:
             return 'Error: {}'.format(e)
-
 
     def create_coveragestore(self, path, workspace=None, lyr_name=None, file_type='GeoTIFF', content_type='image/tiff', overwrite=False):
         """
@@ -212,9 +211,8 @@ class Geoserver:
 
         except Exception as e:
             return "Error:%s" % str(e)
-        
-        
-    def publish_featurestore_sqlview(self, store_name, name, sql, keyColumn,geoName,geoType, workspace=None):
+
+    def publish_featurestore_sqlview(self, name, store_name, sql, key_column=None, geom_name='geom', geom_type='Geometry', workspace=None):
         try:
             if workspace is None:
                 workspace = 'default'
@@ -242,9 +240,8 @@ class Geoserver:
             </virtualTable>
             </entry>
             </metadata>
-            </featureType>""".format(name,sql,keyColumn,geoName,geoType,workspace)
+            </featureType>""".format(name, sql, key_column, geom_name, geom_type, workspace)
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
-            # connecting with the specified store in geoserver
             c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes'.format(
                 self.service_url, workspace, store_name))
             c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])

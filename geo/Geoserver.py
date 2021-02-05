@@ -253,19 +253,20 @@ class Geoserver:
         except Exception as e:
             return "Error:%s" % str(e)
 
-    def upload_style(self, path, workspace=None, overwrite=False):
+    def upload_style(self, path, name=None, workspace=None, overwrite=False):
         '''
         The name of the style file will be, sld_name:workspace
         This function will create the style file in a specified workspace.
         Inputs: path to the sld_file, workspace,
         '''
         try:
-            name = os.path.basename(path)
-            file_size = os.path.getsize(path)
-            f = name.split('.')
-            if len(f) > 0:
-                name = f[0]
+            if name is None:
+                name = os.path.basename(path)
+                f = name.split('.')
+                if len(f) > 0:
+                    name = f[0]
 
+            file_size = os.path.getsize(path)
             url = '{0}/rest/workspaces/{1}/styles'.format(
                 self.service_url, workspace)
             if workspace is None:

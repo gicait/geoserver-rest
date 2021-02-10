@@ -94,6 +94,13 @@ geo.create_featurestore(store_name='geo_data', workspace='demo', db='postgres', 
 geo.publish_featurestore(workspace='demo', store_name='geo_data', pg_table='geodata_table_name')
 ```
 
+The new function `publish_featurestore_sqlview` is available in geoserver-rest version 1.3.0. The function can be run by using following command,
+
+```python
+sql = 'SELECT name, id, geom FROM post_gis_table_name'
+geo.publish_featurestore_sqlview(store_name='geo_data', name='view_name', sql=sql, key_column='name', workspace='demo')
+```
+
 ##### Upload style and publish it
 
 It is used for uploading **SLD** files and publish style. If the style name already exists, you can pass the parameter `overwrite=True` to overwrite it. The name of the style will be name of the uploaded file name.

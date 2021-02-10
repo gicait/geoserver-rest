@@ -98,9 +98,11 @@ geo.publish_featurestore(workspace='demo', store_name='geo_data', pg_table='geod
 
 It is used for uploading **SLD** files and publish style. If the style name already exists, you can pass the parameter `overwrite=True` to overwrite it. The name of the style will be name of the uploaded file name.
 
+Before uploading **SLD** file, please check the version of your sld file. By default the version of sld will be `1.0.0`. As I noticed, by default the **QGIS** will provide the `.sld` file of version `1.0.0` for raster data version `1.1.0` for vector data.
+
 ```python
 geo.upload_style(path=r'path\to\sld\file.sld', workspace='demo')
-geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo')
+geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo', sld_version='1.0.0')
 ```
 
 ##### Create Coverage Style based on the raster (Dynamic) and apply style

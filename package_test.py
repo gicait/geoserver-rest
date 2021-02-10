@@ -14,7 +14,7 @@ geo = Geoserver('http://localhost:8080/geoserver',
 Coverage (raster)
 '''
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
-# geo.upload_style(r'C:\Users\tek\Desktop\geoserver-rest\data\style\dem.sld', workspace='demo', overwrite=True)
+#geo.upload_style(r'C:\Users\tek\Desktop\try_sld.sld', sld_version='1.1.0', workspace='try')
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
 # color_ramp = {
 #     'value1': '#ffff55',

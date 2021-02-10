@@ -253,7 +253,7 @@ class Geoserver:
         except Exception as e:
             return "Error:%s" % str(e)
 
-    def upload_style(self, path, name=None, workspace=None, overwrite=False):
+    def upload_style(self, path, name=None, workspace=None, sld_version='1.0.0', overwrite=False):
         '''
         The name of the style file will be, sld_name:workspace
         This function will create the style file in a specified workspace.
@@ -269,6 +269,11 @@ class Geoserver:
             file_size = os.path.getsize(path)
             url = '{0}/rest/workspaces/{1}/styles'.format(
                 self.service_url, workspace)
+
+            sld_content_type = 'application/vnd.ogc.sld+xml'
+            if sld_version == '1.1.0' or sld_version == '1.1':
+                sld_content_type = 'application/vnd.ogc.se+xml'
+
             if workspace is None:
                 workspace = 'default'
                 url = '{0}/rest/styles'.format(self.service_url)
@@ -292,7 +297,7 @@ class Geoserver:
             # upload the style file
             c.setopt(c.URL, '{0}/{1}'.format(url, name))
             c.setopt(pycurl.HTTPHEADER, [
-                     "Content-type:application/vnd.ogc.sld+xml"])
+                     "Content-type:{0}".format(sld_content_type)])
             c.setopt(pycurl.READFUNCTION, FileReader(
                 open(path, 'rb')).read_callback)
             c.setopt(pycurl.INFILESIZE, file_size)

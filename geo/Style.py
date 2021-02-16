@@ -1,315 +1,644 @@
 import pycurl
 import os
-import seaborn as sns
-from matplotlib.colors import rgb2hex
+import io
+import requests
+from .Style import coverage_style_xml, outline_only_xml, catagorize_xml, classified_xml
+from .Calculation_gdal import raster_value
+from .Postgres import Db
+
+# call back class for read the data
 
 
-def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
-    '''
-    This is the core function for controlling the layers styles
-    The color_ramp can be list or dict or touple or str
-    min, max will be dynamically calculated value from raster
-    number_of_classes will be available in map legend
-    '''
-    style_append = ''
-    if type(color_ramp) is list:
-        N = len(color_ramp)
-        interval = (max-min)/(number_of_classes-1)
+class DataProvider(object):
+    def __init__(self, data):
+        self.data = data
+        self.finished = False
 
-        for i, color in enumerate(color_ramp):
-            value = min+interval*i
-            value = round(value, 1)
-
-            style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
-                color, value, value)
-
-    elif type(color_ramp) is dict:
-        N = len(color_ramp)
-        interval = (max-min)/(number_of_classes-1)
-
-        for key, value, i in zip(color_ramp.keys(), color_ramp.values(), range(N)):
-            style_append += '<sld:ColorMapEntry color="{}" label=" {}" quantity="{}"/>'.format(
-                value, key, min+i)
-
-    else:
-        for i, color in enumerate(color_ramp):
-            N = number_of_classes
-            interval = (max-min)/(number_of_classes-1)
-            value = min+interval*i
-
-            style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
-                color, value, value)
-
-    return style_append
-
-
-def coverage_style_xml(color_ramp, style_name, cmap_type,  min, max, number_of_classes):
-    min_max_difference = max - min
-    palette = sns.color_palette(color_ramp, int(number_of_classes))
-    palette_hex = [rgb2hex(i) for i in palette]
-    style_append = ''
-    interval = min_max_difference/(number_of_classes-1)
-
-    # The main style of the coverage style
-
-    if type(color_ramp == 'str'):
-        palette = sns.color_palette(color_ramp, int(number_of_classes))
-        color_ramp = [rgb2hex(i) for i in palette]
-
-    style_append += coverage_style_colormapentry(
-        color_ramp, min, max, number_of_classes)
-
-    style = """
-    <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" version="1.0.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:sld="http://www.opengis.net/sld">
-    <UserLayer>
-        <sld:LayerFeatureConstraints>
-        <sld:FeatureTypeConstraint/>
-        </sld:LayerFeatureConstraints>
-        <sld:UserStyle>
-        <sld:Name>{2}</sld:Name>
-        <sld:FeatureTypeStyle>
-            <sld:Rule>
-            <sld:RasterSymbolizer>
-                <sld:ChannelSelection>
-                <sld:GrayChannel>
-                    <sld:SourceChannelName>1</sld:SourceChannelName>
-                </sld:GrayChannel>
-                </sld:ChannelSelection>
-                <sld:ColorMap type="{0}">
-                    {1}
-                </sld:ColorMap>
-            </sld:RasterSymbolizer>
-            </sld:Rule>
-        </sld:FeatureTypeStyle>
-        </sld:UserStyle>
-    </UserLayer>
-    </StyledLayerDescriptor>
-    """.format(cmap_type, style_append, style_name)
-
-    with open('style.sld', 'w') as f:
-        f.write(style)
-
-
-def outline_only_xml(color, geom_type='polygon'):
-    if geom_type == 'point':
-        symbolizer = '''
-            <PointSymbolizer>
-                <Graphic>
-                <Mark>
-                    <WellKnownName>circle</WellKnownName>
-                    <Fill>
-                    <CssParameter name="fill">{0}</CssParameter>
-                    </Fill>
-                </Mark>
-                <Size>8</Size>
-                </Graphic>
-            </PointSymbolizer>
-        '''.format(color)
-
-    elif geom_type == 'line':
-        symbolizer = '''
-                <LineSymbolizer>
-                    <Stroke>
-                    <CssParameter name="stroke">{0}</CssParameter>
-                    <CssParameter name="stroke-width">3</CssParameter>
-                    </Stroke>
-                </LineSymbolizer>
-            '''.format(color)
-
-    elif geom_type == 'polygon':
-        symbolizer = '''
-                <PolygonSymbolizer>
-                    <Fill>
-                        <CssParameter name="fill">#FFFFFF</CssParameter>
-                    </Fill>
-                    <Stroke>
-                    <CssParameter name="stroke">{0}</CssParameter>
-                    <CssParameter name="stroke-width">0.26</CssParameter>
-                    </Stroke>
-                </PolygonSymbolizer>
-            '''.format(color)
-
-    else:
-        print('Error: Invalid geometry type')
-        return
-
-    style = '''
-            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <NamedLayer>
-                <se:Name>Layer name</se:Name>
-                <UserStyle>
-                <se:Name>Layer name</se:Name>
-                <se:FeatureTypeStyle>
-                    <se:Rule>
-                    <se:Name>Single symbol</se:Name>
-                    {}
-                    </se:Rule>
-                </se:FeatureTypeStyle>
-                </UserStyle>
-            </NamedLayer>
-            </StyledLayerDescriptor>
-            '''.format(symbolizer)
-
-    with open('style.sld', 'w') as f:
-        f.write(style)
-
-
-def catagorize_xml(column_name, values, color_ramp, geom_type='polygon'):
-    N = len(values)
-    palette = sns.color_palette(color_ramp, int(N))
-    palette_hex = [rgb2hex(i) for i in palette]
-    rule = ''
-    for value, color in zip(values, palette_hex):
-        if geom_type == 'point':
-            rule += '''
-                <Rule>
-                <Name>{0}</Name>
-                <Title>{1}</Title>
-                <ogc:Filter>
-                    <ogc:PropertyIsEqualTo>
-                    <ogc:PropertyName>{0}</ogc:PropertyName>
-                    <ogc:Literal>{1}</ogc:Literal>
-                    </ogc:PropertyIsEqualTo>
-                </ogc:Filter>
-                <PointSymbolizer>
-                    <Graphic>
-                    <Mark>
-                        <WellKnownName>circle</WellKnownName>
-                        <Fill>
-                        <CssParameter name="fill">{2}</CssParameter>
-                        </Fill>
-                    </Mark>
-                    <Size>5</Size>
-                    </Graphic>
-                </PointSymbolizer>
-                </Rule>
-            '''.format(column_name, value, color)
-
-        elif geom_type == 'line':
-            rule += '''
-                <Rule>
-                    <Name>{1}</Name>
-                    <ogc:Filter>
-                        <ogc:PropertyIsEqualTo>
-                        <ogc:PropertyName>{0}</ogc:PropertyName>
-                        <ogc:Literal>{1}</ogc:Literal>
-                        </ogc:PropertyIsEqualTo>
-                    </ogc:Filter>
-                    <LineSymbolizer>
-                        <Stroke>
-                        <CssParameter name="stroke">{2}</CssParameter>
-                        <CssParameter name="stroke-width">1</CssParameter>
-                        </Stroke>
-                    </LineSymbolizer>
-                </Rule>
-            '''.format(column_name, value, color)
-
-        elif geom_type == 'polygon':
-            rule += '''
-                <Rule>
-                    <Name>{0}</Name>
-                    <Title>{1}</Title>
-                    <ogc:Filter>
-                        <ogc:PropertyIsEqualTo>
-                        <ogc:PropertyName>{0}</ogc:PropertyName>
-                        <ogc:Literal>{1}</ogc:Literal>
-                        </ogc:PropertyIsEqualTo>
-                    </ogc:Filter>
-                    <PolygonSymbolizer>
-                        <Fill>
-                            <CssParameter name="fill">{2}</CssParameter>
-                        </Fill>
-                        <Stroke>
-                            <CssParameter name="stroke">{3}</CssParameter>
-                            <CssParameter name="stroke-width">0.5</CssParameter>
-                        </Stroke>
-                    </PolygonSymbolizer>
-                </Rule>
-
-            '''.format(column_name, value, color, '#000000')
-
+    def read_cb(self, size):
+        assert len(self.data) <= size
+        if not self.finished:
+            self.finished = True
+            return self.data
         else:
-            print('Error: Invalid geometry type')
-            return
-
-    style = '''
-            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" version="1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <NamedLayer>
-                        <se:Name>Layer name</se:Name>
-                        <UserStyle>
-                        <se:Name>Layer name</se:Name>
-                        <FeatureTypeStyle>
-                            {}
-                        </FeatureTypeStyle>
-                        </UserStyle>
-                    </NamedLayer>
-                </StyledLayerDescriptor>
-        '''.format(rule)
-
-    with open('style.sld', 'w') as f:
-        f.write(style)
+            # Nothing more to read
+            return ""
 
 
-def classified_xml(style_name, column_name, values, color_ramp, geom_type='polygon'):
-    max_value = max(values)
-    min_value = min(values)
-    diff = max_value - min_value
-    N = 5
-    interval = diff/5
-    palette = sns.color_palette(color_ramp, int(N))
-    palette_hex = [rgb2hex(i) for i in palette]
-    # interval = N/4
-    # color_values = [{value: color} for value, color in zip(values, palette_hex)]
-    # print(color_values)
-    rule = ''
-    for i, color in enumerate(palette_hex):
-        print(i)
+# callback class for reading the files
+class FileReader:
+    def __init__(self, fp):
+        self.fp = fp
 
-        rule += '''
-            <se:Rule>
-                <se:Name>{1}</se:Name>
-                <se:Description>
-                    <se:Title>{4}</se:Title>
-                </se:Description>
-                <ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
-                    <ogc:And>
-                    <ogc:PropertyIsGreaterThan>
-                        <ogc:PropertyName>{0}</ogc:PropertyName>
-                        <ogc:Literal>{5}</ogc:Literal>
-                    </ogc:PropertyIsGreaterThan>
-                    <ogc:PropertyIsLessThanOrEqualTo>
-                        <ogc:PropertyName>{0}</ogc:PropertyName>
-                        <ogc:Literal>{4}</ogc:Literal>
-                    </ogc:PropertyIsLessThanOrEqualTo>
-                    </ogc:And>
-                </ogc:Filter>
-                <se:PolygonSymbolizer>
-                    <se:Fill>
-                    <se:SvgParameter name="fill">{2}</se:SvgParameter>
-                    </se:Fill>
-                    <se:Stroke>
-                    <se:SvgParameter name="stroke">{3}</se:SvgParameter>
-                    <se:SvgParameter name="stroke-width">1</se:SvgParameter>
-                    <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
-                    </se:Stroke>
-                </se:PolygonSymbolizer>
-            </se:Rule>
+    def read_callback(self, size):
+        return self.fp.read(size)
 
-        '''.format(column_name, style_name, color, '#000000', min_value+interval*i, min_value+interval*(i+1))
 
-    style = '''
-            <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ogc="http://www.opengis.net/ogc" version="1.1.0" xmlns:se="http://www.opengis.net/se" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd">
-                <NamedLayer>
-                    <se:Name>{0}</se:Name>
-                    <UserStyle>
-                    <se:Name>{0}</se:Name>
-                        <se:FeatureTypeStyle>
-                            {1}
-                        </se:FeatureTypeStyle>
-                    </UserStyle>
-                </NamedLayer>
-            </StyledLayerDescriptor>
-        '''.format(style_name, rule)
+class Geoserver:
+    def __init__(self, service_url='http://localhost:8080/geoserver', username='admin', password='geoserver'):
+        self.service_url = service_url
+        self.username = username
+        self.password = password
 
-    with open('style.sld', 'w') as f:
-        f.write(style)
+    def create_workspace(self, workspace):
+        """
+        Create a new workspace in geoserver, geoserver workspace url will be same as name of the workspace
+        """
+        try:
+            c = pycurl.Curl()
+            workspace_xml = "<workspace><name>{0}</name></workspace>".format(
+                workspace)
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, '{0}/rest/workspaces'.format(self.service_url))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
+            c.setopt(pycurl.POSTFIELDSIZE, len(workspace_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(workspace_xml).read_cb)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+            c.close()
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def get_coveragestore(self, coveragestore_name, workspace):
+        '''
+        It returns the store name if exist
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}/coveragestores/{2}.json'.format(
+                self.service_url, workspace, coveragestore_name)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            print('Status code: {0}, Get coverage store'.format(r.status_code))
+
+            return r.json()['coverageStore']['name']
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def get_workspace(self, workspace):
+        '''
+        get name  workspace if exist
+        Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}.json'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            if r.status_code == 200:
+                return r.json()['workspace']['name']
+            else:
+                return None
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def create_coveragestore(self, path, workspace=None, lyr_name=None, file_type='GeoTIFF', content_type='image/tiff', overwrite=False):
+        """
+        created the coveragestore, data will uploaded to the server
+        the name parameter will be the name of coveragestore (coveragestore name will be assigned as the file name incase of not providing name parameter)
+        the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
+        """
+
+        # overwrite feature needs to be write again
+        try:
+            file_size = os.path.getsize(path)
+
+            c = pycurl.Curl()
+
+            if lyr_name:
+                file_name = lyr_name
+
+            else:
+                file_name = os.path.basename(path)
+                f = file_name.split(".")
+                if len(f) > 0:
+                    file_name = f[0]
+
+            if workspace is None:
+                workspace = 'default'
+
+            _store = self.get_coveragestore(file_name, workspace)
+            if _store:
+                self.delete_coveragestore(file_name, workspace)
+
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            file_type = file_type.lower()
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}'.format(
+                self.service_url, workspace, file_name, file_type))
+            c.setopt(pycurl.HTTPHEADER, [
+                     "Content-type:{}".format(content_type)])
+            c.setopt(pycurl.READFUNCTION, FileReader(
+                open(path, 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE, file_size)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def create_featurestore(self, store_name, workspace=None, db='postgres', host='localhost', port=5432, schema='public', pg_user='postgres', pg_password='admin', overwrite=False):
+        """
+        Postgis store for connecting postgres with geoserver
+        After creating feature store, you need to publish it
+        Input parameters:specify the store name you want to be created, the postgis database parameters including host, port, database name, schema, user and password,
+        """
+        try:
+            if workspace is None:
+                workspace = 'default'
+
+            c = pycurl.Curl()
+            # connect with geoserver
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(
+                c.URL, '{0}/rest/workspaces/{1}/datastores'.format(self.service_url, workspace))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
+
+            # make the connection with postgis database
+            database_connection = '<dataStore>'\
+                '<name>{0}</name>'\
+                '<connectionParameters>'\
+                '<host>{1}</host>'\
+                '<port>{2}</port>'\
+                '<database>{3}</database>'\
+                '<schema>{4}</schema>'\
+                '<user>{5}</user>'\
+                '<passwd>{6}</passwd>'\
+                '<dbtype>postgis</dbtype>'\
+                '</connectionParameters>'\
+                '</dataStore>'.format(store_name, host,
+                                      port, db, schema, pg_user, pg_password)
+            c.setopt(pycurl.POSTFIELDSIZE, len(database_connection))
+            c.setopt(pycurl.READFUNCTION, DataProvider(
+                database_connection).read_cb)
+
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.perform()
+            c.close()
+        except Exception as e:
+            return "Error:%s" % str(e)
+
+    def publish_featurestore(self, store_name, pg_table, workspace=None):
+        """
+        Only user for postgis vector data
+        input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
+        """
+        try:
+            if workspace is None:
+                workspace = 'default'
+
+            c = pycurl.Curl()
+            layer_xml = "<featureType><name>{0}</name></featureType>".format(
+                pg_table)
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            # connecting with the specified store in geoserver
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes'.format(
+                self.service_url, workspace, store_name))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
+            c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(layer_xml).read_cb)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+            c.close()
+
+        except Exception as e:
+            return "Error:%s" % str(e)
+
+    def publish_featurestore_sqlview(self, name, store_name, sql, key_column=None, geom_name='geom', geom_type='Geometry', workspace=None):
+        try:
+            if workspace is None:
+                workspace = 'default'
+            c = pycurl.Curl()
+            layer_xml = """<featureType>
+            <name>{0}</name>
+            <enabled>true</enabled>
+            <namespace>
+            <name>{5}</name>
+            </namespace>
+            <title>{0}</title>
+            <srs>EPSG:4326</srs>
+            <metadata>
+            <entry key="JDBC_VIRTUAL_TABLE"> 
+            <virtualTable>
+            <name>{0}</name>
+            <sql>{1}</sql>
+            <escapeSql>true</escapeSql>
+            <keyColumn>{2}</keyColumn>
+            <geometry>
+            <name>{3}</name>
+            <type>{4}</type>
+            <srid>4326</srid>
+            </geometry>
+            </virtualTable>
+            </entry>
+            </metadata>
+            </featureType>""".format(name, sql, key_column, geom_name, geom_type, workspace)
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes'.format(
+                self.service_url, workspace, store_name))
+            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
+            c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(layer_xml).read_cb)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+            c.close()
+        except Exception as e:
+            return "Error:%s" % str(e)
+
+    def upload_style(self, path, name=None, workspace=None, sld_version='1.0.0', overwrite=False):
+        '''
+        The name of the style file will be, sld_name:workspace
+        This function will create the style file in a specified workspace.
+        Inputs: path to the sld_file, workspace,
+        '''
+        try:
+            if name is None:
+                name = os.path.basename(path)
+                f = name.split('.')
+                if len(f) > 0:
+                    name = f[0]
+
+            file_size = os.path.getsize(path)
+            url = '{0}/rest/workspaces/{1}/styles'.format(
+                self.service_url, workspace)
+
+            sld_content_type = 'application/vnd.ogc.sld+xml'
+            if sld_version == '1.1.0' or sld_version == '1.1':
+                sld_content_type = 'application/vnd.ogc.se+xml'
+
+            if workspace is None:
+                workspace = 'default'
+                url = '{0}/rest/styles'.format(self.service_url)
+
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(
+                name, name+'.sld')
+            # create the xml file for associated style
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, url)
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:application/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/{1}'.format(url, name))
+            c.setopt(pycurl.HTTPHEADER, [
+                     "Content-type:{0}".format(sld_content_type)])
+            c.setopt(pycurl.READFUNCTION, FileReader(
+                open(path, 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE, file_size)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def get_featuretypes(self, workspace=None, store_name=None):
+        url = '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes.json'.format(
+            self.service_url, workspace, store_name)
+        r = requests.get(url, auth=(self.username, self.password))
+        r_dict = r.json()
+        features = [i['name'] for i in r_dict['featureTypes']['featureType']]
+        print('Status code: {0}, Get feature type'.format(r.status_code))
+
+        return features
+
+    def get_feature_attribute(self, feature_type_name, workspace=None, store_name=None):
+        url = '{0}/rest/workspaces/{1}/datastores/{2}/featuretypes/{3}.json'.format(
+            self.service_url, workspace, store_name, feature_type_name)
+        r = requests.get(url, auth=(self.username, self.password))
+        r_dict = r.json()
+        attribute = [i['name']
+                     for i in r_dict['featureType']['attributes']['attribute']]
+        print('Status code: {0}, Get feature attribute'.format(r.status_code))
+
+        return attribute
+
+    def get_featurestore(self, store_name, workspace):
+        url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
+            self.service_url, workspace, store_name)
+        r = requests.get(url, auth=(self.username, self.password))
+        try:
+            r_dict = r.json()
+            return r_dict['dataStore']
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', number_of_classes=5, overwrite=False):
+        '''
+        The name of the style file will be, rasterName:workspace
+        This function will dynamically create the style file for raster.
+        Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determins the number of class, min for minimum value of the raster, max for the max value of raster
+        '''
+        try:
+            raster = raster_value(raster_path)
+            min = raster['min']
+            max = raster['max']
+            if style_name is None:
+                style_name = raster['file_name']
+            coverage_style_xml(color_ramp, style_name,
+                               cmap_type, min, max, number_of_classes)
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(
+                style_name, style_name+'.sld')
+
+            # create the xml file for associated style
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(
+                c.URL, '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace))
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(
+                self.service_url, workspace, style_name))
+            c.setopt(pycurl.HTTPHEADER, [
+                     "Content-type:application/vnd.ogc.sld+xml"])
+            c.setopt(pycurl.READFUNCTION, FileReader(
+                open('style.sld', 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE, os.path.getsize('style.sld'))
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+            # remove temporary style created style file
+            os.remove('style.sld')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def create_catagorized_featurestyle(self, style_name, column_name, column_distinct_values, workspace=None, color_ramp='tab20', geom_type='polygon', outline_color='#3579b1', overwrite=False):
+        '''
+        Dynamically create the style for postgis geometry
+        The data type must be point, line or polygon
+        Inputs: column_name (based on which column style should be generated), workspace,
+        color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
+        '''
+        try:
+            catagorize_xml(column_name, column_distinct_values,
+                           color_ramp, geom_type)
+
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(
+                style_name, style_name+'.sld')
+
+            # create the xml file for associated style
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(
+                c.URL, '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace))
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(
+                self.service_url, workspace, column_name))
+            c.setopt(pycurl.HTTPHEADER, [
+                     "Content-type:application/vnd.ogc.sld+xml"])
+            c.setopt(pycurl.READFUNCTION, FileReader(
+                open('style.sld', 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE, os.path.getsize('style.sld'))
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+            # remove temporary style created style file
+            os.remove('style.sld')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def create_outline_featurestyle(self, style_name, color='#3579b1', geom_type='polygon', workspace=None, overwrite=False):
+        '''
+        Dynamically create the style for postgis geometry
+        The geometry type must be point, line or polygon
+        Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
+        '''
+        try:
+            outline_only_xml(color, geom_type)
+
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(
+                style_name, style_name+'.sld')
+
+            url = '{0}/rest/workspaces/{1}/styles'.format(
+                self.service_url, workspace)
+            if workspace is None:
+                url = '{0}/rest/styles'.format(self.service_url)
+
+            # create the xml file for associated style
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(c.URL, url)
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/{1}'.format(url, style_name))
+            c.setopt(pycurl.HTTPHEADER, [
+                     "Content-type:application/vnd.ogc.sld+xml"])
+            c.setopt(pycurl.READFUNCTION, FileReader(
+                open('style.sld', 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE, os.path.getsize('style.sld'))
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+            # remove temporary style created style file
+            os.remove('style.sld')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def create_classified_featurestyle(self, style_name, column_name, column_distinct_values, workspace=None, color_ramp='tab20', geom_type='polygon', outline_color='#3579b1', overwrite=False):
+        '''
+        Dynamically create the style for postgis geometry
+        The data type must be point, line or polygon
+        Inputs: column_name (based on which column style should be generated), workspace,
+        color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
+        '''
+        try:
+            classified_xml(style_name, column_name,
+                           column_distinct_values, color_ramp, geom_type='polygon')
+
+            style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(
+                column_name, column_name+'.sld')
+
+            # create the xml file for associated style
+            c = pycurl.Curl()
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(
+                c.URL, '{0}/rest/workspaces/{1}/styles'.format(self.service_url, workspace))
+            c.setopt(pycurl.HTTPHEADER, ['Content-type:text/xml'])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.POST, 1)
+            c.perform()
+
+            # upload the style file
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/styles/{2}'.format(
+                self.service_url, workspace, column_name))
+            c.setopt(pycurl.HTTPHEADER, [
+                     "Content-type:application/vnd.ogc.sld+xml"])
+            c.setopt(pycurl.READFUNCTION, FileReader(
+                open('style.sld', 'rb')).read_callback)
+            c.setopt(pycurl.INFILESIZE, os.path.getsize('style.sld'))
+            if overwrite:
+                c.setopt(pycurl.PUT, 1)
+            else:
+                c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.UPLOAD, 1)
+            c.perform()
+            c.close()
+
+            # remove temporary style created style file
+            os.remove('style.sld')
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    # def create_featurestyle()
+
+    def publish_style(self, layer_name, style_name, workspace, content_type='text/xml'):
+        """
+        publishing a raster file to geoserver
+        the coverage store will be created automatically as the same name as the raster layer name.
+        input parameters: the parameters connecting geoserver (user,password, url and workspace name),the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
+        """
+
+        try:
+            c = pycurl.Curl()
+            style_xml = "<layer><defaultStyle><name>{0}</name></defaultStyle></layer>".format(
+                style_name)
+            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
+            c.setopt(
+                c.URL, '{0}/rest/layers/{1}:{2}'.format(self.service_url, workspace, layer_name))
+            c.setopt(pycurl.HTTPHEADER, [
+                     "Content-type: {}".format(content_type)])
+            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
+            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
+            #c.setopt(pycurl.CUSTOMREQUEST, "PUT")
+            c.setopt(pycurl.PUT, 1)
+            c.perform()
+            c.close()
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def delete_workspace(self, workspace):
+        try:
+            url = '{0}/rest/workspaces/{1}'.format(self.service_url, workspace)
+            r = requests.delete(url, auth=(self.username, self.password))
+            print('Status code: {0}, delete workspace'.format(r.status_code))
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def delete_layer(self, layer_name, workspace=None):
+        try:
+            payload = {'recurse': 'true'}
+            if workspace is None:
+                url = '{0}/rest/layers/{1}'.format(
+                    self.service_url, layer_name)
+            else:
+                url = '{0}/rest/workspaces/{1}/layers/{2}'.format(
+                    self.service_url, workspace, layer_name)
+            r = requests.delete(url, auth=(
+                self.username, self.password), params=payload)
+            print('Status code: {0}, delete layer'.format(r.status_code))
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def delete_featurestore(self, featurestore_name, workspace):
+        try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
+                self.service_url, workspace, featurestore_name)
+            r = requests.delete(url, auth=(
+                self.username, self.password), params=payload)
+            print('Status code: {0}, delete featurestore'.format(
+                r.status_code))
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def delete_coveragestore(self, coveragestore_name, workspace):
+        try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}/coveragestores/{2}'.format(
+                self.service_url, workspace, coveragestore_name)
+            print(url)
+            r = requests.delete(url, auth=(
+                self.username, self.password), params=payload)
+            print('Status code: {0}, delete coveragestore'.format(
+                r.status_code))
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def delete_style(self, style_name, workspace=None):
+        try:
+            if workspace is None:
+                url = '{0}/rest/styles/{1}'.format(
+                    self.service_url, style_name)
+
+            else:
+                url = '{0}/rest/workspaces/{1}/styles/{2}'.format(
+                    self.service_url, workspace, style_name)
+            r = requests.delete(url, auth=(self.username, self.password))
+            print('Status code: {0}, delete style'.format(r.status_code))
+
+        except Exception as e:
+            return 'Error: {}'.format(e)

@@ -4,29 +4,29 @@ import seaborn as sns
 from matplotlib.colors import rgb2hex
 
 
-def coverage_style_colormapentry(color_ramp, min_max_difference, number_of_classes=5):
+def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
     '''
     This is the core function for controlling the layers styles
-    The color_ramp can be list or dict or touple
-    min_max_difference will be dynamically calculated value from raster
+    The color_ramp can be list or dict or touple or str
+    min, max will be dynamically calculated value from raster
     number_of_classes will be available in map legend
     '''
+    style_append = ''
     if type(color_ramp) is list:
         N = len(color_ramp)
-        interval = min_max_difference/(number_of_classes-1)
+        interval = (max-min)/(number_of_classes-1)
 
-        style_append = ''
         for i, color in enumerate(color_ramp):
             value = min+interval*i
             value = round(value, 1)
+
             style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
                 color, value, value)
 
     elif type(color_ramp) is dict:
         N = len(color_ramp)
-        interval = min_max_difference/(number_of_classes-1)
+        interval = (max-min)/(number_of_classes-1)
 
-        style_append = ''
         for key, value, i in zip(color_ramp.keys(), color_ramp.values(), range(N)):
             style_append += '<sld:ColorMapEntry color="{}" label=" {}" quantity="{}"/>'.format(
                 value, key, min+i)
@@ -34,7 +34,7 @@ def coverage_style_colormapentry(color_ramp, min_max_difference, number_of_class
     else:
         for i, color in enumerate(color_ramp):
             N = number_of_classes
-            interval = min_max_difference/(number_of_classes-1)
+            interval = (max-min)/(number_of_classes-1)
             value = min+interval*i
 
             style_append += '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
@@ -45,14 +45,19 @@ def coverage_style_colormapentry(color_ramp, min_max_difference, number_of_class
 
 def coverage_style_xml(color_ramp, style_name, cmap_type,  min, max, number_of_classes):
     min_max_difference = max - min
-    palette = sns.color_palette(color_ramp, int(N))
+    palette = sns.color_palette(color_ramp, int(number_of_classes))
     palette_hex = [rgb2hex(i) for i in palette]
     style_append = ''
-    interval = Num/4
+    interval = min_max_difference/(number_of_classes-1)
 
     # The main style of the coverage style
-    style_append = coverage_style_colormapentry(
-        color_ramp, min_max_difference, number_of_classes)
+
+    if type(color_ramp == 'str'):
+        palette = sns.color_palette(color_ramp, int(number_of_classes))
+        color_ramp = [rgb2hex(i) for i in palette]
+
+    style_append += coverage_style_colormapentry(
+        color_ramp, min, max, number_of_classes)
 
     style = """
     <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" version="1.0.0" xmlns:ogc="http://www.opengis.net/ogc" xmlns:sld="http://www.opengis.net/sld">

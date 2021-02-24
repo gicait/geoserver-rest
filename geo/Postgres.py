@@ -20,8 +20,6 @@ class Db:
                 password=self.password
             )
 
-            print("psycopg2 connection:", self.conn)
-
         except Exception as err:
             print("psycopg2 connect() ERROR:", err)
             self.conn = None
@@ -132,7 +130,7 @@ class Db:
 
     # delete table
 
-    def delete_table(self, table_name, schema, dbname='postgres'):
+    def delete_table(self, table_name, schema):
         try:
             cursor = self.conn.cursor()
             sql = '''DROP TABLE IF EXISTS "{}"."{}" CASCADE;'''.format(
@@ -145,4 +143,21 @@ class Db:
 
         except Exception as err:
             print('Delete table error: ', err)
+            cursor.rollback()
+
+    # Delete values
+
+    def delete_values(self, table_name, schema, condition):
+        try:
+            cursor = self.conn.cursor()
+            sql = '''DELETE FROM "{}"."{}" WHERE {}'''.format(
+                schema, table_name, condition)
+
+            cursor.execute(sql)
+            self.conn.commit()
+            cursor.close()
+            print('Values dropped successfully.')
+
+        except Exception as err:
+            print('Value delete error: ', err)
             cursor.rollback()

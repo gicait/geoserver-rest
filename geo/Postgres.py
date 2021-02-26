@@ -114,7 +114,6 @@ class Db:
     # delete table
     def delete_table(self, table_name, schema):
         with self.conn.cursor() as cursor:
-            print(cursor, 'cursor from delete table')
             sql = '''DROP TABLE IF EXISTS "{}"."{}" CASCADE;'''.format(
                 schema, table_name)
             self.execute_sql(cursor, sql)

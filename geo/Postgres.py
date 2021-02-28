@@ -44,7 +44,6 @@ class Db:
 
             except Exception as err:
                 print("get_columns_names ERROR:", err)
-                col_cursor.rollback()
 
             for tup in col_names:
                 columns += [tup[0]]
@@ -71,7 +70,6 @@ class Db:
 
             except Exception as err:
                 print("get_columns_names ERROR:", err)
-                col_cursor.rollback()
 
             for tup in values_name:
                 values += [tup[0]]

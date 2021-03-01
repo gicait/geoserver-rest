@@ -8,7 +8,16 @@ Connection
 geo = Geoserver('http://localhost:8080/geoserver',
                 username='admin', password='geoserver')
 # pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
-# geo.create_workspace('demo')
+geo.create_workspace('demo2')
+
+'''
+New get requests
+'''
+# geo.get_version()
+# geo.get_manifest()
+# geo.get_status()
+# geo.get_system_status()
+
 
 '''
 Coverage (raster)

@@ -6,9 +6,8 @@ from .Style import coverage_style_xml, outline_only_xml, catagorize_xml, classif
 from .Calculation_gdal import raster_value
 from .Postgres import Db
 
+
 # call back class for read the data
-
-
 class DataProvider(object):
     def __init__(self, data):
         self.data = data
@@ -39,22 +38,72 @@ class Geoserver:
         self.username = username
         self.password = password
 
+    def get_manifest(self):
+        '''
+        It returns the manifest of the geoserver
+        '''
+        try:
+            url = '{0}/rest/about/manifest.json'.format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            print('get_manifest error: ', e)
+
+    def get_version(self):
+        '''
+        It returns the version of the geoserver
+        '''
+        try:
+            url = '{0}/rest/about/version.json'.format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            print('get_version error: ', e)
+
+    def get_status(self):
+        '''
+        It returns the status of the geoserver
+        '''
+        try:
+            url = '{0}/rest/about/status.json'.format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            print('get_status error: ', e)
+
+    def get_system_status(self):
+        '''
+        It returns the system status of the geoserver
+        '''
+        try:
+            url = '{0}/rest/about/system-status.json'.format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            print('get_system_status error: ', e)
+
     def create_workspace(self, workspace):
         """
         Create a new workspace in geoserver, geoserver workspace url will be same as name of the workspace
         """
         try:
-            c = pycurl.Curl()
-            workspace_xml = "<workspace><name>{0}</name></workspace>".format(
-                workspace)
-            c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
-            c.setopt(c.URL, '{0}/rest/workspaces'.format(self.service_url))
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(workspace_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(workspace_xml).read_cb)
-            c.setopt(pycurl.POST, 1)
-            c.perform()
-            c.close()
+            url = '{0}/rest/workspaces'.format(self.service_url)
+            data = "<workspace><name>{0}</name></workspace>".format(workspace)
+            r = requests.post(url, data, auth=(self.username, self.password), headers={
+                "content-type": "text/xml"})
+            if r.status_code == 201:
+                return "{0} Workspace {1} created!".format(r.status_code, workspace)
+
+            if r.status_code == 401:
+                raise Exception('The workspace already exist')
+
+            else:
+                raise Exception("The workspace can not be created")
+
         except Exception as e:
             return 'Error: {}'.format(e)
 

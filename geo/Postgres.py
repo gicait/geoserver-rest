@@ -22,7 +22,6 @@ class Db:
             self.conn = None
 
     # Execute sql query
-
     def execute_sql(self, cursor, sql):
         try:
             cursor.execute(sql)
@@ -41,12 +40,11 @@ class Db:
             try:
                 col_cursor.execute(sql_object)
                 col_names = (col_cursor.fetchall())
+                for tup in col_names:
+                    columns += [tup[0]]
 
             except Exception as err:
                 print("get_columns_names ERROR:", err)
-
-            for tup in col_names:
-                columns += [tup[0]]
 
         return columns
 
@@ -67,12 +65,11 @@ class Db:
             try:
                 col_cursor.execute(sql_object, (column))
                 values_name = (col_cursor.fetchall())
+                for tup in values_name:
+                    values += [tup[0]]
 
             except Exception as err:
                 print("get_columns_names ERROR:", err)
-
-            for tup in values_name:
-                values += [tup[0]]
 
         return values
 

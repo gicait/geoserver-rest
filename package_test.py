@@ -16,13 +16,14 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 #geo.upload_style(r'C:\Users\tek\Desktop\try_sld.sld', sld_version='1.1.0', workspace='try')
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-# color_ramp = {
-#     'value1': '#ffff55',
-#     'value2': '#505050',
-#     'value3': '#404040'
-# }
-# geo.create_coveragestyle(style_name='demo', raster_path=r'C:\Users\GIC\Downloads\NDVI_20201104.tif',
-#                          workspace='demo', color_ramp='RdYlGn')
+color_ramp1 = {
+    'value1': '#ffff55',
+    'value2': '#505050',
+    'value3': '#404040'
+}
+geo.create_coveragestyle(style_name='demo',
+                         raster_path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif',
+                         workspace='demo', color_ramp=color_ramp1, cmap_type='values', overwrite=True)
 
 
 '''

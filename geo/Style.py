@@ -14,6 +14,10 @@ def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
     style_append = ''
     if type(color_ramp) is list:
         N = len(color_ramp)
+
+        if N != number_of_classes:
+            number_of_classes = N
+
         interval = (max-min)/(number_of_classes-1)
 
         for i, color in enumerate(color_ramp):
@@ -25,11 +29,17 @@ def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
 
     elif type(color_ramp) is dict:
         N = len(color_ramp)
+
+        if N != number_of_classes:
+            number_of_classes = N
+
         interval = (max-min)/(number_of_classes-1)
 
-        for key, value, i in zip(color_ramp.keys(), color_ramp.values(), range(N)):
+        for name, color, i in zip(color_ramp.keys(), color_ramp.values(), range(N)):
+            value = min+interval*i
+
             style_append += '<sld:ColorMapEntry color="{}" label=" {}" quantity="{}"/>'.format(
-                value, key, min+i)
+                color, name, value)
 
     else:
         for i, color in enumerate(color_ramp):
@@ -45,14 +55,11 @@ def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
 
 def coverage_style_xml(color_ramp, style_name, cmap_type,  min, max, number_of_classes):
     min_max_difference = max - min
-    palette = sns.color_palette(color_ramp, int(number_of_classes))
-    palette_hex = [rgb2hex(i) for i in palette]
     style_append = ''
     interval = min_max_difference/(number_of_classes-1)
 
     # The main style of the coverage style
-
-    if type(color_ramp == 'str'):
+    if type(color_ramp) is str:
         palette = sns.color_palette(color_ramp, int(number_of_classes))
         color_ramp = [rgb2hex(i) for i in palette]
 

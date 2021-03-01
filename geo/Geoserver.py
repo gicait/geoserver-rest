@@ -344,7 +344,7 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
-    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', overwrite=False):
+    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', number_of_classes=5, overwrite=False):
         '''
         The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster.
@@ -356,7 +356,8 @@ class Geoserver:
             max = raster['max']
             if style_name is None:
                 style_name = raster['file_name']
-            coverage_style_xml(color_ramp, style_name, cmap_type, min, max)
+            coverage_style_xml(color_ramp, style_name,
+                               cmap_type, min, max, number_of_classes)
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(
                 style_name, style_name+'.sld')
 

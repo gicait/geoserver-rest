@@ -5,10 +5,11 @@ from geo.Style import catagorize_xml, classified_xml
 '''
 Connection
 '''
-geo = Geoserver('http://localhost:8080/geoserver',
+geo = Geoserver('http://127.0.0.1:8080/geoserver',
                 username='admin', password='geoserver')
 # pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
-geo.create_workspace('demo2')
+# geo.create_workspace('demo2')
+# geo.get_workspace('itc2')
 
 '''
 New get requests

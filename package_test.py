@@ -20,7 +20,7 @@ New get requests
 # a = geo.create_shp_datastore(
 #     r"G:\1. Tajikistan\1. data\A_Admin_boundaries\B_Region\Country_region.shp")
 # print(a)
-a = geo.get_default_workspace()
+a = geo.get_coveragestore('aaa', 'default')
 print(a)
 
 '''

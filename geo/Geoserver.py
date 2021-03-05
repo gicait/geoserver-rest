@@ -171,6 +171,41 @@ class Geoserver:
         except Exception as e:
             return 'reload error: {}'.format(e)
 
+    def get_coveragestores(self, workspace=None):
+        '''
+        Get all the coveragestores inside specific workspace
+        '''
+        try:
+            if workspace is None:
+                workspace = 'default'
+
+            url = '{0}/rest/workspaces/{1}/coveragestores'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_coveragestores error: {}'.format(e)
+
+    def get_coveragestore(self, coveragestore_name, workspace=None):
+        '''
+        It returns the store name if exist
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            if workspace is None:
+                workspace = 'default'
+            url = '{0}/rest/workspaces/{1}/coveragestores/{2}.json'.format(
+                self.service_url, workspace, coveragestore_name)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            print('Status code: {0}, Get coverage store'.format(r.status_code))
+
+            return r.json()
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
     def create_workspace(self, workspace):
         """
         Create a new workspace in geoserver, geoserver workspace url will be same as name of the workspace
@@ -190,23 +225,6 @@ class Geoserver:
 
             else:
                 raise Exception("The workspace can not be created")
-
-        except Exception as e:
-            return 'Error: {}'.format(e)
-
-    def get_coveragestore(self, coveragestore_name, workspace):
-        '''
-        It returns the store name if exist
-        '''
-        try:
-            payload = {'recurse': 'true'}
-            url = '{0}/rest/workspaces/{1}/coveragestores/{2}.json'.format(
-                self.service_url, workspace, coveragestore_name)
-            r = requests.get(url, auth=(
-                self.username, self.password), params=payload)
-            print('Status code: {0}, Get coverage store'.format(r.status_code))
-
-            return r.json()['coverageStore']['name']
 
         except Exception as e:
             return 'Error: {}'.format(e)

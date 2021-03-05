@@ -48,7 +48,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            print('get_manifest error: ', e)
+            return ('get_manifest error: ', e)
 
     def get_version(self):
         '''
@@ -60,7 +60,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            print('get_version error: ', e)
+            return ('get_version error: ', e)
 
     def get_status(self):
         '''
@@ -72,7 +72,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            print('get_status error: ', e)
+            return ('get_status error: ', e)
 
     def get_system_status(self):
         '''
@@ -84,7 +84,92 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            print('get_system_status error: ', e)
+            return ('get_system_status error: ', e)
+
+    def reload(self):
+        '''
+        Reloads the GeoServer catalog and configuration from disk. This operation is used in cases where an external tool has modified the on-disk configuration. This operation will also force GeoServer to drop any internal caches and reconnect to all data stores.
+        curl -X POST http://localhost:8080/geoserver/rest/reload -H  "accept: application/json" -H  "content-type: application/json"
+        '''
+        try:
+            url = '{0}/rest/reload'.format(self.service_url)
+            r = requests.post(url, auth=(self.username, self.password))
+            return 'Status code: {}'.format(r.status_code)
+
+        except Exception as e:
+            return 'reload error: {}'.format(e)
+
+    def reset(self):
+        '''
+        Resets all store, raster, and schema caches. This operation is used to force GeoServer to drop all caches and store connections and reconnect to each of them the next time they are needed by a request. This is useful in case the stores themselves cache some information about the data structures they manage that may have changed in the meantime.
+        curl -X POST http://localhost:8080/geoserver/rest/reset -H  "accept: application/json" -H  "content-type: application/json"
+        '''
+        try:
+            url = '{0}/rest/reset'.format(self.service_url)
+            r = requests.post(url, auth=(self.username, self.password))
+            return 'Status code: {}'.format(r.status_code)
+
+        except Exception as e:
+            return 'reload error: {}'.format(e)
+
+    def get_datastores(self, workspace=None):
+        '''
+        List all data stores in workspace ws.
+        If workspace is not provided, it will listout all the datastores inside default workspace
+        curl -X GET http://localhost:8080/geoserver/rest/workspaces/demo/datastores -H  "accept: application/xml" -H  "content-type: application/json"
+        '''
+        try:
+            if workspace == None:
+                workspace = 'default'
+
+            url = '{0}/rest/workspaces/{1}/datastores.json'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return "get_datastores error: {}".format(e)
+
+    def get_default_workspace(self):
+        '''
+        Get the default workspace
+        '''
+        try:
+            url = '{0}/rest/workspaces/default'.format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_default_workspace error: {}'.format(e)
+
+    def get_workspaces(self):
+        '''
+        Get all the workspaces
+        '''
+        try:
+            url = '{0}/rest/workspaces'.format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_workspaces error: {}'.format(e)
+
+    def set_default_workspace(self, workspace):
+        '''
+        Set the default workspace
+        '''
+        try:
+            url = '{0}/rest/workspaces/default'.format(self.service_url)
+            data = "<workspace><name>{}</name></workspace>".format(workspace)
+            print(url, data)
+            r = requests.put(url, data, auth=(self.username, self.password), headers={
+                "content-type": "text/xml"})
+
+            if r.status_code == 200:
+                return "Status code: {0}, default workspace {1} set!".format(r.status_code, workspace)
+
+        except Exception as e:
+            return 'reload error: {}'.format(e)
 
     def create_workspace(self, workspace):
         """
@@ -93,8 +178,10 @@ class Geoserver:
         try:
             url = '{0}/rest/workspaces'.format(self.service_url)
             data = "<workspace><name>{0}</name></workspace>".format(workspace)
-            r = requests.post(url, data, auth=(self.username, self.password), headers={
-                "content-type": "text/xml"})
+            headers = {"content-type": "text/xml"}
+            r = requests.post(url, data, auth=(
+                self.username, self.password), headers=headers)
+
             if r.status_code == 201:
                 return "{0} Workspace {1} created!".format(r.status_code, workspace)
 
@@ -275,7 +362,7 @@ class Geoserver:
             <title>{0}</title>
             <srs>EPSG:4326</srs>
             <metadata>
-            <entry key="JDBC_VIRTUAL_TABLE"> 
+            <entry key="JDBC_VIRTUAL_TABLE">
             <virtualTable>
             <name>{0}</name>
             <sql>{1}</sql>
@@ -619,7 +706,7 @@ class Geoserver:
                      "Content-type: {}".format(content_type)])
             c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
             c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            #c.setopt(pycurl.CUSTOMREQUEST, "PUT")
+            # c.setopt(pycurl.CUSTOMREQUEST, "PUT")
             c.setopt(pycurl.PUT, 1)
             c.perform()
             c.close()

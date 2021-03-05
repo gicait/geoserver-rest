@@ -8,7 +8,7 @@ Connection
 geo = Geoserver('http://localhost:8080/geoserver',
                 username='admin', password='geoserver')
 # pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
-geo.create_workspace('demo2')
+# geo.create_workspace('demo2')
 
 '''
 New get requests
@@ -17,7 +17,11 @@ New get requests
 # geo.get_manifest()
 # geo.get_status()
 # geo.get_system_status()
-
+# a = geo.create_shp_datastore(
+#     r"G:\1. Tajikistan\1. data\A_Admin_boundaries\B_Region\Country_region.shp")
+# print(a)
+a = geo.get_default_workspace()
+print(a)
 
 '''
 Coverage (raster)
@@ -25,14 +29,14 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 #geo.upload_style(r'C:\Users\tek\Desktop\try_sld.sld', sld_version='1.1.0', workspace='try')
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-color_ramp1 = {
-    'value1': '#ffff55',
-    'value2': '#505050',
-    'value3': '#404040'
-}
-geo.create_coveragestyle(style_name='demo',
-                         raster_path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif',
-                         workspace='demo', color_ramp=color_ramp1, cmap_type='values', overwrite=True)
+# color_ramp1 = {
+#     'value1': '#ffff55',
+#     'value2': '#505050',
+#     'value3': '#404040'
+# }
+# geo.create_coveragestyle(style_name='demo',
+#                          raster_path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif',
+#                          workspace='demo', color_ramp=color_ramp1, cmap_type='values', overwrite=True)
 
 
 '''

@@ -4,7 +4,7 @@ import io
 import requests
 from .Style import coverage_style_xml, outline_only_xml, catagorize_xml, classified_xml
 from .Calculation_gdal import raster_value
-from .Postgres import Db
+from .supports import prepare_zip_file
 
 
 # call back class for read the data
@@ -130,6 +130,76 @@ class Geoserver:
         except Exception as e:
             return "get_datastores error: {}".format(e)
 
+    def get_coveragestore(self, coveragestore_name, workspace=None):
+        '''
+        It returns the store name if exist
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            if workspace is None:
+                workspace = 'default'
+            url = '{0}/rest/workspaces/{1}/coveragestores/{2}.json'.format(
+                self.service_url, workspace, coveragestore_name)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            print('Status code: {0}, Get coverage store'.format(r.status_code))
+
+            return r.json()
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def get_coveragestores(self, workspace=None):
+        '''
+        Get all the coveragestores inside specific workspace
+        '''
+        try:
+            if workspace is None:
+                workspace = 'default'
+
+            url = '{0}/rest/workspaces/{1}/coveragestores'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_coveragestores error: {}'.format(e)
+
+    def get_layer(self, layer_name, workspace=None):
+        '''
+        Get the layer by layer name
+        '''
+        try:
+            url = '{0}/rest/layers/{1}'.format(
+                self.service_url, layer_name)
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/layers/{2}'.format(
+                    self.service_url, workspace, layer_name)
+
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_layer error: {}'.format(e)
+
+    def get_layers(self, workspace=None):
+        '''
+        Get all the layers from geoserver
+        If workspace is None, it will listout all the layers from geoserver
+        '''
+        try:
+            url = '{0}/rest/layers'.format(
+                self.service_url)
+
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/layers'.format(
+                    self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_layers error: {}'.format(e)
+
     def get_default_workspace(self):
         '''
         Get the default workspace
@@ -171,41 +241,6 @@ class Geoserver:
         except Exception as e:
             return 'reload error: {}'.format(e)
 
-    def get_coveragestores(self, workspace=None):
-        '''
-        Get all the coveragestores inside specific workspace
-        '''
-        try:
-            if workspace is None:
-                workspace = 'default'
-
-            url = '{0}/rest/workspaces/{1}/coveragestores'.format(
-                self.service_url, workspace)
-            r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
-
-        except Exception as e:
-            return 'get_coveragestores error: {}'.format(e)
-
-    def get_coveragestore(self, coveragestore_name, workspace=None):
-        '''
-        It returns the store name if exist
-        '''
-        try:
-            payload = {'recurse': 'true'}
-            if workspace is None:
-                workspace = 'default'
-            url = '{0}/rest/workspaces/{1}/coveragestores/{2}.json'.format(
-                self.service_url, workspace, coveragestore_name)
-            r = requests.get(url, auth=(
-                self.username, self.password), params=payload)
-            print('Status code: {0}, Get coverage store'.format(r.status_code))
-
-            return r.json()
-
-        except Exception as e:
-            return 'Error: {}'.format(e)
-
     def create_workspace(self, workspace):
         """
         Create a new workspace in geoserver, geoserver workspace url will be same as name of the workspace
@@ -241,7 +276,7 @@ class Geoserver:
             r = requests.get(url, auth=(
                 self.username, self.password), params=payload)
             if r.status_code == 200:
-                return r.json()['workspace']['name']
+                return r.json()
             else:
                 return None
 
@@ -339,6 +374,46 @@ class Geoserver:
             c.close()
         except Exception as e:
             return "Error:%s" % str(e)
+
+    def create_shp_datastore(self, path, store_name=None, workspace=None, file_format='shp'):
+        '''
+        Create the datastore for shapefile
+        Path refers to the path to the zipped shapefile
+        '''
+        try:
+            if path is None:
+                raise Exception('You must provide a full path to shapefile')
+
+            if workspace is None:
+                workspace = 'default'
+
+            if store_name is None:
+                store_name = os.path.basename(path)
+                f = store_name.split('.')
+                if len(f) > 0:
+                    store_name = f[0]
+
+            headers = {
+                "Content-type": "application/zip",
+                "Accept": "application/xml",
+            }
+
+            if isinstance(data, dict):
+                print('data is not a zip file')
+                path = prepare_zip_file(store_name, path)
+
+            url = '{0}/rest/workspaces/{1}/datastores/{2}/file.{3}'.format(
+                self.service_url, workspace, store_name, file_format)
+
+            with open(path, 'rb') as f:
+                r = requests.put(url, data=f.read(), auth=(
+                    self.username, self.password), headers=headers)
+
+                if (r.status_code != 201):
+                    return '{}: The shapefile datastore can not be created!'.format(r.status_code)
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
 
     def publish_featurestore(self, store_name, pg_table, workspace=None):
         """

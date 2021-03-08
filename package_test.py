@@ -18,10 +18,11 @@ New get requests
 # geo.get_status()
 # geo.get_system_status()
 # a = geo.create_shp_datastore(
-#     r"G:\1. Tajikistan\1. data\A_Admin_boundaries\B_Region\Country_region.shp")
+#     r"C:\Program Files (x86)\GeoServer 2.15.1\data_dir\data\demo\C_Jamoat\C_Jamoat.zip", store_name='111')
 # print(a)
-a = geo.get_coveragestore('aaa', 'default')
-print(a)
+geo.get_layer('jamoat-db', workspace='demo')
+# a = geo.create_shp_datastore('aaa', 'default')
+# print(a)
 
 '''
 Coverage (raster)

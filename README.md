@@ -16,7 +16,14 @@ The `geoserver-rest` package can be installed with pip, if all the dependencies 
 pip install geoserver-rest
 ```
 
-###### Windows Installation
+### Conda installation
+
+```bash
+conda install -c conda-forge geoserver-rest
+conda install -c iamtekson geoserver-rest
+```
+
+#### Windows Installation
 
 In windows, the gdal and pycurl dependencies can be install using `pipwin`,
 

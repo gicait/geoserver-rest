@@ -112,6 +112,25 @@ class Geoserver:
         except Exception as e:
             return 'reload error: {}'.format(e)
 
+    def get_datastore(self, store_name, workspace=None):
+        '''
+        data store in given workspace
+        If workspace is not provided, it will take the default workspace
+        curl -X GET http://localhost:8080/geoserver/rest/workspaces/demo/datastores -H  "accept: application/xml" -H  "content-type: application/json"
+        '''
+        try:
+            if workspace == None:
+                workspace = 'default'
+
+            url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
+                self.service_url, workspace, store_name)
+
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return "get_datastores error: {}".format(e)
+
     def get_datastores(self, workspace=None):
         '''
         List all data stores in workspace ws.
@@ -199,6 +218,75 @@ class Geoserver:
 
         except Exception as e:
             return 'get_layers error: {}'.format(e)
+
+    def get_layergroups(self, workspace=None):
+        '''
+        Get all the layer groups from geoserver
+        If workspace is None, it will listout all the layer groups from geoserver
+        '''
+        try:
+            url = '{0}/rest/layergroups'.format(
+                self.service_url)
+
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/layergroups'.format(
+                    self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_layers error: {}'.format(e)
+
+    def get_layergroup(self, layer_name, workspace=None):
+        '''
+        Get the layer group by layer group name
+        '''
+        try:
+            url = '{0}/rest/layergroups/{1}'.format(
+                self.service_url, layer_name)
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/layergroups/{2}'.format(
+                    self.service_url, workspace, layer_name)
+
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_layer error: {}'.format(e)
+
+    def get_style(self, style_name, workspace=None):
+        '''
+        Get the style by style name
+        '''
+        try:
+            url = '{0}/rest/styles/{1}.json'.format(
+                self.service_url, style_name)
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/styles/{2}.json'.format(
+                    self.service_url, workspace, style_name)
+
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_style error: {}'.format(e)
+
+    def get_styles(self, workspace=None):
+        '''
+        Get all the styles from geoserver
+        '''
+        try:
+            url = '{0}/rest/styles.json'.format(
+                self.service_url)
+
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/styles.json'.format(
+                    self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_styles error: {}'.format(e)
 
     def get_default_workspace(self):
         '''

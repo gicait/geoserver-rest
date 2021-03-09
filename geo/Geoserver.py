@@ -868,7 +868,6 @@ class Geoserver:
             return 'Error: {}'.format(e)
 
     # def create_featurestyle()
-
     def publish_style(self, layer_name, style_name, workspace, content_type='text/xml'):
         """
         publishing a raster file to geoserver
@@ -896,24 +895,39 @@ class Geoserver:
 
     def delete_workspace(self, workspace):
         try:
+            payload = {'recurse': 'true'}
             url = '{0}/rest/workspaces/{1}'.format(self.service_url, workspace)
-            r = requests.delete(url, auth=(self.username, self.password))
-            print('Status code: {0}, delete workspace'.format(r.status_code))
+            r = requests.delete(url, auth=(
+                self.username, self.password), param=payload)
+
+            if r.status_code == 200:
+                return('Status code: {0}, delete workspace'.format(r.status_code))
+
+            else:
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
+
         except Exception as e:
             return 'Error: {}'.format(e)
 
     def delete_layer(self, layer_name, workspace=None):
         try:
             payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}/layers/{2}'.format(
+                self.service_url, workspace, layer_name)
             if workspace is None:
                 url = '{0}/rest/layers/{1}'.format(
                     self.service_url, layer_name)
-            else:
-                url = '{0}/rest/workspaces/{1}/layers/{2}'.format(
-                    self.service_url, workspace, layer_name)
+
             r = requests.delete(url, auth=(
                 self.username, self.password), params=payload)
-            print('Status code: {0}, delete layer'.format(r.status_code))
+            if r.status_code == 200:
+                return('Status code: {0}, delete layer'.format(
+                    r.status_code))
+
+            else:
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return 'Error: {}'.format(e)
@@ -923,10 +937,19 @@ class Geoserver:
             payload = {'recurse': 'true'}
             url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
                 self.service_url, workspace, featurestore_name)
+            if workspace is None:
+                url = '{0}/rest/datastores/{1}'.format(
+                    self.service_url, featurestore_name)
             r = requests.delete(url, auth=(
                 self.username, self.password), params=payload)
-            print('Status code: {0}, delete featurestore'.format(
-                r.status_code))
+
+            if r.status_code == 200:
+                return('Status code: {0}, delete featurestore'.format(
+                    r.status_code))
+
+            else:
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return 'Error: {}'.format(e)
@@ -936,26 +959,42 @@ class Geoserver:
             payload = {'recurse': 'true'}
             url = '{0}/rest/workspaces/{1}/coveragestores/{2}'.format(
                 self.service_url, workspace, coveragestore_name)
-            print(url)
+
+            if workspace is None:
+                url = '{0}/rest/coveragestores/{1}'.format(
+                    self.service_url, coveragestore_name)
+
             r = requests.delete(url, auth=(
                 self.username, self.password), params=payload)
-            print('Status code: {0}, delete coveragestore'.format(
-                r.status_code))
+
+            if(r.status_code == 200):
+                return ("Coverage store deleted successfully)
+
+            else:
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return 'Error: {}'.format(e)
 
     def delete_style(self, style_name, workspace=None):
         try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}/styles/{2}'.format(
+                self.service_url, workspace, style_name)
             if workspace is None:
                 url = '{0}/rest/styles/{1}'.format(
                     self.service_url, style_name)
 
+            r = requests.delete(url, auth=(
+                self.username, self.password), param=payload)
+
+            if(r.status_code == 200):
+                return ('Status code: {0}, delete style'.format(r.status_code))
+
             else:
-                url = '{0}/rest/workspaces/{1}/styles/{2}'.format(
-                    self.service_url, workspace, style_name)
-            r = requests.delete(url, auth=(self.username, self.password))
-            print('Status code: {0}, delete style'.format(r.status_code))
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return 'Error: {}'.format(e)

@@ -180,8 +180,6 @@ class Geoserver:
             if r.status_code != 201:
                 return '{}: The coveragestore can not be created!'.format(r.status_code)
 
-            return '{}: Data uploaded successfully'.format(r.status_code)
-
         except Exception as e:
             return 'Error: {}'.format(e)
 

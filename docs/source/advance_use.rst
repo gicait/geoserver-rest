@@ -1,7 +1,7 @@
 Advance use for automation
 ============================
 
-The following code will first convert all the `.rst` data format inside `C:\Users\gic\Desktop\etlIa\` folder, into `tiff` format and then upload all the `tiff` files to the GeoServer.
+The following code will first convert all the ``.rst`` data format inside ``C:\Users\gic\Desktop\etlIa\`` folder, into ``tiff`` format and then upload all the ``tiff`` files to the GeoServer.
 
 
 .. code-block:: python3

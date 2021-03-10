@@ -1,6 +1,10 @@
 [![Downloads](https://pepy.tech/badge/geoserver-rest)](https://pepy.tech/project/geoserver-rest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+### Full documentation
+
+Checkout the full documentation of `geoserver-rest` in [geoserver-rest docs](https://geoserver-rest.readthedocs.io/en/latest/index.html)
+
 ### Installation
 
 The `geoserver-rest` package is useful for the management of geospatial data in [GeoServer](http://geoserver.org/). The package is useful for the creating, updating and deleting geoserver workspaces, stores, layers, and style files. For installation of this package, following packages should be installed first:

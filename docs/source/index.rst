@@ -9,12 +9,12 @@ Welcome to geoserver-rest documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: About:
 
    about
    installation
    how_to_use
    advance_use
+   license
    contribution
    acknowledgements
 

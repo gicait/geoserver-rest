@@ -535,7 +535,6 @@ class Geoserver:
             }
 
             if isinstance(data, dict):
-                print('data is not a zip file')
                 path = prepare_zip_file(store_name, path)
 
             url = '{0}/rest/workspaces/{1}/datastores/{2}/file.{3}'.format(
@@ -545,7 +544,10 @@ class Geoserver:
                 r = requests.put(url, data=f.read(), auth=(
                     self.username, self.password), headers=headers)
 
-                if (r.status_code != 201):
+                if (r.status_code in [200, 201]):
+                    return 'The shapefile datastore created successfully!'
+
+                else:
                     return '{}: The shapefile datastore can not be created!'.format(r.status_code)
 
         except Exception as e:

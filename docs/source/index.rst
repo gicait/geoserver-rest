@@ -1,0 +1,28 @@
+.. geoserver-rest documentation master file, created by
+   sphinx-quickstart on Wed Mar 10 14:46:38 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to geoserver-rest documentation!
+========================================
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: About:
+
+   about
+   installation
+   how_to_use
+   advance_use
+   contribution
+   acknowledgements
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

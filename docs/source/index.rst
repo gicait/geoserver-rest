@@ -19,10 +19,9 @@ Welcome to geoserver-rest documentation!
    acknowledgements
 
 
+Checkout the video tutorial on geoserver-rest below,
 
-Indices and tables
-==================
+.. raw:: html
+    
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/nXvzmbGukeE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

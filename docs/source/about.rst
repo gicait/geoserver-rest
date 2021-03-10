@@ -1,6 +1,9 @@
 About geoserver-rest!
 =====================
 
+What is geoserver-rest?
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The geoserver-rest package is useful for the management of geospatial data in `GeoServer <http://geoserver.org/>`_. The package is useful for the creating, updating and deleting geoserver workspaces, stores, layers, and style files.
 
 Checkout the video tutorial on geoserver-rest below,

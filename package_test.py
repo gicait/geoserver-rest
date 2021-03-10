@@ -21,10 +21,12 @@ New get requests
 #     r"C:\Program Files (x86)\GeoServer 2.15.1\data_dir\data\demo\C_Jamoat\C_Jamoat.zip", store_name='111')
 # print(a)
 # geo.get_layer('jamoat-db', workspace='demo')
-geo.get_datastore('111', 'demo')
-geo.get_style('hazard_exp', workspace='geoinformatics_center', )
-geo.get_styles()
-# a = geo.create_shp_datastore('aaa', 'default')
+# geo.get_datastore('111', 'demo')
+# geo.get_style('hazard_exp', workspace='geoinformatics_center', )
+# a = geo.get_styles()
+# # geo.create_datastore(
+# #     'datastore1', r'C:\Users\tek\Desktop\try\geoserver-rest\data\A_Admin_boundaries\A_Country\Country_border.shp', workspace='demo')
+# # a = geo.create_shp_datastore('aaa', 'default')
 # print(a)
 
 '''

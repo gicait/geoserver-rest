@@ -967,8 +967,8 @@ class Geoserver:
             r = requests.delete(url, auth=(
                 self.username, self.password), params=payload)
 
-            if(r.status_code == 200):
-                return ("Coverage store deleted successfully)
+            if r.status_code == 200:
+                return "Coverage store deleted successfully"
 
             else:
                 raise Exception('Error: {1} {2}'.format(

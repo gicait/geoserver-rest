@@ -396,10 +396,6 @@ class Geoserver:
             if workspace is None:
                 workspace = 'default'
 
-            _store = self.get_coveragestore(file_name, workspace)
-            if _store:
-                self.delete_coveragestore(file_name, workspace)
-
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
             file_type = file_type.lower()
             c.setopt(c.URL, '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}'.format(
@@ -463,6 +459,58 @@ class Geoserver:
         except Exception as e:
             return "Error:%s" % str(e)
 
+    def create_datastore(self, name, path, workspace=None, overwrite=False):
+        '''
+        The path referes as path to,
+            1. shapefile (.shp) file or 
+            2. GeoPackage (.gpkg) file or 
+            3. WFS url (http://localhost:8080/geoserver/wfs?request=GetCapabilities) or 
+            4. directory containing shapefiles.
+
+        If you have PostGIS datastore, please use create_featurestore function
+
+        The name referes as name of the datastore
+        After creating the datastore, you need to publish it by using publish_featurestore function
+        '''
+        if workspace is None:
+            workspace = 'default'
+
+        if path is None:
+            raise Exception("You must provide a full path to the data")
+
+        data_url = '<url>file:{0}</url>'.format(path)
+
+        if 'http://' in path:
+            data_url = '<GET_CAPABILITIES_URL>{0}</GET_CAPABILITIES_URL>'.format(
+                path)
+
+        data = '<dataStore><name>{0}</name><connectionParameters>{1}</connectionParameters></dataStore>'.format(
+            name, data_url)
+        headers = {"content-type": "text/xml"}
+
+        try:
+            r = None
+            if overwrite:
+                url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
+                    self.service_url, workspace, name)
+                r = requests.put(url, data, auth=(
+                    self.username, self.password), headers=headers)
+
+            else:
+                url = '{0}/rest/workspaces/{1}/datastores'.format(
+                    self.service_url, workspace)
+                r = requests.post(url, data, auth=(
+                    self.username, self.password), headers=headers)
+
+            if r.status_code in [200, 201]:
+                return "Data store created/updated successfully"
+
+            else:
+                raise Exception('datastore can not be created')
+
+        except Exception as e:
+            return "Error create_datastore: {}".format(e)
+
     def create_shp_datastore(self, path, store_name=None, workspace=None, file_format='shp'):
         '''
         Create the datastore for shapefile
@@ -487,7 +535,6 @@ class Geoserver:
             }
 
             if isinstance(data, dict):
-                print('data is not a zip file')
                 path = prepare_zip_file(store_name, path)
 
             url = '{0}/rest/workspaces/{1}/datastores/{2}/file.{3}'.format(
@@ -497,7 +544,10 @@ class Geoserver:
                 r = requests.put(url, data=f.read(), auth=(
                     self.username, self.password), headers=headers)
 
-                if (r.status_code != 201):
+                if (r.status_code in [200, 201]):
+                    return 'The shapefile datastore created successfully!'
+
+                else:
                     return '{}: The shapefile datastore can not be created!'.format(r.status_code)
 
         except Exception as e:
@@ -967,8 +1017,8 @@ class Geoserver:
             r = requests.delete(url, auth=(
                 self.username, self.password), params=payload)
 
-            if(r.status_code == 200):
-                return ("Coverage store deleted successfully)
+            if r.status_code == 200:
+                return "Coverage store deleted successfully"
 
             else:
                 raise Exception('Error: {1} {2}'.format(

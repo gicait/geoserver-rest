@@ -21,11 +21,14 @@ New get requests
 #     r"C:\Program Files (x86)\GeoServer 2.15.1\data_dir\data\demo\C_Jamoat\C_Jamoat.zip", store_name='111')
 # print(a)
 # geo.get_layer('jamoat-db', workspace='demo')
-geo.get_datastore('111', 'demo')
-geo.get_style('hazard_exp', workspace='geoinformatics_center', )
-geo.get_styles()
+# geo.get_datastore('111', 'demo')
+# geo.get_style('hazard_exp', workspace='geoinformatics_center', )
+# a = geo.get_styles()
+a = geo.create_datastore(
+    'datastore4', r"http://localhost:8080/geoserver/wfs?request=GetCapabilities", workspace='demo', overwrite=True)
 # a = geo.create_shp_datastore('aaa', 'default')
-# print(a)
+print(a)
+# geo.publish_featurestore('datastore2', 'admin_units', workspace='demo')
 
 '''
 Coverage (raster)

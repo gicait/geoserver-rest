@@ -14,6 +14,7 @@ Welcome to geoserver-rest documentation!
    installation
    how_to_use
    advance_use
+   change_log
    license
    contribution
    acknowledgements

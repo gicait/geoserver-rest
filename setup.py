@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="geoserver-rest",
-    version="1.5.1",
+    version="1.5.2",
     author="Tek Kshetri",
     author_email="iamtekson@gmail.com",
     description="Package for GeoServer rest API",

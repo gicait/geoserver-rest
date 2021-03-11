@@ -43,6 +43,8 @@ If the layername already exists in geoserver, you can pass another parameter ``o
 Create featurestore and publish layer
 ---------------------------------------
 
+.. _ create_featurestore:
+
 It is used for connecting the ``PostGIS`` with geoserver and publish this as a layer. It is only useful for vector data. The postgres connection parameters should be passed as the parameters. For publishing the PostGIS tables, the ``pg_table`` parameter represent the table name in postgres
 
 .. code-block:: python3
@@ -57,6 +59,41 @@ The new function ``publish_featurestore_sqlview`` is available from geoserver-re
 
     sql = 'SELECT name, id, geom FROM post_gis_table_name'
     geo.publish_featurestore_sqlview(store_name='geo_data', name='view_name', sql=sql, key_column='name', workspace='demo')
+
+
+Create shapefile datastore and publish layer
+-----------------------------------------------
+
+The ``create_shp datastore`` function will be useful for uploading the shapefile and publishing the shapefile as a layer. This function will upload the data to the geoserver ``data_dir`` in ``h2`` database structure and publish it as a layer.
+
+.. code-block:: python3
+
+    geo.create_shp_datastore(path=r'path/to/shp/file.shp', store_name='store', workspace='demo')
+
+
+Create datastore and publish layer
+------------------------------------
+
+The ``create_datastore`` function will create the datastore for the specific data. After creating the datastore, you need to publish it as a layer by using ``publish_featurestore`` function. It can take the following type of data path,
+
+1. Path to shapefile (.shp) file 
+2. Path to GeoPackage (.gpkg) file 
+3. WFS url (http://localhost:8080/geoserver/wfs?request=GetCapabilities) or 
+4. Directory containing shapefiles
+
+If you have PostGIS datastore, please use :ref:`create_featurestore <create_featurestore>` function.
+
+.. code-block:: python3
+
+    geo.create_datastore(name="ds", path=r'path/to/shp/file_name.shp', workspace='demo')
+    geo.publish_featurestore(workspace='demo', store_name='ds', pg_table='file_name')
+
+If your data is comming from ``WFS`` url, then use this,
+
+.. code-block:: python3
+
+    geo.create_datastore(name="ds", path='http://localhost:8080/geoserver/wfs?request=GetCapabilities', workspace='demo')
+    geo.publish_featurestore(workspace='demo', store_name='ds', pg_table='wfs_layer_name')
 
 
 Upload style and publish it
@@ -123,7 +160,7 @@ For generating the style for ``classified raster``, you can pass the another par
     geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn', cmap_type='values')
 
 .. list-table:: Options for ``create_coveragestyle``
-    :widths: 20 20 15 50
+    :widths: 15 15 15 55
     :header-rows: 1
 
     * - Option
@@ -182,7 +219,7 @@ It is used for creating the style for ``point``, ``line`` and ``polygon`` dynami
 The options for creating catagorized/classified featurestyle are as follows,
 
 .. list-table:: Options for ``create_catagorized_featurestyle`` and ``create_classified_featurestyle``
-    :widths: 20 20 15 50
+    :widths: 15 15 15 55
     :header-rows: 1
 
     * - Option

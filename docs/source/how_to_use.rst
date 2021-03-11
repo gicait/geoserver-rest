@@ -43,7 +43,7 @@ If the layername already exists in geoserver, you can pass another parameter ``o
 Create featurestore and publish layer
 ---------------------------------------
 
-.. _ create_featurestore:
+.. _create_featurestore:
 
 It is used for connecting the ``PostGIS`` with geoserver and publish this as a layer. It is only useful for vector data. The postgres connection parameters should be passed as the parameters. For publishing the PostGIS tables, the ``pg_table`` parameter represent the table name in postgres
 

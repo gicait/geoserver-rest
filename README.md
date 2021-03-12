@@ -9,6 +9,14 @@ The documentation for this project is moved here: [https://geoserver-rest.readth
 
 The `geoserver-rest` package is useful for the management of geospatial data in [GeoServer](http://geoserver.org/). The package is useful for the creating, updating and deleting geoserver workspaces, stores, layers, and style files.
 
+### Installation
+
+```python
+conda install -c conda-forge geoserver-rest
+```
+
+For the `pip` installation, check the [official documentation of geoserver-rest](https://geoserver-rest.readthedocs.io/en/latest/installation.html)
+
 ### Some examples
 
 Please check the [https://geoserver-rest.readthedocs.io/](https://geoserver-rest.readthedocs.io/) for full documentation.

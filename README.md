@@ -9,20 +9,17 @@ The documentation for this project is moved here: [https://geoserver-rest.readth
 
 The `geoserver-rest` package is useful for the management of geospatial data in [GeoServer](http://geoserver.org/). The package is useful for the creating, updating and deleting geoserver workspaces, stores, layers, and style files.
 
-##### Initialize the library
-
-This step is used to initialize the library. It takes parameters as geoserver url, username, password.
-
-```python
-from geo.Geoserver import Geoserver
-geo = Geoserver('http://127.0.0.1:8080/geoserver', username='admin', password='geoserver')
-```
-
 ### Some examples
 
 Please check the [https://geoserver-rest.readthedocs.io/](https://geoserver-rest.readthedocs.io/) for full documentation.
 
 ```python
+# Import the library
+from geo.Geoserver import Geoserver
+
+# Initialize the library
+geo = Geoserver('http://127.0.0.1:8080/geoserver', username='admin', password='geoserver')
+
 # For creating workspace
 geo.create_workspace(workspace='demo')
 

@@ -300,6 +300,25 @@ class Geoserver:
         except Exception as e:
             return 'get_default_workspace error: {}'.format(e)
 
+    def get_workspace(self, workspace):
+        '''
+        get name  workspace if exist
+        Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}.json'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            if r.status_code == 200:
+                return r.json()
+            else:
+                return None
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
     def get_workspaces(self):
         '''
         Get all the workspaces
@@ -348,25 +367,6 @@ class Geoserver:
 
             else:
                 raise Exception("The workspace can not be created")
-
-        except Exception as e:
-            return 'Error: {}'.format(e)
-
-    def get_workspace(self, workspace):
-        '''
-        get name  workspace if exist
-        Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
-        '''
-        try:
-            payload = {'recurse': 'true'}
-            url = '{0}/rest/workspaces/{1}.json'.format(
-                self.service_url, workspace)
-            r = requests.get(url, auth=(
-                self.username, self.password), params=payload)
-            if r.status_code == 200:
-                return r.json()
-            else:
-                return None
 
         except Exception as e:
             return 'Error: {}'.format(e)

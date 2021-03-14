@@ -1,0 +1,37 @@
+{% set data = load_setup_py_data() %}
+package:
+  name: "geoserver-rest"
+  version: {{ data.get('version') }}
+
+build:
+  # entry_points:
+  #   - anaconda = binstar_client.scripts.cli:main
+  #   - binstar = binstar_client.scripts.cli:main
+  #   - conda-server = binstar_client.scripts.cli:main
+
+source:
+  path: ./../
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python
+    - setuptools
+    - gdal
+    - seaborn
+    - pycurl
+    - psycopg2
+
+about:
+  home: https://github.com/gicait/geoserver-rest
+  license: MIT
+  license_familY: MIT
+  license_file: LICENSE
+  summary: "The package for management of geospatial data in GeoServer"
+
+extra:
+  recipe-maintainers:
+    - iamtekson

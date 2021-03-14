@@ -4,7 +4,7 @@ import io
 import requests
 from .Style import coverage_style_xml, outline_only_xml, catagorize_xml, classified_xml
 from .Calculation_gdal import raster_value
-from .Postgres import Db
+from .supports import prepare_zip_file
 
 
 # call back class for read the data
@@ -48,7 +48,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            print('get_manifest error: ', e)
+            return ('get_manifest error: ', e)
 
     def get_version(self):
         '''
@@ -60,7 +60,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            print('get_version error: ', e)
+            return ('get_version error: ', e)
 
     def get_status(self):
         '''
@@ -72,7 +72,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            print('get_status error: ', e)
+            return ('get_status error: ', e)
 
     def get_system_status(self):
         '''
@@ -84,7 +84,250 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            print('get_system_status error: ', e)
+            return ('get_system_status error: ', e)
+
+    def reload(self):
+        '''
+        Reloads the GeoServer catalog and configuration from disk. This operation is used in cases where an external tool has modified the on-disk configuration. This operation will also force GeoServer to drop any internal caches and reconnect to all data stores.
+        curl -X POST http://localhost:8080/geoserver/rest/reload -H  "accept: application/json" -H  "content-type: application/json"
+        '''
+        try:
+            url = '{0}/rest/reload'.format(self.service_url)
+            r = requests.post(url, auth=(self.username, self.password))
+            return 'Status code: {}'.format(r.status_code)
+
+        except Exception as e:
+            return 'reload error: {}'.format(e)
+
+    def reset(self):
+        '''
+        Resets all store, raster, and schema caches. This operation is used to force GeoServer to drop all caches and store connections and reconnect to each of them the next time they are needed by a request. This is useful in case the stores themselves cache some information about the data structures they manage that may have changed in the meantime.
+        curl -X POST http://localhost:8080/geoserver/rest/reset -H  "accept: application/json" -H  "content-type: application/json"
+        '''
+        try:
+            url = '{0}/rest/reset'.format(self.service_url)
+            r = requests.post(url, auth=(self.username, self.password))
+            return 'Status code: {}'.format(r.status_code)
+
+        except Exception as e:
+            return 'reload error: {}'.format(e)
+
+    def get_datastore(self, store_name, workspace=None):
+        '''
+        data store in given workspace
+        If workspace is not provided, it will take the default workspace
+        curl -X GET http://localhost:8080/geoserver/rest/workspaces/demo/datastores -H  "accept: application/xml" -H  "content-type: application/json"
+        '''
+        try:
+            if workspace == None:
+                workspace = 'default'
+
+            url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
+                self.service_url, workspace, store_name)
+
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return "get_datastores error: {}".format(e)
+
+    def get_datastores(self, workspace=None):
+        '''
+        List all data stores in workspace ws.
+        If workspace is not provided, it will listout all the datastores inside default workspace
+        curl -X GET http://localhost:8080/geoserver/rest/workspaces/demo/datastores -H  "accept: application/xml" -H  "content-type: application/json"
+        '''
+        try:
+            if workspace == None:
+                workspace = 'default'
+
+            url = '{0}/rest/workspaces/{1}/datastores.json'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return "get_datastores error: {}".format(e)
+
+    def get_coveragestore(self, coveragestore_name, workspace=None):
+        '''
+        It returns the store name if exist
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            if workspace is None:
+                workspace = 'default'
+            url = '{0}/rest/workspaces/{1}/coveragestores/{2}.json'.format(
+                self.service_url, workspace, coveragestore_name)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            print('Status code: {0}, Get coverage store'.format(r.status_code))
+
+            return r.json()
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
+    def get_coveragestores(self, workspace=None):
+        '''
+        Get all the coveragestores inside specific workspace
+        '''
+        try:
+            if workspace is None:
+                workspace = 'default'
+
+            url = '{0}/rest/workspaces/{1}/coveragestores'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_coveragestores error: {}'.format(e)
+
+    def get_layer(self, layer_name, workspace=None):
+        '''
+        Get the layer by layer name
+        '''
+        try:
+            url = '{0}/rest/layers/{1}'.format(
+                self.service_url, layer_name)
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/layers/{2}'.format(
+                    self.service_url, workspace, layer_name)
+
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_layer error: {}'.format(e)
+
+    def get_layers(self, workspace=None):
+        '''
+        Get all the layers from geoserver
+        If workspace is None, it will listout all the layers from geoserver
+        '''
+        try:
+            url = '{0}/rest/layers'.format(
+                self.service_url)
+
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/layers'.format(
+                    self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_layers error: {}'.format(e)
+
+    def get_layergroups(self, workspace=None):
+        '''
+        Get all the layer groups from geoserver
+        If workspace is None, it will listout all the layer groups from geoserver
+        '''
+        try:
+            url = '{0}/rest/layergroups'.format(
+                self.service_url)
+
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/layergroups'.format(
+                    self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_layers error: {}'.format(e)
+
+    def get_layergroup(self, layer_name, workspace=None):
+        '''
+        Get the layer group by layer group name
+        '''
+        try:
+            url = '{0}/rest/layergroups/{1}'.format(
+                self.service_url, layer_name)
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/layergroups/{2}'.format(
+                    self.service_url, workspace, layer_name)
+
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_layer error: {}'.format(e)
+
+    def get_style(self, style_name, workspace=None):
+        '''
+        Get the style by style name
+        '''
+        try:
+            url = '{0}/rest/styles/{1}.json'.format(
+                self.service_url, style_name)
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/styles/{2}.json'.format(
+                    self.service_url, workspace, style_name)
+
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_style error: {}'.format(e)
+
+    def get_styles(self, workspace=None):
+        '''
+        Get all the styles from geoserver
+        '''
+        try:
+            url = '{0}/rest/styles.json'.format(
+                self.service_url)
+
+            if workspace is not None:
+                url = '{0}/rest/workspaces/{1}/styles.json'.format(
+                    self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_styles error: {}'.format(e)
+
+    def get_default_workspace(self):
+        '''
+        Get the default workspace
+        '''
+        try:
+            url = '{0}/rest/workspaces/default'.format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_default_workspace error: {}'.format(e)
+
+    def get_workspaces(self):
+        '''
+        Get all the workspaces
+        '''
+        try:
+            url = '{0}/rest/workspaces'.format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return 'get_workspaces error: {}'.format(e)
+
+    def set_default_workspace(self, workspace):
+        '''
+        Set the default workspace
+        '''
+        try:
+            url = '{0}/rest/workspaces/default'.format(self.service_url)
+            data = "<workspace><name>{}</name></workspace>".format(workspace)
+            print(url, data)
+            r = requests.put(url, data, auth=(self.username, self.password), headers={
+                "content-type": "text/xml"})
+
+            if r.status_code == 200:
+                return "Status code: {0}, default workspace {1} set!".format(r.status_code, workspace)
+
+        except Exception as e:
+            return 'reload error: {}'.format(e)
 
     def create_workspace(self, workspace):
         """
@@ -93,8 +336,10 @@ class Geoserver:
         try:
             url = '{0}/rest/workspaces'.format(self.service_url)
             data = "<workspace><name>{0}</name></workspace>".format(workspace)
-            r = requests.post(url, data, auth=(self.username, self.password), headers={
-                "content-type": "text/xml"})
+            headers = {"content-type": "text/xml"}
+            r = requests.post(url, data, auth=(
+                self.username, self.password), headers=headers)
+
             if r.status_code == 201:
                 return "{0} Workspace {1} created!".format(r.status_code, workspace)
 
@@ -103,23 +348,6 @@ class Geoserver:
 
             else:
                 raise Exception("The workspace can not be created")
-
-        except Exception as e:
-            return 'Error: {}'.format(e)
-
-    def get_coveragestore(self, coveragestore_name, workspace):
-        '''
-        It returns the store name if exist
-        '''
-        try:
-            payload = {'recurse': 'true'}
-            url = '{0}/rest/workspaces/{1}/coveragestores/{2}.json'.format(
-                self.service_url, workspace, coveragestore_name)
-            r = requests.get(url, auth=(
-                self.username, self.password), params=payload)
-            print('Status code: {0}, Get coverage store'.format(r.status_code))
-
-            return r.json()['coverageStore']['name']
 
         except Exception as e:
             return 'Error: {}'.format(e)
@@ -227,6 +455,100 @@ class Geoserver:
         except Exception as e:
             return "Error:%s" % str(e)
 
+    def create_datastore(self, name, path, workspace=None, overwrite=False):
+        '''
+        The path referes as path to,
+            1. shapefile (.shp) file or 
+            2. GeoPackage (.gpkg) file or 
+            3. WFS url (http://localhost:8080/geoserver/wfs?request=GetCapabilities) or 
+            4. directory containing shapefiles.
+
+        If you have PostGIS datastore, please use create_featurestore function
+
+        The name referes as name of the datastore
+        After creating the datastore, you need to publish it by using publish_featurestore function
+        '''
+        if workspace is None:
+            workspace = 'default'
+
+        if path is None:
+            raise Exception("You must provide a full path to the data")
+
+        data_url = '<url>file:{0}</url>'.format(path)
+
+        if 'http://' in path:
+            data_url = '<GET_CAPABILITIES_URL>{0}</GET_CAPABILITIES_URL>'.format(
+                path)
+
+        data = '<dataStore><name>{0}</name><connectionParameters>{1}</connectionParameters></dataStore>'.format(
+            name, data_url)
+        headers = {"content-type": "text/xml"}
+
+        try:
+            r = None
+            if overwrite:
+                url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
+                    self.service_url, workspace, name)
+                r = requests.put(url, data, auth=(
+                    self.username, self.password), headers=headers)
+
+            else:
+                url = '{0}/rest/workspaces/{1}/datastores'.format(
+                    self.service_url, workspace)
+                r = requests.post(url, data, auth=(
+                    self.username, self.password), headers=headers)
+
+            if r.status_code in [200, 201]:
+                return "Data store created/updated successfully"
+
+            else:
+                raise Exception('datastore can not be created')
+
+        except Exception as e:
+            return "Error create_datastore: {}".format(e)
+
+    def create_shp_datastore(self, path, store_name=None, workspace=None, file_format='shp'):
+        '''
+        Create the datastore for shapefile
+        Path refers to the path to the zipped shapefile
+        '''
+        try:
+            if path is None:
+                raise Exception('You must provide a full path to shapefile')
+
+            if workspace is None:
+                workspace = 'default'
+
+            if store_name is None:
+                store_name = os.path.basename(path)
+                f = store_name.split('.')
+                if len(f) > 0:
+                    store_name = f[0]
+
+            headers = {
+                "Content-type": "application/zip",
+                "Accept": "application/xml",
+            }
+
+            if isinstance(data, dict):
+                path = prepare_zip_file(store_name, path)
+
+            url = '{0}/rest/workspaces/{1}/datastores/{2}/file.{3}'.format(
+                self.service_url, workspace, store_name, file_format)
+
+            with open(path, 'rb') as f:
+                r = requests.put(url, data=f.read(), auth=(
+                    self.username, self.password), headers=headers)
+
+                if (r.status_code in [200, 201]):
+                    return 'The shapefile datastore created successfully!'
+
+                else:
+                    return '{}: The shapefile datastore can not be created!'.format(r.status_code)
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
     def publish_featurestore(self, store_name, pg_table, workspace=None):
         """
         Only user for postgis vector data
@@ -267,7 +589,7 @@ class Geoserver:
             <title>{0}</title>
             <srs>EPSG:4326</srs>
             <metadata>
-            <entry key="JDBC_VIRTUAL_TABLE"> 
+            <entry key="JDBC_VIRTUAL_TABLE">
             <virtualTable>
             <name>{0}</name>
             <sql>{1}</sql>
@@ -385,7 +707,7 @@ class Geoserver:
         except Exception as e:
             return 'Error: {}'.format(e)
 
-    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', overwrite=False):
+    def create_coveragestyle(self,  raster_path, style_name=None, workspace=None, color_ramp='RdYlGn_r', cmap_type='ramp', number_of_classes=5, overwrite=False):
         '''
         The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster.
@@ -397,7 +719,8 @@ class Geoserver:
             max = raster['max']
             if style_name is None:
                 style_name = raster['file_name']
-            coverage_style_xml(color_ramp, style_name, cmap_type, min, max)
+            coverage_style_xml(color_ramp, style_name,
+                               cmap_type, min, max, number_of_classes)
             style_xml = "<style><name>{0}</name><filename>{1}</filename></style>".format(
                 style_name, style_name+'.sld')
 
@@ -591,7 +914,6 @@ class Geoserver:
             return 'Error: {}'.format(e)
 
     # def create_featurestyle()
-
     def publish_style(self, layer_name, style_name, workspace, content_type='text/xml'):
         """
         publishing a raster file to geoserver
@@ -610,7 +932,7 @@ class Geoserver:
                      "Content-type: {}".format(content_type)])
             c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
             c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            #c.setopt(pycurl.CUSTOMREQUEST, "PUT")
+            # c.setopt(pycurl.CUSTOMREQUEST, "PUT")
             c.setopt(pycurl.PUT, 1)
             c.perform()
             c.close()
@@ -619,24 +941,39 @@ class Geoserver:
 
     def delete_workspace(self, workspace):
         try:
+            payload = {'recurse': 'true'}
             url = '{0}/rest/workspaces/{1}'.format(self.service_url, workspace)
-            r = requests.delete(url, auth=(self.username, self.password))
-            print('Status code: {0}, delete workspace'.format(r.status_code))
+            r = requests.delete(url, auth=(
+                self.username, self.password), param=payload)
+
+            if r.status_code == 200:
+                return('Status code: {0}, delete workspace'.format(r.status_code))
+
+            else:
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
+
         except Exception as e:
             return 'Error: {}'.format(e)
 
     def delete_layer(self, layer_name, workspace=None):
         try:
             payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}/layers/{2}'.format(
+                self.service_url, workspace, layer_name)
             if workspace is None:
                 url = '{0}/rest/layers/{1}'.format(
                     self.service_url, layer_name)
-            else:
-                url = '{0}/rest/workspaces/{1}/layers/{2}'.format(
-                    self.service_url, workspace, layer_name)
+
             r = requests.delete(url, auth=(
                 self.username, self.password), params=payload)
-            print('Status code: {0}, delete layer'.format(r.status_code))
+            if r.status_code == 200:
+                return('Status code: {0}, delete layer'.format(
+                    r.status_code))
+
+            else:
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return 'Error: {}'.format(e)
@@ -646,10 +983,19 @@ class Geoserver:
             payload = {'recurse': 'true'}
             url = '{0}/rest/workspaces/{1}/datastores/{2}'.format(
                 self.service_url, workspace, featurestore_name)
+            if workspace is None:
+                url = '{0}/rest/datastores/{1}'.format(
+                    self.service_url, featurestore_name)
             r = requests.delete(url, auth=(
                 self.username, self.password), params=payload)
-            print('Status code: {0}, delete featurestore'.format(
-                r.status_code))
+
+            if r.status_code == 200:
+                return('Status code: {0}, delete featurestore'.format(
+                    r.status_code))
+
+            else:
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return 'Error: {}'.format(e)
@@ -659,26 +1005,42 @@ class Geoserver:
             payload = {'recurse': 'true'}
             url = '{0}/rest/workspaces/{1}/coveragestores/{2}'.format(
                 self.service_url, workspace, coveragestore_name)
-            print(url)
+
+            if workspace is None:
+                url = '{0}/rest/coveragestores/{1}'.format(
+                    self.service_url, coveragestore_name)
+
             r = requests.delete(url, auth=(
                 self.username, self.password), params=payload)
-            print('Status code: {0}, delete coveragestore'.format(
-                r.status_code))
+
+            if r.status_code == 200:
+                return "Coverage store deleted successfully"
+
+            else:
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return 'Error: {}'.format(e)
 
     def delete_style(self, style_name, workspace=None):
         try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}/styles/{2}'.format(
+                self.service_url, workspace, style_name)
             if workspace is None:
                 url = '{0}/rest/styles/{1}'.format(
                     self.service_url, style_name)
 
+            r = requests.delete(url, auth=(
+                self.username, self.password), param=payload)
+
+            if(r.status_code == 200):
+                return ('Status code: {0}, delete style'.format(r.status_code))
+
             else:
-                url = '{0}/rest/workspaces/{1}/styles/{2}'.format(
-                    self.service_url, workspace, style_name)
-            r = requests.delete(url, auth=(self.username, self.password))
-            print('Status code: {0}, delete style'.format(r.status_code))
+                raise Exception('Error: {1} {2}'.format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return 'Error: {}'.format(e)

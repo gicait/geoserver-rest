@@ -18,7 +18,18 @@ New get requests
 # geo.get_manifest()
 # geo.get_status()
 # geo.get_system_status()
-
+# a = geo.create_shp_datastore(
+#     r"C:\Program Files (x86)\GeoServer 2.15.1\data_dir\data\demo\C_Jamoat\C_Jamoat.zip", store_name='111')
+# print(a)
+# geo.get_layer('jamoat-db', workspace='demo')
+# geo.get_datastore('111', 'demo')
+# geo.get_style('hazard_exp', workspace='geoinformatics_center', )
+# a = geo.get_styles()
+a = geo.create_datastore(
+    'datastore4', r"http://localhost:8080/geoserver/wfs?request=GetCapabilities", workspace='demo', overwrite=True)
+# a = geo.create_shp_datastore('aaa', 'default')
+print(a)
+# geo.publish_featurestore('datastore2', 'admin_units', workspace='demo')
 
 '''
 Coverage (raster)
@@ -26,13 +37,14 @@ Coverage (raster)
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 #geo.upload_style(r'C:\Users\tek\Desktop\try_sld.sld', sld_version='1.1.0', workspace='try')
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
-# color_ramp = {
+# color_ramp1 = {
 #     'value1': '#ffff55',
 #     'value2': '#505050',
 #     'value3': '#404040'
 # }
-# geo.create_coveragestyle(style_name='demo', raster_path=r'C:\Users\GIC\Downloads\NDVI_20201104.tif',
-#                          workspace='demo', color_ramp='RdYlGn')
+# geo.create_coveragestyle(style_name='demo',
+#                          raster_path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif',
+#                          workspace='demo', color_ramp=color_ramp1, cmap_type='values', overwrite=True)
 
 
 '''

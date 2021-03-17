@@ -515,6 +515,7 @@ class Geoserver:
         '''
         Create the datastore for shapefile
         Path refers to the path to the zipped shapefile
+        The layer name will be assigned according to the shp name
         '''
         try:
             if path is None:
@@ -534,10 +535,10 @@ class Geoserver:
                 "Accept": "application/xml",
             }
 
-            if isinstance(data, dict):
+            if isinstance(path, dict):
                 path = prepare_zip_file(store_name, path)
 
-            url = '{0}/rest/workspaces/{1}/datastores/{2}/file.{3}'.format(
+            url = '{0}/rest/workspaces/{1}/datastores/{2}/file.{3}?filename={2}&update=overwrite'.format(
                 self.service_url, workspace, store_name, file_format)
 
             with open(path, 'rb') as f:

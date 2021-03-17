@@ -398,7 +398,7 @@ class Geoserver:
 
             c.setopt(pycurl.USERPWD, self.username + ':' + self.password)
             file_type = file_type.lower()
-            c.setopt(c.URL, '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}'.format(
+            c.setopt(c.URL, '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}'.format(
                 self.service_url, workspace, file_name, file_type))
             c.setopt(pycurl.HTTPHEADER, [
                      "Content-type:{}".format(content_type)])

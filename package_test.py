@@ -24,8 +24,8 @@ New get requests
 # geo.get_datastore('111', 'demo')
 # geo.get_style('hazard_exp', workspace='geoinformatics_center', )
 # a = geo.get_styles()
-a = geo.create_datastore(
-    'datastore4', r"http://localhost:8080/geoserver/wfs?request=GetCapabilities", workspace='demo', overwrite=True)
+# a = geo.create_datastore(
+#     'datastore4', r"http://localhost:8080/geoserver/wfs?request=GetCapabilities", workspace='demo', overwrite=True)
 # a = geo.create_shp_datastore('aaa', 'default')
 print(a)
 # geo.publish_featurestore('datastore2', 'admin_units', workspace='demo')
@@ -33,7 +33,8 @@ print(a)
 '''
 Coverage (raster)
 '''
-# geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
+geo.create_coveragestore(
+    r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', lyr_name='name_try' overwrite=False)
 #geo.upload_style(r'C:\Users\tek\Desktop\try_sld.sld', sld_version='1.1.0', workspace='try')
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
 # color_ramp1 = {

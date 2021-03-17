@@ -391,7 +391,7 @@ class Geoserver:
 
         file_type = file_type.lower()
 
-        url = '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}'.format(
+        url = '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}'.format(
             self.service_url, workspace, lyr_name, file_type)
 
         headers = {

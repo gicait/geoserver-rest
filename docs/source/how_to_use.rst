@@ -68,7 +68,7 @@ The ``create_shp datastore`` function will be useful for uploading the shapefile
 
 .. code-block:: python3
 
-    geo.create_shp_datastore(path=r'path/to/shp/file.shp', store_name='store', workspace='demo')
+    geo.create_shp_datastore(path=r'path/to/zipped/shp/file.zip', store_name='store', workspace='demo')
 
 
 Create datastore and publish layer

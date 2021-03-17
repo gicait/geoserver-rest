@@ -64,7 +64,7 @@ The new function ``publish_featurestore_sqlview`` is available from geoserver-re
 Create shapefile datastore and publish layer
 -----------------------------------------------
 
-The ``create_shp datastore`` function will be useful for uploading the shapefile and publishing the shapefile as a layer. This function will upload the data to the geoserver ``data_dir`` in ``h2`` database structure and publish it as a layer.
+The ``create_shp datastore`` function will be useful for uploading the shapefile and publishing the shapefile as a layer. This function will upload the data to the geoserver ``data_dir`` in ``h2`` database structure and publish it as a layer. The layer name will be same as the shapefile name.
 
 .. code-block:: python3
 

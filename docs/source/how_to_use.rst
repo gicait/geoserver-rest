@@ -1,47 +1,47 @@
 How to use
 ===========
 
-This library is used for get, create, update and delete workspace, coveragestore, featurestore, styles. Some of the examples are shown below.
+This library is built for getting, creating, updating and deleting workspaces, coveragestores, featurestores, and styles. Some examples are shown below.
 
-Getting start with geoserver-rest
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Getting started with `geoserver-rest`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This following step is used to initialize the library. It takes parameters as geoserver url, username, password.
 
-.. code-block:: python3
+.. code-block:: python
 
     from geo.Geoserver import Geoserver
     geo = Geoserver('http://127.0.0.1:8080/geoserver', username='admin', password='geoserver')
 
-Create workspace
------------------
+Creating workspaces
+-------------------
 
-.. code-block:: python3
+.. code-block:: python
 
     geo.create_workspace(workspace='demo')
 
-
-Create coveragestore
----------------------
+Creating coveragestores
+-----------------------
 
 It is helpful for publishing the raster data to the geoserver. Here if you don't pass the ``lyr_name`` parameter, it will take the raster file name as the layer name.
 
-.. code-block:: python3
+.. code-block:: python
 
     geo.create_coveragestore(lyr_name='layer1', path=r'path\to\raster\file.tif', workspace='demo')
 
 
-**Note:** If your raster is not loading correctly, please make sure you assign the coordinate system for your raster file.
+.. note::
+    If your raster is not loading correctly, please make sure you assign the coordinate system for your raster file.
 
-If the layername already exists in geoserver, you can pass another parameter ``overwrite=True``,
+If the `layername` already exists in geoserver, you can additionall pass the parameter ``overwrite=True``,
 
-.. code-block:: python3
+.. code-block:: python
 
     geo.create_coveragestore(lyr_name='layer1', path=r'path\to\raster\file.tif', workspace='demo', overwrite=True)
 
 
-Create featurestore and publish layer
----------------------------------------
+Creating and publishing featurestores and featurestore layers
+-------------------------------------------------------------
 
 .. _create_featurestore:
 
@@ -61,8 +61,8 @@ The new function ``publish_featurestore_sqlview`` is available from geoserver-re
     geo.publish_featurestore_sqlview(store_name='geo_data', name='view_name', sql=sql, key_column='name', workspace='demo')
 
 
-Create shapefile datastore and publish layer
------------------------------------------------
+Creating and publishing shapefile datastore layers
+--------------------------------------------------
 
 The ``create_shp datastore`` function will be useful for uploading the shapefile and publishing the shapefile as a layer. This function will upload the data to the geoserver ``data_dir`` in ``h2`` database structure and publish it as a layer. The layer name will be same as the shapefile name.
 
@@ -70,16 +70,15 @@ The ``create_shp datastore`` function will be useful for uploading the shapefile
 
     geo.create_shp_datastore(path=r'path/to/zipped/shp/file.zip', store_name='store', workspace='demo')
 
+Creating and publishing datastore layers
+----------------------------------------
 
-Create datastore and publish layer
-------------------------------------
+The ``create_datastore`` function will create the datastore for the specific data. After creating the datastore, you need to publish it as a layer by using ``publish_featurestore`` function. It can take the following type of data path:
 
-The ``create_datastore`` function will create the datastore for the specific data. After creating the datastore, you need to publish it as a layer by using ``publish_featurestore`` function. It can take the following type of data path,
-
-1. Path to shapefile (.shp) file 
-2. Path to GeoPackage (.gpkg) file 
-3. WFS url (http://localhost:8080/geoserver/wfs?request=GetCapabilities) or 
-4. Directory containing shapefiles
+1. Path to shapefile (`.shp`) file;
+2. Path to GeoPackage (`.gpkg`) file;
+3. WFS url (e.g. http://localhost:8080/geoserver/wfs?request=GetCapabilities) or;
+4. Directory containing shapefiles.
 
 If you have PostGIS datastore, please use :ref:`create_featurestore <create_featurestore>` function.
 
@@ -88,7 +87,7 @@ If you have PostGIS datastore, please use :ref:`create_featurestore <create_feat
     geo.create_datastore(name="ds", path=r'path/to/shp/file_name.shp', workspace='demo')
     geo.publish_featurestore(workspace='demo', store_name='ds', pg_table='file_name')
 
-If your data is comming from ``WFS`` url, then use this,
+If your data is coming from ``WFS`` url, then use this,
 
 .. code-block:: python3
 
@@ -96,8 +95,8 @@ If your data is comming from ``WFS`` url, then use this,
     geo.publish_featurestore(workspace='demo', store_name='ds', pg_table='wfs_layer_name')
 
 
-Upload style and publish it
----------------------------------------
+Uploading and publishing styles
+-------------------------------
 
 It is used for uploading ``SLD`` files and publish style. If the style name already exists, you can pass the parameter ``overwrite=True`` to overwrite it. The name of the style will be name of the uploaded file name.
 
@@ -109,24 +108,21 @@ Before uploading ``SLD`` file, please check the version of your sld file. By def
     geo.upload_style(path=r'path\to\sld\file.sld', workspace='demo')
     geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo', sld_version='1.0.0')
 
-
-
-Create Coverage Style based on the raster (Dynamic) and apply style
---------------------------------------------------------------------
+Creating and applying dynamic styles based on the raster coverages
+------------------------------------------------------------------
 
 It is used to create the style file for raster data. You can get the ``color_ramp`` name from `matplotlib colormaps <https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html>`_. By default ``color_ramp='RdYlGn'`` (red to green color ramp).
 
-.. code-block:: python3
+.. code-block:: python
 
     geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn')
     geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
 
 
+.. note::
+    If you have your own custom color and the custom label, you can pass the ``values:color`` pair as below to generate the map with dynamic legend.
 
-**Note:** If you have your own custom color and the custom label, you can pass the ``values:color`` pair as below to generate the map with dynamic legend, 
-
-
-.. code-block:: python3
+.. code-block:: python
 
     c_ramp = {
         'label 1 value': '#ffff55',
@@ -150,12 +146,9 @@ It is used to create the style file for raster data. You can get the ``color_ram
     '''
     geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
 
-
-
-
 For generating the style for ``classified raster``, you can pass the another parameter called ``cmap_type='values'`` as,
 
-.. code-block:: python3
+.. code-block:: python
 
     geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn', cmap_type='values')
 
@@ -194,29 +187,27 @@ For generating the style for ``classified raster``, you can pass the another par
       - For overwriting the previous style file in geoserver   
 
 
-Create featur style
-----------------------
+Creating feature styles
+-----------------------
 
-It is used for creating the style for ``point``, ``line`` and ``polygon`` dynamically. Currently, it supports three different types of feature styles,
+It is used for creating the style for ``point``, ``line`` and ``polygon`` dynamically. It currently supports three different types of feature styles:
 
 1. ``Outline featurestyle``: For creating the style which have only boundary color but not the fill style
 2. ``Catagorized featurestyle``: For creating catagorized dataset
 3. ``Classified featurestyle``: Classify the input data and style it: (For now, it only supports polygon geometry)
 
-
-
-.. code-block:: python3
+.. code-block:: python
 
     geo.create_outline_featurestyle(style_name='new_style' color="#3579b1" geom_type='polygon', workspace='demo')
     geo.create_catagorized_featurestyle(style_name='name_of_style', column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo')
     geo.create_classified_featurestyle(style_name='name_of_style' column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo')
 
-**Note:**
+.. note::
 
-* The ``geom_type`` must be either ``point``, ``line`` or ``polygon``.
-*  The ``color_ramp`` name can be obtained from `matplotlib colormaps <https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html>`_.
+    * The ``geom_type`` must be either ``point``, ``line`` or ``polygon``.
+    * The ``color_ramp`` name can be obtained from `matplotlib colormaps <https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html>`_.
 
-The options for creating catagorized/classified featurestyle are as follows,
+The options for creating categorized/classified `featurestyles` are as follows,
 
 .. list-table:: Options for ``create_catagorized_featurestyle`` and ``create_classified_featurestyle``
     :widths: 15 15 15 55
@@ -268,10 +259,10 @@ The options for creating catagorized/classified featurestyle are as follows,
       - For overwriting the previous style file in geoserver   
 
 
-Some of the delete request examples
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Deletion requests examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python3
+.. code-block:: python
 
     # delete workspace
     geo.delete_workspace(workspace='demo')
@@ -289,10 +280,10 @@ Some of the delete request examples
     geo.delete_style(style_name='kamal2', workspace='demo')
 
 
-Some of the get request examples
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Some get request examples
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python3
+.. code-block:: python
     
     # get geoserver version
     version = geo.get_version()
@@ -351,10 +342,10 @@ Some of the get request examples
     fs = geo.get_featurestore(store_name='sn', workspace='ws')
 
 
-Some of the special function
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Special functions
+^^^^^^^^^^^^^^^^^
 
-.. code-block:: python3
+.. code-block:: python
 
     # Reloads the GeoServer catalog and configuration from disk. This operation is used in cases where an external tool has modified the on-disk configuration. This operation will also force GeoServer to drop any internal caches and reconnect to all data stores.
     geo.reload()
@@ -367,11 +358,10 @@ Some of the special function
 
 
 
-Global parameters for most of the functions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Global parameters for most functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following parameters are the common parameters in most of the functions/methods,
+The following parameters are common to most functions/methods:
 
 * ``workspace``: If workspace is not provided, the function will take the ``default`` workspace.
 * ``overwrite``: This parameter takes only the boolean value. In most of the create method, the ``overwrite`` parameter is available. The default value is ``False``. But if you set it to True, the method will be in update mode. 
-

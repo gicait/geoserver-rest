@@ -2,17 +2,18 @@ Installation
 =============
 
 Conda installation
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
-The ``geoserver-rest`` can be installed from either ``conda-forge`` channel or ``iamtekson`` channel as below,
+The ``geoserver-rest`` can be installed from either ``conda-forge`` channel or ``iamtekson`` channel as below:
 
 .. code-block:: shell
 
     conda install -c conda-forge geoserver-rest
     conda install -c iamtekson geoserver-rest
 
+
 Pip installation
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 For installation of this package, following packages should be installed first:
 
@@ -21,7 +22,7 @@ For installation of this package, following packages should be installed first:
 
 
 Windows installation
-----------------------
+--------------------
 
 In windows, the ``gdal`` and ``pycurl`` dependencies can be install using ``pipwin``,
 
@@ -39,10 +40,10 @@ Now you can install the library using pip install command,
     pip install geoserver-rest
 
 
-Ubuntu installation
----------------------
+Linux installation
+------------------
 
-In ubuntu, The ``gdal`` and ``pycurl`` dependencies can be install using following method,
+In Debian/Ubuntu, ``gdal`` and ``pycurl`` can be installed using following method:
 
 .. code-block:: shell
 
@@ -51,14 +52,8 @@ In ubuntu, The ``gdal`` and ``pycurl`` dependencies can be install using followi
     sudo apt install gdal-bin libgdal-dev python3-pycurl
     pip3 install pygdal=="`gdal-config --version`.*"
 
-
-Now the geoserver-rest library can be installed using pip install command,
+Now the geoserver-rest library can be installed using pip install command:
 
 .. code-block:: shell
 
     pip install geoserver-rest
-
-    
-
-
-  

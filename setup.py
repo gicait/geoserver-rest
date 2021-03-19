@@ -23,6 +23,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
+        'pygments',
         'pycurl',
         'seaborn',
         'gdal',

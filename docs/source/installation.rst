@@ -32,7 +32,7 @@ In windows, the ``gdal`` and ``pycurl`` dependencies can be install using ``pipw
     pipwin refresh
     pipwin install gdal
     pipwin install pycurl
-    
+
 Now you can install the library using pip install command,
 
 .. code-block:: shell

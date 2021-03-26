@@ -172,19 +172,19 @@ For generating the style for ``classified raster``, you can pass the another par
       - path to the raster file (Required)
 
     * - workspace
-      - string 
+      - string
       - None
       - The name of the workspace. Optional field. It will take the default workspace of geoserver if nothing is provided
-    
+
     * - color_ramp
       - string, list, dict
       - RdYiGn
-      - The color ramp name. The name of the color ramp can be found here in `matplotlib colormaps <https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html>`_ 
+      - The color ramp name. The name of the color ramp can be found here in `matplotlib colormaps <https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html>`_
 
     * - overwrite
-      - boolean 
+      - boolean
       - False
-      - For overwriting the previous style file in geoserver   
+      - For overwriting the previous style file in geoserver
 
 
 Creating feature styles
@@ -226,7 +226,7 @@ The options for creating categorized/classified `featurestyles` are as follows,
     * - column_name
       - string
       - None
-      - The name of the column, based on which the style will be generated 
+      - The name of the column, based on which the style will be generated
 
     * - column_distinct_values
       - list/array
@@ -234,29 +234,29 @@ The options for creating categorized/classified `featurestyles` are as follows,
       - The column distinct values based on which the style will be applied/classified. This option is only available for ``create_classified_featurestyle``
 
     * - workspace
-      - string 
+      - string
       - None
       - The name of the workspace. Optional field. It will take the default workspace of geoserver if nothing is provided
-    
+
     * - color_ramp
       - string
       - RdYiGn
-      - The color ramp name. The name of the color ramp can be found here in `matplotlib colormaps <https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html>`_ 
+      - The color ramp name. The name of the color ramp can be found here in `matplotlib colormaps <https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html>`_
 
     * - geom_type
       - string
       - polygon
-      - The geometry type, available options are ``point``, ``line`` or ``polygon`` 
+      - The geometry type, available options are ``point``, ``line`` or ``polygon``
 
     * - outline_color
       - color hex value
       - '#3579b1'
-      - The outline color of the polygon/line 
+      - The outline color of the polygon/line
 
     * - overwrite
-      - boolean 
+      - boolean
       - False
-      - For overwriting the previous style file in geoserver   
+      - For overwriting the previous style file in geoserver
 
 
 Deletion requests examples
@@ -284,7 +284,7 @@ Some get request examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
-    
+
     # get geoserver version
     version = geo.get_version()
     print(version)
@@ -364,4 +364,4 @@ Global parameters for most functions
 The following parameters are common to most functions/methods:
 
 * ``workspace``: If workspace is not provided, the function will take the ``default`` workspace.
-* ``overwrite``: This parameter takes only the boolean value. In most of the create method, the ``overwrite`` parameter is available. The default value is ``False``. But if you set it to True, the method will be in update mode. 
+* ``overwrite``: This parameter takes only the boolean value. In most of the create method, the ``overwrite`` parameter is available. The default value is ``False``. But if you set it to True, the method will be in update mode.

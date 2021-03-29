@@ -1,10 +1,12 @@
 from tempfile import mkstemp
 from zipfile import ZipFile
 import os
+from typing import Dict
 
 
-def prepare_zip_file(name, data):
-    """
+def prepare_zip_file(name: str, data: Dict):
+    """Creates a zip file from
+
     GeoServer's REST API uses ZIP archives as containers for file formats such
     as Shapefile and WorldImage which include several 'boxcar' files alongside
     the main data.  In such archives, GeoServer assumes that all of the relevant
@@ -13,6 +15,15 @@ def prepare_zip_file(name, data):
     these expectations, based on a basename, and a dict of extensions to paths or
     file-like objects. The client code is responsible for deleting the zip
     archive when it's done.
+
+    Parameters
+    ----------
+    name : name of files
+    data : dict
+
+    Returns
+    -------
+    str
     """
     fd, path = mkstemp()
     zip_file = ZipFile(path, "w", allowZip64=True)

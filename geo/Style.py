@@ -1,5 +1,3 @@
-import pycurl
-import os
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 

@@ -1,7 +1,7 @@
 import os
 
 try:
-    from osgeo import gdal
+    from osgeo import gdal  # noqa
 except ImportError:
     import gdal
 

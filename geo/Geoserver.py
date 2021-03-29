@@ -32,6 +32,16 @@ class FileReader:
 
 
 class Geoserver:
+    """
+    Attributes
+    ----------
+    service_url : str
+        The URL for the GeoServer instance.
+    username : str
+        Login name for session.
+    password: str
+        Password for session.
+    """
     def __init__(
         self,
         service_url="http://localhost:8080/geoserver",
@@ -44,7 +54,7 @@ class Geoserver:
 
     def get_manifest(self):
         """
-        It returns the manifest of the geoserver
+        Returns the manifest of the geoserver.
         """
         try:
             url = "{}/rest/about/manifest.json".format(self.service_url)
@@ -52,11 +62,11 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return ("get_manifest error: ", e)
+            return "get_manifest error: ", e
 
     def get_version(self):
         """
-        It returns the version of the geoserver
+        Returns the version of the geoserver.
         """
         try:
             url = "{}/rest/about/version.json".format(self.service_url)
@@ -64,11 +74,11 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return ("get_version error: ", e)
+            return "get_version error: ", e
 
     def get_status(self):
         """
-        It returns the status of the geoserver
+        Returns the status of the geoserver.
         """
         try:
             url = "{}/rest/about/status.json".format(self.service_url)
@@ -76,7 +86,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return ("get_status error: ", e)
+            return "get_status error: ", e
 
     def get_system_status(self):
         """
@@ -88,11 +98,14 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return ("get_system_status error: ", e)
+            return "get_system_status error: ", e
 
     def reload(self):
         """
-        Reloads the GeoServer catalog and configuration from disk. This operation is used in cases where an external tool has modified the on-disk configuration. This operation will also force GeoServer to drop any internal caches and reconnect to all data stores.
+        Reloads the GeoServer catalog and configuration from disk.
+
+        This operation is used in cases where an external tool has modified the on-disk configuration.
+        This operation will also force GeoServer to drop any internal caches and reconnect to all data stores.
         curl -X POST http://localhost:8080/geoserver/rest/reload -H  "accept: application/json" -H  "content-type: application/json"
         """
         try:
@@ -105,7 +118,10 @@ class Geoserver:
 
     def reset(self):
         """
-        Resets all store, raster, and schema caches. This operation is used to force GeoServer to drop all caches and store connections and reconnect to each of them the next time they are needed by a request. This is useful in case the stores themselves cache some information about the data structures they manage that may have changed in the meantime.
+        Resets all store, raster, and schema caches. This operation is used to force GeoServer to drop all caches and
+        store connections and reconnect to each of them the next time they are needed by a request. This is useful in
+        case the stores themselves cache some information about the data structures they manage that may have changed
+        in the meantime.
         curl -X POST http://localhost:8080/geoserver/rest/reset -H  "accept: application/json" -H  "content-type: application/json"
         """
         try:
@@ -116,9 +132,10 @@ class Geoserver:
         except Exception as e:
             return "reload error: {}".format(e)
 
-    def get_datastore(self, store_name, workspace=None):
+    def get_datastore(self, store_name: str, workspace: str = None):
         """
-        data store in given workspace
+        Return the data store in a given workspace.
+
         If workspace is not provided, it will take the default workspace
         curl -X GET http://localhost:8080/geoserver/rest/workspaces/demo/datastores -H  "accept: application/xml" -H  "content-type: application/json"
         """
@@ -136,9 +153,10 @@ class Geoserver:
         except Exception as e:
             return "get_datastores error: {}".format(e)
 
-    def get_datastores(self, workspace=None):
+    def get_datastores(self, workspace: str = None):
         """
-        List all data stores in workspace ws.
+        List all data stores in a workspace.
+
         If workspace is not provided, it will listout all the datastores inside default workspace
         curl -X GET http://localhost:8080/geoserver/rest/workspaces/demo/datastores -H  "accept: application/xml" -H  "content-type: application/json"
         """
@@ -155,9 +173,9 @@ class Geoserver:
         except Exception as e:
             return "get_datastores error: {}".format(e)
 
-    def get_coveragestore(self, coveragestore_name, workspace=None):
+    def get_coveragestore(self, coveragestore_name: str, workspace: str = None):
         """
-        It returns the store name if exist
+        Returns the store name if it exists.
         """
         try:
             payload = {"recurse": "true"}
@@ -174,9 +192,9 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def get_coveragestores(self, workspace=None):
+    def get_coveragestores(self, workspace: str = None):
         """
-        Get all the coveragestores inside specific workspace
+        Returns all the coveragestores inside a specific workspace.
         """
         try:
             if workspace is None:
@@ -191,9 +209,9 @@ class Geoserver:
         except Exception as e:
             return "get_coveragestores error: {}".format(e)
 
-    def get_layer(self, layer_name, workspace=None):
+    def get_layer(self, layer_name: str, workspace: str = None):
         """
-        Get the layer by layer name
+        Returns the layer by layer name.
         """
         try:
             url = "{}/rest/layers/{}".format(self.service_url, layer_name)
@@ -208,7 +226,7 @@ class Geoserver:
         except Exception as e:
             return "get_layer error: {}".format(e)
 
-    def get_layers(self, workspace=None):
+    def get_layers(self, workspace: str = None):
         """
         Get all the layers from geoserver
         If workspace is None, it will listout all the layers from geoserver
@@ -224,10 +242,13 @@ class Geoserver:
         except Exception as e:
             return "get_layers error: {}".format(e)
 
-    def get_layergroups(self, workspace=None):
+    def get_layergroups(self, workspace: str = None):
         """
-        Get all the layer groups from geoserver
-        If workspace is None, it will listout all the layer groups from geoserver
+        Returns all the layer groups from geoserver.
+
+        Notes
+        -----
+        If workspace is None, it will list all the layer groups from geoserver.
         """
         try:
             url = "{}/rest/layergroups".format(self.service_url)
@@ -242,9 +263,9 @@ class Geoserver:
         except Exception as e:
             return "get_layers error: {}".format(e)
 
-    def get_layergroup(self, layer_name, workspace=None):
+    def get_layergroup(self, layer_name: str, workspace: str = None):
         """
-        Get the layer group by layer group name
+        Returns the layer group by layer group name.
         """
         try:
             url = "{}/rest/layergroups/{}".format(self.service_url, layer_name)
@@ -261,7 +282,7 @@ class Geoserver:
 
     def get_style(self, style_name, workspace=None):
         """
-        Get the style by style name
+        Returns the style by style name.
         """
         try:
             url = "{}/rest/styles/{}.json".format(self.service_url, style_name)
@@ -278,7 +299,7 @@ class Geoserver:
 
     def get_styles(self, workspace=None):
         """
-        Get all the styles from geoserver
+        Returns all loaded styles from geoserver.
         """
         try:
             url = "{}/rest/styles.json".format(self.service_url)
@@ -295,7 +316,7 @@ class Geoserver:
 
     def get_default_workspace(self):
         """
-        Get the default workspace
+        Returns the default workspace.
         """
         try:
             url = "{}/rest/workspaces/default".format(self.service_url)
@@ -307,7 +328,7 @@ class Geoserver:
 
     def get_workspaces(self):
         """
-        Get all the workspaces
+        Returns all the workspaces.
         """
         try:
             url = "{}/rest/workspaces".format(self.service_url)
@@ -317,9 +338,9 @@ class Geoserver:
         except Exception as e:
             return "get_workspaces error: {}".format(e)
 
-    def set_default_workspace(self, workspace):
+    def set_default_workspace(self, workspace: str):
         """
-        Set the default workspace
+        Set the default workspace.
         """
         try:
             url = "{}/rest/workspaces/default".format(self.service_url)
@@ -340,9 +361,11 @@ class Geoserver:
         except Exception as e:
             return "reload error: {}".format(e)
 
-    def create_workspace(self, workspace):
+    def create_workspace(self, workspace: str):
         """
-        Create a new workspace in geoserver, geoserver workspace url will be same as name of the workspace
+        Create a new workspace in geoserver.
+
+        The geoserver workspace url will be same as the name of the workspace.
         """
         try:
             url = "{}/rest/workspaces".format(self.service_url)
@@ -364,9 +387,10 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def get_workspace(self, workspace):
+    def get_workspace(self, workspace: str):
         """
-        get name  workspace if exist
+        Get workspace name if it exists.
+
         Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
         """
         try:
@@ -384,15 +408,27 @@ class Geoserver:
     def create_coveragestore(
         self,
         path,
-        workspace=None,
-        lyr_name=None,
-        file_type="GeoTIFF",
-        content_type="image/tiff",
-        overwrite=False,
+        workspace: str = None,
+        layer_name: str = None,
+        file_type: str = "GeoTIFF",
+        content_type: str = "image/tiff",
+        overwrite: bool = False,
     ):
         """
-        created the coveragestore, data will uploaded to the server
-        the name parameter will be the name of coveragestore (coveragestore name will be assigned as the file name incase of not providing name parameter)
+        Creates the coveragestore; Data will uploaded to the server.
+
+        Parameters
+        ----------
+        path : str
+        workspace : str
+        layer_name : str
+            The name of coveragestore. If not provided, parsed from the file name.
+        file_type : str
+        content_type : str
+        overwrite : bool
+
+        Notes
+        -----
         the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
         """
 
@@ -402,8 +438,8 @@ class Geoserver:
 
             c = pycurl.Curl()
 
-            if lyr_name:
-                file_name = lyr_name
+            if layer_name:
+                file_name = layer_name
 
             else:
                 file_name = os.path.basename(path)
@@ -437,20 +473,34 @@ class Geoserver:
 
     def create_featurestore(
         self,
-        store_name,
-        workspace=None,
-        db="postgres",
-        host="localhost",
-        port=5432,
-        schema="public",
-        pg_user="postgres",
-        pg_password="admin",
-        overwrite=False,
+        store_name: str,
+        workspace: str = None,
+        db: str = "postgres",
+        host: str = "localhost",
+        port: int = 5432,
+        schema: str = "public",
+        pg_user: str = "postgres",
+        pg_password: str = "admin",
+        overwrite: bool = False,
     ):
         """
-        Postgis store for connecting postgres with geoserver
-        After creating feature store, you need to publish it
-        Input parameters:specify the store name you want to be created, the postgis database parameters including host, port, database name, schema, user and password,
+        Create PostGIS store for connecting postgres with geoserver.
+
+        Parameters
+        ----------
+        store_name : str
+        workspace : str
+        db : str
+        host : str
+        port : int
+        schema : str
+        pg_user : str
+        pg_password : str
+        overwrite : bool
+
+        Notes
+        -----
+        After creating feature store, you need to publish it.
         """
         try:
             if workspace is None:
@@ -494,18 +544,25 @@ class Geoserver:
         except Exception as e:
             return "Error:%s" % str(e)
 
-    def create_datastore(self, name, path, workspace=None, overwrite=False):
+    def create_datastore(self, name: str, path: str, workspace: str = None, overwrite: bool = False):
         """
-        The path referes as path to,
-            1. shapefile (.shp) file or
-            2. GeoPackage (.gpkg) file or
-            3. WFS url (http://localhost:8080/geoserver/wfs?request=GetCapabilities) or
-            4. directory containing shapefiles.
+        Create a datastore within the GeoServer.
 
+        Parameters
+        ----------
+        name : str
+            Name of datastore to be created.
+            After creating the datastore, you need to publish it by using publish_featurestore function.
+        path : str
+            Path to shapefile (.shp) file, GeoPackage (.gpkg) file, WFS url
+            (e.g. http://localhost:8080/geoserver/wfs?request=GetCapabilities) or directory containing shapefiles.
+        workspace : str
+            Default: "default".
+        overwrite : bool
+
+        Notes
+        -----
         If you have PostGIS datastore, please use create_featurestore function
-
-        The name referes as name of the datastore
-        After creating the datastore, you need to publish it by using publish_featurestore function
         """
         if workspace is None:
             workspace = "default"
@@ -524,7 +581,6 @@ class Geoserver:
         headers = {"content-type": "text/xml"}
 
         try:
-            r = None
             if overwrite:
                 url = "{}/rest/workspaces/{}/datastores/{}".format(
                     self.service_url, workspace, name
@@ -551,11 +607,23 @@ class Geoserver:
             return "Error create_datastore: {}".format(e)
 
     def create_shp_datastore(
-        self, path, store_name=None, workspace=None, file_format="shp"
+        self, path, store_name=None, workspace=None, file_extension="shp"
     ):
         """
-        Create the datastore for shapefile
-        Path refers to the path to the zipped shapefile
+        Create datastore for a shapefile.
+
+        Parameters
+        ----------
+        path : str
+            Path to the zipped shapefile (.shp).
+        store_name : str
+            Name of store to be created. If None, parses from the filename stem.
+        workspace: str
+            Name of workspace to be used. Default: "default".
+        file_extension : str
+
+        Notes
+        -----
         The layer name will be assigned according to the shp name
         """
         try:
@@ -580,7 +648,7 @@ class Geoserver:
                 path = prepare_zip_file(store_name, path)
 
             url = "{0}/rest/workspaces/{1}/datastores/{2}/file.{3}?filename={2}&update=overwrite".format(
-                self.service_url, workspace, store_name, file_format
+                self.service_url, workspace, store_name, file_extension
             )
 
             with open(path, "rb") as f:
@@ -614,6 +682,7 @@ class Geoserver:
             c = pycurl.Curl()
             layer_xml = "<featureType><name>{}</name></featureType>".format(pg_table)
             c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
+
             # connecting with the specified store in geoserver
             c.setopt(
                 c.URL,

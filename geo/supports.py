@@ -4,7 +4,7 @@ import os
 from typing import Dict
 
 
-def prepare_zip_file(name: str, data: Dict):
+def prepare_zip_file(name: str, data: Dict) -> str:
     """Creates a zip file from
 
     GeoServer's REST API uses ZIP archives as containers for file formats such

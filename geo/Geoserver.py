@@ -1,8 +1,11 @@
-import pycurl
 import os
+from typing import Optional
+
+import pycurl
 import requests
-from .Style import coverage_style_xml, outline_only_xml, catagorize_xml, classified_xml
+
 from .Calculation_gdal import raster_value
+from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
 from .supports import prepare_zip_file
 
 
@@ -132,7 +135,7 @@ class Geoserver:
         except Exception as e:
             return "reload error: {}".format(e)
 
-    def get_datastore(self, store_name: str, workspace: str = None):
+    def get_datastore(self, store_name: str, workspace: Optional[str] = None):
         """
         Return the data store in a given workspace.
 
@@ -153,7 +156,7 @@ class Geoserver:
         except Exception as e:
             return "get_datastores error: {}".format(e)
 
-    def get_datastores(self, workspace: str = None):
+    def get_datastores(self, workspace: Optional[str] = None):
         """
         List all data stores in a workspace.
 
@@ -173,7 +176,7 @@ class Geoserver:
         except Exception as e:
             return "get_datastores error: {}".format(e)
 
-    def get_coveragestore(self, coveragestore_name: str, workspace: str = None):
+    def get_coveragestore(self, coveragestore_name: str, workspace: Optional[str] = None):
         """
         Returns the store name if it exists.
         """
@@ -209,7 +212,7 @@ class Geoserver:
         except Exception as e:
             return "get_coveragestores error: {}".format(e)
 
-    def get_layer(self, layer_name: str, workspace: str = None):
+    def get_layer(self, layer_name: str, workspace: Optional[str] = None):
         """
         Returns the layer by layer name.
         """
@@ -226,7 +229,7 @@ class Geoserver:
         except Exception as e:
             return "get_layer error: {}".format(e)
 
-    def get_layers(self, workspace: str = None):
+    def get_layers(self, workspace: Optional[str] = None):
         """
         Get all the layers from geoserver
         If workspace is None, it will listout all the layers from geoserver
@@ -242,7 +245,7 @@ class Geoserver:
         except Exception as e:
             return "get_layers error: {}".format(e)
 
-    def get_layergroups(self, workspace: str = None):
+    def get_layergroups(self, workspace: Optional[str] = None):
         """
         Returns all the layer groups from geoserver.
 
@@ -263,7 +266,7 @@ class Geoserver:
         except Exception as e:
             return "get_layers error: {}".format(e)
 
-    def get_layergroup(self, layer_name: str, workspace: str = None):
+    def get_layergroup(self, layer_name: str, workspace: Optional[str] = None):
         """
         Returns the layer group by layer group name.
         """
@@ -280,7 +283,7 @@ class Geoserver:
         except Exception as e:
             return "get_layer error: {}".format(e)
 
-    def get_style(self, style_name, workspace=None):
+    def get_style(self, style_name, workspace: Optional[str] = None):
         """
         Returns the style by style name.
         """
@@ -297,7 +300,7 @@ class Geoserver:
         except Exception as e:
             return "get_style error: {}".format(e)
 
-    def get_styles(self, workspace=None):
+    def get_styles(self, workspace: Optional[str] = None):
         """
         Returns all loaded styles from geoserver.
         """
@@ -408,8 +411,8 @@ class Geoserver:
     def create_coveragestore(
         self,
         path,
-        workspace: str = None,
-        layer_name: str = None,
+        workspace: Optional[str] = None,
+        layer_name: Optional[str] = None,
         file_type: str = "GeoTIFF",
         content_type: str = "image/tiff",
         overwrite: bool = False,
@@ -420,8 +423,8 @@ class Geoserver:
         Parameters
         ----------
         path : str
-        workspace : str
-        layer_name : str
+        workspace : str, optional
+        layer_name : str, optional
             The name of coveragestore. If not provided, parsed from the file name.
         file_type : str
         content_type : str
@@ -474,7 +477,7 @@ class Geoserver:
     def create_featurestore(
         self,
         store_name: str,
-        workspace: str = None,
+        workspace: Optional[str] = None,
         db: str = "postgres",
         host: str = "localhost",
         port: int = 5432,
@@ -489,7 +492,7 @@ class Geoserver:
         Parameters
         ----------
         store_name : str
-        workspace : str
+        workspace : str, optional
         db : str
         host : str
         port : int
@@ -544,7 +547,7 @@ class Geoserver:
         except Exception as e:
             return "Error:%s" % str(e)
 
-    def create_datastore(self, name: str, path: str, workspace: str = None, overwrite: bool = False):
+    def create_datastore(self, name: str, path: str, workspace: Optional[str] = None, overwrite: bool = False):
         """
         Create a datastore within the GeoServer.
 
@@ -556,7 +559,7 @@ class Geoserver:
         path : str
             Path to shapefile (.shp) file, GeoPackage (.gpkg) file, WFS url
             (e.g. http://localhost:8080/geoserver/wfs?request=GetCapabilities) or directory containing shapefiles.
-        workspace : str
+        workspace : str, optional
             Default: "default".
         overwrite : bool
 
@@ -607,7 +610,7 @@ class Geoserver:
             return "Error create_datastore: {}".format(e)
 
     def create_shp_datastore(
-        self, path, store_name=None, workspace=None, file_extension="shp"
+        self, path: str, store_name: Optional[str] = None, workspace: Optional[str] = None, file_extension: str = "shp"
     ):
         """
         Create datastore for a shapefile.
@@ -616,9 +619,9 @@ class Geoserver:
         ----------
         path : str
             Path to the zipped shapefile (.shp).
-        store_name : str
+        store_name : str, optional
             Name of store to be created. If None, parses from the filename stem.
-        workspace: str
+        workspace: str, optional
             Name of workspace to be used. Default: "default".
         file_extension : str
 
@@ -670,8 +673,20 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def publish_featurestore(self, store_name, pg_table, workspace=None):
+    def publish_featurestore(self, store_name: str, pg_table: str, workspace: Optional[str] = None):
         """
+
+        Parameters
+        ----------
+        store_name : str
+        pg_table : str
+        workspace : str, optional
+
+        Returns
+        -------
+
+        Notes
+        -----
         Only user for postgis vector data
         input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
         """
@@ -710,6 +725,22 @@ class Geoserver:
         geom_type="Geometry",
         workspace=None,
     ):
+        """
+
+        Parameters
+        ----------
+        name
+        store_name
+        sql
+        key_column
+        geom_name
+        geom_type
+        workspace
+
+        Returns
+        -------
+
+        """
         try:
             if workspace is None:
                 workspace = "default"
@@ -760,6 +791,20 @@ class Geoserver:
         self, path, name=None, workspace=None, sld_version="1.0.0", overwrite=False
     ):
         """
+
+        Parameters
+        ----------
+        path
+        name
+        workspace
+        sld_version
+        overwrite
+
+        Returns
+        -------
+
+        Notes
+        -----
         The name of the style file will be, sld_name:workspace
         This function will create the style file in a specified workspace.
         Inputs: path to the sld_file, workspace,
@@ -816,6 +861,17 @@ class Geoserver:
             return "Error: {}".format(e)
 
     def get_featuretypes(self, workspace=None, store_name=None):
+        """
+
+        Parameters
+        ----------
+        workspace
+        store_name
+
+        Returns
+        -------
+
+        """
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes.json".format(
             self.service_url, workspace, store_name
         )
@@ -827,6 +883,18 @@ class Geoserver:
         return features
 
     def get_feature_attribute(self, feature_type_name, workspace=None, store_name=None):
+        """
+
+        Parameters
+        ----------
+        feature_type_name
+        workspace
+        store_name
+
+        Returns
+        -------
+
+        """
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.json".format(
             self.service_url, workspace, store_name, feature_type_name
         )
@@ -862,6 +930,22 @@ class Geoserver:
         overwrite=False,
     ):
         """
+
+        Parameters
+        ----------
+        raster_path
+        style_name
+        workspace
+        color_ramp
+        cmap_type
+        number_of_classes
+        overwrite
+
+        Returns
+        -------
+
+        Notes
+        -----
         The name of the style file will be, rasterName:workspace
         This function will dynamically create the style file for raster.
         Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determins the number of class, min for minimum value of the raster, max for the max value of raster
@@ -933,6 +1017,20 @@ class Geoserver:
         overwrite=False,
     ):
         """
+
+        Parameters
+        ----------
+        style_name
+        column_name
+        column_distinct_values
+        workspace
+        color_ramp
+        geom_type
+        outline_color
+        overwrite
+
+        Notes
+        -----
         Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
         Inputs: column_name (based on which column style should be generated), workspace,
@@ -997,6 +1095,20 @@ class Geoserver:
         overwrite=False,
     ):
         """
+
+        Parameters
+        ----------
+        style_name
+        color
+        geom_type
+        workspace
+        overwrite
+
+        Returns
+        -------
+
+        Notes
+        -----
         Dynamically create the style for postgis geometry
         The geometry type must be point, line or polygon
         Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
@@ -1051,13 +1163,27 @@ class Geoserver:
         style_name,
         column_name,
         column_distinct_values,
-        workspace=None,
-        color_ramp="tab20",
-        geom_type="polygon",
-        outline_color="#3579b1",
-        overwrite=False,
+        workspace: Optional[str] = None,
+        color_ramp: str = "tab20",
+        geom_type: str = "polygon",
+        outline_color: str = "#3579b1",
+        overwrite: bool = False,
     ):
         """
+
+        Parameters
+        ----------
+        style_name
+        column_name
+        column_distinct_values
+        workspace
+        color_ramp
+        geom_type
+        outline_color
+        overwrite
+
+        Notes
+        -----
         Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
         Inputs: column_name (based on which column style should be generated), workspace,
@@ -1120,11 +1246,22 @@ class Geoserver:
             return "Error: {}".format(e)
 
     # def create_featurestyle()
-    def publish_style(self, layer_name, style_name, workspace, content_type="text/xml"):
-        """
-        publishing a raster file to geoserver
-        the coverage store will be created automatically as the same name as the raster layer name.
-        input parameters: the parameters connecting geoserver (user,password, url and workspace name),the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
+    def publish_style(self, layer_name: str, style_name: str, workspace: str, content_type: str = "text/xml"):
+        """Publish a raster file to geoserver.
+
+        Parameters
+        ----------
+        layer_name : str
+        style_name : str
+        workspace : str
+        content_type : str
+
+        Notes
+        -----
+        The coverage store will be created automatically as the same name as the raster layer name.
+        input parameters: the parameters connecting geoserver (user,password, url and workspace name),
+        the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type.
+
         """
 
         try:
@@ -1149,7 +1286,17 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_workspace(self, workspace):
+    def delete_workspace(self, workspace: str):
+        """
+
+        Parameters
+        ----------
+        workspace : str
+
+        Returns
+        -------
+
+        """
         try:
             payload = {"recurse": "true"}
             url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
@@ -1164,7 +1311,15 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_layer(self, layer_name, workspace=None):
+    def delete_layer(self, layer_name: str , workspace: Optional[str] = None):
+        """
+
+        Parameters
+        ----------
+        layer_name : str
+        workspace : str, optional
+
+        """
         try:
             payload = {"recurse": "true"}
             url = "{}/rest/workspaces/{}/layers/{}".format(
@@ -1185,7 +1340,15 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_featurestore(self, featurestore_name, workspace):
+    def delete_featurestore(self, featurestore_name: str, workspace: Optional[str] = None):
+        """
+
+        Parameters
+        ----------
+        featurestore_name : str
+        workspace : str, optional
+
+        """
         try:
             payload = {"recurse": "true"}
             url = "{}/rest/workspaces/{}/datastores/{}".format(
@@ -1208,7 +1371,15 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_coveragestore(self, coveragestore_name, workspace):
+    def delete_coveragestore(self, coveragestore_name: str, workspace: Optional[str] = None):
+        """
+
+        Parameters
+        ----------
+        coveragestore_name : str
+        workspace : str, optional
+
+        """
         try:
             payload = {"recurse": "true"}
             url = "{}/rest/workspaces/{}/coveragestores/{}".format(
@@ -1233,7 +1404,14 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_style(self, style_name, workspace=None):
+    def delete_style(self, style_name, workspace: Optional[str] = None):
+        """
+
+        Parameters
+        ----------
+        style_name : str
+        workspace : str, optional
+        """
         try:
             payload = {"recurse": "true"}
             url = "{}/rest/workspaces/{}/styles/{}".format(

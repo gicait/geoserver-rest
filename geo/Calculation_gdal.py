@@ -3,7 +3,7 @@ import os
 try:
     from osgeo import gdal  # noqa
 except ImportError:
-    import gdal
+    import gdal  # noqa
 
 
 def raster_value(path):
@@ -15,11 +15,11 @@ def raster_value(path):
         gtif = gdal.Open(path)
         srcband = gtif.GetRasterBand(1)
         srcband.ComputeStatistics(0)
-        N = srcband.GetMaximum() - srcband.GetMinimum() + 1
-        N = int(N)
-        min = srcband.GetMinimum()
-        max = srcband.GetMaximum()
-        result = {"N": N, "min": min, "max": max, "file_name": file_name}
+        n = srcband.GetMaximum() - srcband.GetMinimum() + 1
+        n = int(n)
+        min_value = srcband.GetMinimum()
+        max_value = srcband.GetMaximum()
+        result = {"N": n, "min": min_value, "max": max_value, "file_name": file_name}
         return result
 
     else:

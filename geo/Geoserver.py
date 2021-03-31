@@ -45,6 +45,7 @@ class Geoserver:
     password: str
         Password for session.
     """
+
     def __init__(
         self,
         service_url="http://localhost:8080/geoserver",
@@ -176,7 +177,9 @@ class Geoserver:
         except Exception as e:
             return "get_datastores error: {}".format(e)
 
-    def get_coveragestore(self, coveragestore_name: str, workspace: Optional[str] = None):
+    def get_coveragestore(
+        self, coveragestore_name: str, workspace: Optional[str] = None
+    ):
         """
         Returns the store name if it exists.
         """
@@ -547,7 +550,13 @@ class Geoserver:
         except Exception as e:
             return "Error:%s" % str(e)
 
-    def create_datastore(self, name: str, path: str, workspace: Optional[str] = None, overwrite: bool = False):
+    def create_datastore(
+        self,
+        name: str,
+        path: str,
+        workspace: Optional[str] = None,
+        overwrite: bool = False,
+    ):
         """
         Create a datastore within the GeoServer.
 
@@ -610,7 +619,11 @@ class Geoserver:
             return "Error create_datastore: {}".format(e)
 
     def create_shp_datastore(
-        self, path: str, store_name: Optional[str] = None, workspace: Optional[str] = None, file_extension: str = "shp"
+        self,
+        path: str,
+        store_name: Optional[str] = None,
+        workspace: Optional[str] = None,
+        file_extension: str = "shp",
     ):
         """
         Create datastore for a shapefile.
@@ -673,7 +686,9 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def publish_featurestore(self, store_name: str, pg_table: str, workspace: Optional[str] = None):
+    def publish_featurestore(
+        self, store_name: str, pg_table: str, workspace: Optional[str] = None
+    ):
         """
 
         Parameters
@@ -952,12 +967,17 @@ class Geoserver:
         """
         try:
             raster = raster_value(raster_path)
-            min = raster["min"]
-            max = raster["max"]
+            min_value = raster["min"]
+            max_value = raster["max"]
             if style_name is None:
                 style_name = raster["file_name"]
             coverage_style_xml(
-                color_ramp, style_name, cmap_type, min, max, number_of_classes
+                color_ramp,
+                style_name,
+                cmap_type,
+                min_value,
+                max_value,
+                number_of_classes,
             )
             style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
                 style_name, style_name + ".sld"
@@ -1246,7 +1266,13 @@ class Geoserver:
             return "Error: {}".format(e)
 
     # def create_featurestyle()
-    def publish_style(self, layer_name: str, style_name: str, workspace: str, content_type: str = "text/xml"):
+    def publish_style(
+        self,
+        layer_name: str,
+        style_name: str,
+        workspace: str,
+        content_type: str = "text/xml",
+    ):
         """Publish a raster file to geoserver.
 
         Parameters
@@ -1311,7 +1337,7 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_layer(self, layer_name: str , workspace: Optional[str] = None):
+    def delete_layer(self, layer_name: str, workspace: Optional[str] = None):
         """
 
         Parameters
@@ -1340,7 +1366,9 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_featurestore(self, featurestore_name: str, workspace: Optional[str] = None):
+    def delete_featurestore(
+        self, featurestore_name: str, workspace: Optional[str] = None
+    ):
         """
 
         Parameters
@@ -1371,7 +1399,9 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_coveragestore(self, coveragestore_name: str, workspace: Optional[str] = None):
+    def delete_coveragestore(
+        self, coveragestore_name: str, workspace: Optional[str] = None
+    ):
         """
 
         Parameters

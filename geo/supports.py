@@ -1,5 +1,6 @@
 from tempfile import mkstemp
 from zipfile import ZipFile
+import os
 
 
 def prepare_zip_file(name, data):
@@ -14,11 +15,11 @@ def prepare_zip_file(name, data):
     archive when it's done.
     """
     fd, path = mkstemp()
-    zip_file = ZipFile(path, 'w', allowZip64=True)
+    zip_file = ZipFile(path, "w", allowZip64=True)
     print(fd, path, zip_file, data)
     for ext, stream in data.items():
-        fname = "{0}.{1}".format(name, ext)
-        if (isinstance(stream, string_types)):
+        fname = "{}.{}".format(name, ext)
+        if isinstance(stream, str):
             zip_file.write(stream, fname)
         else:
             zip_file.writestr(fname, stream.read())

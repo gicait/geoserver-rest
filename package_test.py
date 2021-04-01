@@ -2,18 +2,18 @@ from geo.Geoserver import Geoserver
 from geo.Postgres import Db
 from geo.Style import catagorize_xml, classified_xml
 
-'''
+"""
 Connection
-'''
+"""
 geo = Geoserver('http://127.0.0.1:8080/geoserver',
                 username='admin', password='geoserver')
 # pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
 # geo.create_workspace('demo2')
 # geo.get_workspace('itc2')
 
-'''
+"""
 New get requests
-'''
+"""
 # geo.get_version()
 # geo.get_manifest()
 # geo.get_status()
@@ -34,9 +34,9 @@ a = geo.create_geotiff_coveragestore(path=r'C:\Users\tek\Desktop\try\geoserver-r
 print(a)
 # geo.publish_featurestore('datastore2', 'admin_units', workspace='demo')
 
-'''
+"""
 Coverage (raster)
-'''
+"""
 # geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\try_sld.sld', sld_version='1.1.0', workspace='try')
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
@@ -50,9 +50,9 @@ Coverage (raster)
 #                          workspace='demo', color_ramp=color_ramp1, cmap_type='values', overwrite=True)
 
 
-'''
+"""
 Features (vector)
-'''
+"""
 # geo.create_featurestore(store_name='fdemo', workspace='demo')
 # geo.publish_featurestore('fdemo','zones','demo')
 # a = geo.get_featuretypes(workspace='demo', store_name='fdemo')
@@ -75,9 +75,9 @@ Feature styles
 # catagorize_xml('kamal', [1,2,3,4,5,6,7], num_of_class=30, geom_type='line')
 # geo.create_catagorized_featurestyle('kamal2', [1,2,3,4,5,6,7], workspace='demo')
 
-'''
+"""
 Postgres
-'''
+"""
 # print(pg.get_columns_names('zones'))
 # print(pg.get_all_values('zones', 'shape_area'))
 # pg.create_schema('kamal kshetri')
@@ -86,9 +86,9 @@ Postgres
 # a = pg.get_all_values('jamoat-db', 'shape_area')[5]
 # print(a)
 
-'''
+"""
 Delete request
-'''
+"""
 # geo.delete_workspace(workspace='demo')
 # geo.delete_layer(layer_name='agri_final_proj', workspace='demo')
 # geo.delete_featurestore(featurestore_name='feature_store', workspace='demo')
@@ -96,7 +96,7 @@ Delete request
 # geo.delete_style(style_name='kamal2', workspace='demo')
 
 
-'''
+"""
 others
-'''
+"""
 # classified_xml('test', 'kamal', [4,5,3,12], color_ramp='hot')

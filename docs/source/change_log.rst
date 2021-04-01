@@ -1,7 +1,14 @@
 Change Log
 =============
 
-``[V1.5.2] - 2021-11-03``
+``[V-master]``
+^^^^^^^^^^^^^^^
+
+* Documentation adjustments (bunch of Sphinx-docs formatting fixes and English corrections)
+* Add black and pre-commit
+
+
+``[V1.5.2] - 2020-11-03``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``New features``

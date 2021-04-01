@@ -732,28 +732,25 @@ class Geoserver:
 
     def publish_featurestore_sqlview(
         self,
-        name,
-        store_name,
-        sql,
-        key_column=None,
-        geom_name="geom",
-        geom_type="Geometry",
-        workspace=None,
+        name : str,
+        store_name : str,
+        sql: str,
+        key_column: str,
+        geom_name: str = "geom",
+        geom_type: str = "Geometry",
+        workspace: Optional[str] = None,
     ):
         """
 
         Parameters
         ----------
-        name
-        store_name
-        sql
-        key_column
-        geom_name
-        geom_type
-        workspace
-
-        Returns
-        -------
+        name : str
+        store_name : str
+        sql : str
+        key_column : str
+        geom_name : str
+        geom_type : str
+        workspace : str, optional
 
         """
         try:
@@ -803,20 +800,17 @@ class Geoserver:
             return "Error:%s" % str(e)
 
     def upload_style(
-        self, path, name=None, workspace=None, sld_version="1.0.0", overwrite=False
+        self, path: str, name: Optional[str] = None, workspace: Optional[str] = None, sld_version: str ="1.0.0", overwrite: bool = False
     ):
         """
 
         Parameters
         ----------
-        path
-        name
-        workspace
-        sld_version
-        overwrite
-
-        Returns
-        -------
+        path : str
+        name : str, optional
+        workspace : str, optional
+        sld_version : str
+        overwrite : bool
 
         Notes
         -----
@@ -839,7 +833,7 @@ class Geoserver:
                 sld_content_type = "application/vnd.ogc.se+xml"
 
             if workspace is None:
-                workspace = "default"
+                # workspace = "default"
                 url = "{}/rest/styles".format(self.service_url)
 
             style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
@@ -875,16 +869,13 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def get_featuretypes(self, workspace=None, store_name=None):
+    def get_featuretypes(self, workspace: str = None, store_name: str = None):
         """
 
         Parameters
         ----------
-        workspace
-        store_name
-
-        Returns
-        -------
+        workspace : str
+        store_name : str
 
         """
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes.json".format(
@@ -897,17 +888,14 @@ class Geoserver:
 
         return features
 
-    def get_feature_attribute(self, feature_type_name, workspace=None, store_name=None):
+    def get_feature_attribute(self, feature_type_name: str, workspace: str, store_name: str):
         """
 
         Parameters
         ----------
-        feature_type_name
-        workspace
-        store_name
-
-        Returns
-        -------
+        feature_type_name : str
+        workspace : str
+        store_name : str
 
         """
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.json".format(
@@ -922,7 +910,15 @@ class Geoserver:
 
         return attribute
 
-    def get_featurestore(self, store_name, workspace):
+    def get_featurestore(self, store_name: str, workspace: str):
+        """
+
+        Parameters
+        ----------
+        store_name : str
+        workspace : str
+
+        """
         url = "{}/rest/workspaces/{}/datastores/{}".format(
             self.service_url, workspace, store_name
         )
@@ -936,28 +932,26 @@ class Geoserver:
 
     def create_coveragestyle(
         self,
-        raster_path,
-        style_name=None,
-        workspace=None,
-        color_ramp="RdYlGn_r",
-        cmap_type="ramp",
-        number_of_classes=5,
-        overwrite=False,
+        raster_path : str,
+        style_name: Optional[str]=None,
+        workspace: str = None,
+        color_ramp: str = "RdYlGn_r",
+        cmap_type: str = "ramp",
+        number_of_classes: int = 5,
+        overwrite: bool = False,
     ):
         """
 
         Parameters
         ----------
-        raster_path
-        style_name
-        workspace
-        color_ramp
-        cmap_type
-        number_of_classes
-        overwrite
-
-        Returns
-        -------
+        raster_path : str
+        style_name : str, optional
+        workspace : str
+        color_ramp : str
+        cmap_type : str
+            # TODO: This should be a set of the available options : {"ramp", "linear", ... }
+        number_of_classes : int
+        overwrite : bool
 
         Notes
         -----
@@ -1027,31 +1021,31 @@ class Geoserver:
 
     def create_catagorized_featurestyle(
         self,
-        style_name,
-        column_name,
+        style_name: str,
+        column_name: str,
         column_distinct_values,
-        workspace=None,
-        color_ramp="tab20",
-        geom_type="polygon",
-        outline_color="#3579b1",
-        overwrite=False,
+        workspace: str = None,
+        color_ramp: str = "tab20",
+        geom_type: str = "polygon",
+        outline_color: str = "#3579b1",
+        overwrite: bool = False,
     ):
-        """
+        """Dynamically create categorized style for postgis geometry,
 
         Parameters
         ----------
-        style_name
-        column_name
+        style_name : str
+        column_name : str
         column_distinct_values
-        workspace
-        color_ramp
-        geom_type
-        outline_color
-        overwrite
+        workspace : str
+        color_ramp : str
+        geom_type : str
+        outline_color : str
+        overwrite : bool
 
         Notes
         -----
-        Dynamically create the style for postgis geometry
+
         The data type must be point, line or polygon
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
@@ -1108,28 +1102,27 @@ class Geoserver:
 
     def create_outline_featurestyle(
         self,
-        style_name,
-        color="#3579b1",
-        geom_type="polygon",
-        workspace=None,
-        overwrite=False,
+        style_name: str,
+        color: str = "#3579b1",
+        geom_type: str = "polygon",
+        workspace: Optional[str] = None,
+        overwrite: bool = False,
     ):
-        """
+        """Dynamically creates the outline style for postgis geometry
 
         Parameters
         ----------
-        style_name
-        color
-        geom_type
-        workspace
-        overwrite
+        style_name : str
+        color : str
+        geom_type : str
+        workspace : str, optional
+        overwrite : bool
 
         Returns
         -------
 
         Notes
         -----
-        Dynamically create the style for postgis geometry
         The geometry type must be point, line or polygon
         Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
         """
@@ -1180,31 +1173,28 @@ class Geoserver:
 
     def create_classified_featurestyle(
         self,
-        style_name,
-        column_name,
+        style_name: str,
+        column_name: str,
         column_distinct_values,
         workspace: Optional[str] = None,
         color_ramp: str = "tab20",
-        geom_type: str = "polygon",
-        outline_color: str = "#3579b1",
+        # geom_type: str = "polygon",
+        # outline_color: str = "#3579b1",
         overwrite: bool = False,
     ):
-        """
+        """Dynamically creates the classified style for postgis geometries.
 
         Parameters
         ----------
-        style_name
-        column_name
+        style_name : str
+        column_name : str
         column_distinct_values
-        workspace
-        color_ramp
-        geom_type
-        outline_color
-        overwrite
+        workspace : str, optional
+        color_ramp : str
+        overwrite : bool
 
         Notes
         -----
-        Dynamically create the style for postgis geometry
         The data type must be point, line or polygon
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
@@ -1265,7 +1255,6 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    # def create_featurestyle()
     def publish_style(
         self,
         layer_name: str,
@@ -1318,9 +1307,6 @@ class Geoserver:
         Parameters
         ----------
         workspace : str
-
-        Returns
-        -------
 
         """
         try:
@@ -1434,7 +1420,7 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def delete_style(self, style_name, workspace: Optional[str] = None):
+    def delete_style(self, style_name: str, workspace: Optional[str] = None):
         """
 
         Parameters

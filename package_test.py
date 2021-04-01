@@ -5,11 +5,11 @@ from geo.Style import catagorize_xml, classified_xml
 """
 Connection
 """
-geo = Geoserver(
-    "http://localhost:8080/geoserver", username="admin", password="geoserver"
-)
+geo = Geoserver('http://127.0.0.1:8080/geoserver',
+                username='admin', password='geoserver')
 # pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
 # geo.create_workspace('demo2')
+# geo.get_workspace('itc2')
 
 """
 New get requests
@@ -25,21 +25,19 @@ New get requests
 # geo.get_datastore('111', 'demo')
 # geo.get_style('hazard_exp', workspace='geoinformatics_center', )
 # a = geo.get_styles()
-# a = geo.create_datastore(
+# a = geo.create_geotiff_coveragestore(
 #     'datastore4', r"http://localhost:8080/geoserver/wfs?request=GetCapabilities", workspace='demo', overwrite=True)
-a = geo.create_shp_datastore(
-    r"C:\Users\tek\Desktop\try\geoserver-rest\data\A_Admin_boundaries\A_Country\A_Country.zip",
-    "aaa",
-    "default",
-)
+# a = geo.create_shp_datastore('aaa', 'default')
+a = geo.create_geotiff_coveragestore(path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif',
+                                     name='f_try2', workspace='demo', upload=False,)
+
 print(a)
 # geo.publish_featurestore('datastore2', 'admin_units', workspace='demo')
 
 """
 Coverage (raster)
 """
-# geo.create_coveragestore(
-#     r'C:\Users\tek\Desktop\try\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', lyr_name='name_try', overwrite=False)
+# geo.create_coveragestore(r'C:\Users\tek\Desktop\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif', workspace='demo', overwrite=False)
 # geo.upload_style(r'C:\Users\tek\Desktop\try_sld.sld', sld_version='1.1.0', workspace='try')
 # geo.publish_style('agri_final_proj', 'dem', 'demo')
 # color_ramp1 = {

@@ -305,6 +305,25 @@ class Geoserver:
         except Exception as e:
             return "get_default_workspace error: {}".format(e)
 
+    def get_workspace(self, workspace):
+        '''
+        get name  workspace if exist
+        Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}.json'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            if r.status_code == 200:
+                return r.json()
+            else:
+                return None
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
     def get_workspaces(self):
         """
         Get all the workspaces
@@ -395,43 +414,37 @@ class Geoserver:
         the name parameter will be the name of coveragestore (coveragestore name will be assigned as the file name incase of not providing name parameter)
         the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
         """
+        if path is None:
+            raise Exception('You must provide the full path to the raster')
 
-        # overwrite feature needs to be write again
+        if workspace is None:
+            workspace = 'default'
+
+        if lyr_name is None:
+            lyr_name = os.path.basename(path)
+            f = lyr_name.split(".")
+            if len(f) > 0:
+                lyr_name = f[0]
+
+        file_type = file_type.lower()
+
+        url = '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}'.format(
+            self.service_url, workspace, lyr_name, file_type)
+
+        headers = {
+            "content-type": content_type
+        }
+
+        r = None
         try:
-            file_size = os.path.getsize(path)
+            with open(path, 'rb') as f:
+                r = requests.put(url, data=f.read(), auth=(
+                    self.username, self.password), headers=headers)
+                print(r.content, r.status_code)
 
-            c = pycurl.Curl()
+            if r.status_code != 201:
+                return '{}: The coveragestore can not be created!'.format(r.status_code)
 
-            if lyr_name:
-                file_name = lyr_name
-
-            else:
-                file_name = os.path.basename(path)
-                f = file_name.split(".")
-                if len(f) > 0:
-                    file_name = f[0]
-
-            if workspace is None:
-                workspace = "default"
-
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            file_type = file_type.lower()
-            c.setopt(
-                c.URL,
-                "{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}".format(
-                    self.service_url, workspace, file_name, file_type
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:{}".format(content_type)])
-            c.setopt(pycurl.READFUNCTION, FileReader(open(path, "rb")).read_callback)
-            c.setopt(pycurl.INFILESIZE, file_size)
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.UPLOAD, 1)
-            c.perform()
-            c.close()
         except Exception as e:
             return "Error: {}".format(e)
 

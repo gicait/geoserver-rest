@@ -35,6 +35,12 @@ repos:
     -   id: black
         language_version: python3
         args: ["--target-version", "py36"]
+-   repo: https://github.com/timothycrosley/isort
+    rev: 5.7.0
+    hooks:
+    -   id: isort
+        language_version: python3
+        args: ['--profile', 'black']
 -   repo: https://github.com/pycqa/flake8
     rev: 3.9.0
     hooks:

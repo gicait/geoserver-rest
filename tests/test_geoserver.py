@@ -1,6 +1,7 @@
-from geo.Style import catagorize_xml, classified_xml
-from common import geo
 import pytest
+from common import geo
+
+from geo.Style import catagorize_xml, classified_xml
 
 
 @pytest.mark.skip(reason="Only setup for local testing.")
@@ -83,7 +84,7 @@ class TestFeatures:
         )
         # assert a == "something we expect"
 
-        a = geo.get_featurestore("fdemo", "demo")
+        a = geo.get_featurestore("fdemo", "demo")  # noqa: F841
         # assert a == "something we expect"
 
     def test_sql_featurestore(self):

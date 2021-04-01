@@ -732,8 +732,8 @@ class Geoserver:
 
     def publish_featurestore_sqlview(
         self,
-        name : str,
-        store_name : str,
+        name: str,
+        store_name: str,
         sql: str,
         key_column: str,
         geom_name: str = "geom",
@@ -800,7 +800,12 @@ class Geoserver:
             return "Error:%s" % str(e)
 
     def upload_style(
-        self, path: str, name: Optional[str] = None, workspace: Optional[str] = None, sld_version: str ="1.0.0", overwrite: bool = False
+        self,
+        path: str,
+        name: Optional[str] = None,
+        workspace: Optional[str] = None,
+        sld_version: str = "1.0.0",
+        overwrite: bool = False,
     ):
         """
 
@@ -888,7 +893,9 @@ class Geoserver:
 
         return features
 
-    def get_feature_attribute(self, feature_type_name: str, workspace: str, store_name: str):
+    def get_feature_attribute(
+        self, feature_type_name: str, workspace: str, store_name: str
+    ):
         """
 
         Parameters
@@ -932,8 +939,8 @@ class Geoserver:
 
     def create_coveragestyle(
         self,
-        raster_path : str,
-        style_name: Optional[str]=None,
+        raster_path: str,
+        style_name: Optional[str] = None,
         workspace: str = None,
         color_ramp: str = "RdYlGn_r",
         cmap_type: str = "ramp",

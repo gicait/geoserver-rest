@@ -1,7 +1,7 @@
-from tempfile import mkstemp
-from zipfile import ZipFile
 import os
+from tempfile import mkstemp
 from typing import Dict
+from zipfile import ZipFile
 
 
 def prepare_zip_file(name: str, data: Dict) -> str:

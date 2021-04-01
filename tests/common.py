@@ -1,5 +1,6 @@
-from geo.Geoserver import Geoserver
 import os
+
+from geo.Geoserver import Geoserver
 
 GEO_URL = os.getenv("GEO_URL", "http://localhost:8080/geoserver")
 

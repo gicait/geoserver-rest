@@ -54,7 +54,7 @@ class Db:
             print("ERROR: ", err)
 
     # get the columns names inside database
-    def get_columns_names(self, table: str):
+    def get_column_names(self, table: str):
         columns = list()
         with self.conn.cursor() as col_cursor:
             col_names_str = "SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{}';".format(
@@ -68,11 +68,35 @@ class Db:
                     columns += [tup[0]]
 
             except Exception as err:
-                print("get_columns_names ERROR:", err)
+                print("get_column_names ERROR:", err)
+
+        return columns
+
+    # get numberic columns names inside database
+
+    def get_numeric_column_names(self, table: str):
+        column = list()
+        with self.conn.cursor() as col_cursor:
+            col_names_str = """
+                            SELECT col.column_name FROM INFORMATION_SCHEMA.COLUMNS as col 
+                            WHERE table_name = '{}' 
+                                AND col.data_type in ('smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'smallserial', 'serial', 'bigserial', 'money');
+                            """.format(table)
+
+            sql_object = sql.SQL(col_names_str).format(sql.Identifier(table))
+            try:
+                col_cursor.execute(sql_object)
+                col_names = col_cursor.fetchall()
+                for tup in col_names:
+                    columns += [tup[0]]
+
+            except Exception as err:
+                print("get_numeric_column_names ERROR:", err)
 
         return columns
 
     # get all the values from specific column
+
     def get_all_values(
         self, column: str, table: str, schema: str, distinct: bool = True
     ):
@@ -102,7 +126,7 @@ class Db:
                     values += [tup[0]]
 
             except Exception as err:
-                print("get_columns_names ERROR:", err)
+                print("get_all_values ERROR:", err)
 
         return values
 

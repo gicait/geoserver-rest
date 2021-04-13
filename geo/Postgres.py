@@ -75,7 +75,7 @@ class Db:
     # get numberic columns names inside database
 
     def get_numeric_column_names(self, table: str):
-        column = list()
+        columns = list()
         with self.conn.cursor() as col_cursor:
             col_names_str = """
                             SELECT col.column_name FROM INFORMATION_SCHEMA.COLUMNS as col 

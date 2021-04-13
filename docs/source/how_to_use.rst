@@ -27,7 +27,7 @@ It is helpful for publishing the raster data to the geoserver. Here if you don't
 
 .. code-block:: python
 
-    geo.create_coveragestore(lyr_name='layer1', path=r'path\to\raster\file.tif', workspace='demo')
+    geo.create_coveragestore(layer_name='layer1', path=r'path\to\raster\file.tif', workspace='demo')
 
 
 .. note::
@@ -37,7 +37,7 @@ If the `layername` already exists in geoserver, you can additionall pass the par
 
 .. code-block:: python
 
-    geo.create_coveragestore(lyr_name='layer1', path=r'path\to\raster\file.tif', workspace='demo', overwrite=True)
+    geo.create_coveragestore(layer_name='layer1', path=r'path\to\raster\file.tif', workspace='demo', overwrite=True)
 
 
 Creating and publishing featurestores and featurestore layers

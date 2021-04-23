@@ -467,10 +467,10 @@ class Geoserver:
             c.setopt(pycurl.HTTPHEADER, ["Content-type:{}".format(content_type)])
             c.setopt(pycurl.READFUNCTION, FileReader(open(path, "rb")).read_callback)
             c.setopt(pycurl.INFILESIZE, file_size)
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
+            if overwrite or file_type != 'imagemosaic':
+                c.setopt(pycurl.CUSTOMREQUEST, "PUT")
             else:
-                c.setopt(pycurl.POST, 1)
+                c.setopt(pycurl.CUSTOMREQUEST, "POST")
             c.setopt(pycurl.UPLOAD, 1)
             c.perform()
             c.close()

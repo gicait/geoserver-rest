@@ -365,7 +365,7 @@ class Geoserver:
                 )
 
         except Exception as e:
-            return "reload error: {}".format(e)
+            raise e
 
     def create_workspace(self, workspace: str):
         """
@@ -391,7 +391,7 @@ class Geoserver:
                 raise Exception("The workspace can not be created")
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def get_workspace(self, workspace: str):
         """
@@ -439,10 +439,10 @@ class Geoserver:
         """
 
         # overwrite feature needs to be write again
+        c = pycurl.Curl()
         try:
             file_size = os.path.getsize(path)
 
-            c = pycurl.Curl()
 
             if layer_name:
                 file_name = layer_name
@@ -473,9 +473,13 @@ class Geoserver:
                 c.setopt(pycurl.CUSTOMREQUEST, "POST")
             c.setopt(pycurl.UPLOAD, 1)
             c.perform()
-            c.close()
+
+            if c.getinfo(pycurl.HTTP_CODE) != 201:
+                raise Exception(f'Error code from Geoserver {c.getinfo(pycurl.RESPONSE_CODE)}')
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
+        finally:
+            c.close()
 
     def create_featurestore(
         self,
@@ -548,7 +552,7 @@ class Geoserver:
             c.perform()
             c.close()
         except Exception as e:
-            return "Error:%s" % str(e)
+            raise e
 
     def create_datastore(
         self,
@@ -616,7 +620,7 @@ class Geoserver:
                 raise Exception("datastore can not be created")
 
         except Exception as e:
-            return "Error create_datastore: {}".format(e)
+            raise e
 
     def create_shp_datastore(
         self,
@@ -684,7 +688,7 @@ class Geoserver:
                     )
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def publish_featurestore(
         self, store_name: str, pg_table: str, workspace: Optional[str] = None
@@ -728,7 +732,7 @@ class Geoserver:
             c.close()
 
         except Exception as e:
-            return "Error:%s" % str(e)
+            raise e
 
     def publish_featurestore_sqlview(
         self,
@@ -797,7 +801,7 @@ class Geoserver:
             c.perform()
             c.close()
         except Exception as e:
-            return "Error:%s" % str(e)
+            raise e
 
     def upload_style(
         self,
@@ -872,7 +876,7 @@ class Geoserver:
             c.close()
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def get_featuretypes(self, workspace: str = None, store_name: str = None):
         """
@@ -1105,7 +1109,7 @@ class Geoserver:
             os.remove("style.sld")
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def create_outline_featurestyle(
         self,
@@ -1176,7 +1180,7 @@ class Geoserver:
             os.remove("style.sld")
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def create_classified_featurestyle(
         self,
@@ -1260,7 +1264,7 @@ class Geoserver:
             os.remove("style.sld")
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def publish_style(
         self,
@@ -1306,7 +1310,7 @@ class Geoserver:
             c.perform()
             c.close()
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def delete_workspace(self, workspace: str):
         """
@@ -1328,7 +1332,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def delete_layer(self, layer_name: str, workspace: Optional[str] = None):
         """
@@ -1357,7 +1361,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def delete_featurestore(
         self, featurestore_name: str, workspace: Optional[str] = None
@@ -1390,7 +1394,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def delete_coveragestore(
         self, coveragestore_name: str, workspace: Optional[str] = None
@@ -1425,7 +1429,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e
 
     def delete_style(self, style_name: str, workspace: Optional[str] = None):
         """
@@ -1452,4 +1456,4 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise e

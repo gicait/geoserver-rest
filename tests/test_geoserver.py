@@ -1,5 +1,5 @@
 import pytest
-from common import geo
+from .common import geo
 
 from geo.Style import catagorize_xml, classified_xml
 
@@ -60,7 +60,8 @@ class TestCoverages:
             r"C:\Users\tek\Desktop\try_sld.sld", sld_version="1.1.0", workspace="try"
         )
         geo.publish_style("agri_final_proj", "dem", "demo")
-        color_ramp1 = {"value1": "#ffff55", "value2": "#505050", "value3": "#404040"}
+        color_ramp1 = {"value1": "#ffff55",
+                       "value2": "#505050", "value3": "#404040"}
         geo.create_coveragestyle(
             style_name="demo",
             raster_path=r"C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif",
@@ -125,7 +126,8 @@ class TestStyles:
 class TestPostGres:
     from geo.Postgres import Db
 
-    pg = Db(dbname="postgres", user="postgres", password="admin", host="localhost")
+    pg = Db(dbname="postgres", user="postgres",
+            password="admin", host="localhost")
 
     def test_postgres(self):
         print(self.pg.get_columns_names("zones"))
@@ -148,8 +150,10 @@ class TestDeletion:
     def test_delete(self):
         geo.delete_workspace(workspace="demo")
         geo.delete_layer(layer_name="agri_final_proj", workspace="demo")
-        geo.delete_featurestore(featurestore_name="feature_store", workspace="demo")
-        geo.delete_coveragestore(coveragestore_name="store_name", workspace="demo")
+        geo.delete_featurestore(
+            featurestore_name="feature_store", workspace="demo")
+        geo.delete_coveragestore(
+            coveragestore_name="store_name", workspace="demo")
         geo.delete_style(style_name="kamal2", workspace="demo")
 
 

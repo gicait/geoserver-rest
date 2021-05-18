@@ -5,7 +5,8 @@ build:
     - libssl-dev
     - libcurl4-openssl-dev
     - python3-dev
-    - libgdal-dev
+    - libgdal20
+    - libproj12
    
     
 

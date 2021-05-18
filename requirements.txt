@@ -2,6 +2,6 @@ pygments
 pycurl
 requests
 seaborn
-gdal
+gdal==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
 psycopg2
 matplotlib

@@ -1,3 +1,4 @@
+from numpy.core.numeric import True_
 from geo.Geoserver import Geoserver
 from geo.Postgres import Db
 from geo.Style import catagorize_xml, classified_xml
@@ -28,10 +29,9 @@ New get requests
 # a = geo.create_geotiff_coveragestore(
 #     'datastore4', r"http://localhost:8080/geoserver/wfs?request=GetCapabilities", workspace='demo', overwrite=True)
 # a = geo.create_shp_datastore('aaa', 'default')
-a = geo.create_coveragestore(
-    path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif')
+# a = geo.create_coveragestore(
+#     path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif')
 
-print(a)
 # geo.publish_featurestore('datastore2', 'admin_units', workspace='demo')
 
 """
@@ -68,6 +68,12 @@ Features (vector)
 #     store_name, name, sql, key_column=keyColumn, geom_name='geom', geom_type='Geometry', workspace='geoinformatics_center')
 # print(a)
 
+a = geo.create_featurestore(
+    store_name='kamal', pg_password='gicait123', db='sdss', schema='geoinformatics_center', workspace='demo', overwrite=True)
+print(a)
+
+a = geo.publish_featurestore(store_name='kamal', pg_table='ear', workspace='demo')
+print(a)
 """
 Feature styles
 """

@@ -520,47 +520,51 @@ class Geoserver:
         -----
         After creating feature store, you need to publish it.
         """
+
+        url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)
+
+        headers = {
+            'content-type': 'text/xml'
+        }
+
+        # make the connection with postgis database
+        database_connection = (
+            "<dataStore>"
+            "<name>{0}</name>"
+            "<connectionParameters>"
+            "<host>{1}</host>"
+            "<port>{2}</port>"
+            "<database>{3}</database>"
+            "<schema>{4}</schema>"
+            "<user>{5}</user>"
+            "<passwd>{6}</passwd>"
+            "<dbtype>postgis</dbtype>"
+            "</connectionParameters>"
+            "</dataStore>".format(
+                store_name, host, port, db, schema, pg_user, pg_password
+            )
+        )
+
+        r = None
         try:
-            if workspace is None:
-                workspace = "default"
-
-            c = pycurl.Curl()
-            # connect with geoserver
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
-
-            # make the connection with postgis database
-            database_connection = (
-                "<dataStore>"
-                "<name>{}</name>"
-                "<connectionParameters>"
-                "<host>{}</host>"
-                "<port>{}</port>"
-                "<database>{}</database>"
-                "<schema>{}</schema>"
-                "<user>{}</user>"
-                "<passwd>{}</passwd>"
-                "<dbtype>postgis</dbtype>"
-                "</connectionParameters>"
-                "</dataStore>".format(
-                    store_name, host, port, db, schema, pg_user, pg_password
-                )
-            )
-            c.setopt(pycurl.POSTFIELDSIZE, len(database_connection))
-            c.setopt(pycurl.READFUNCTION, DataProvider(database_connection).read_cb)
-
             if overwrite:
-                c.setopt(pycurl.PUT, 1)
+                url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
+                    self.service_url, workspace, store_name)
+
+                r = requests.put(url, data=database_connection, auth=(
+                    self.username, self.password), headers=headers)
+
+                if r.status_code not in [200, 201]:
+                    return '{}: Datastore can not be updated'.format(r.status_code)
             else:
-                c.setopt(pycurl.POST, 1)
-            c.perform()
-            c.close()
+                r = requests.post(url, data=database_connection, auth=(
+                    self.username, self.password), headers=headers)
+
+                if r.status_code not in [200, 201]:
+                    return '{}: Data store can not be created!'.format(r.status_code)
+
         except Exception as e:
-            return "Error:%s" % str(e)
+            return "Error: {}".format(e)
 
     def create_datastore(
         self,
@@ -698,9 +702,7 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def publish_featurestore(
-        self, store_name: str, pg_table: str, workspace: Optional[str] = None
-    ):
+    def publish_featurestore(self, store_name: str, pg_table: str, workspace: Optional[str] = None):
         """
 
         Parameters
@@ -717,30 +719,23 @@ class Geoserver:
         Only user for postgis vector data
         input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
         """
+        if workspace is None:
+            workspace = "default"
+
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/".format(
+            self.service_url, workspace, store_name)
+
+        layer_xml = "<featureType><name>{}</name></featureType>".format(pg_table)
+        headers = {"content-type": "text/xml"}
+
         try:
-            if workspace is None:
-                workspace = "default"
-
-            c = pycurl.Curl()
-            layer_xml = "<featureType><name>{}</name></featureType>".format(pg_table)
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-
-            # connecting with the specified store in geoserver
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
-                    self.service_url, workspace, store_name
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(layer_xml).read_cb)
-            c.setopt(pycurl.POST, 1)
-            c.perform()
-            c.close()
+            r = requests.post(url, data=layer_xml, auth=(
+                self.username, self.password), headers=headers)
+            if r.status_code not in [200, 201]:
+                return '{}: Data can not be published!'.format(r.status_code)
 
         except Exception as e:
-            return "Error:%s" % str(e)
+            return "Error: {}".format(e)
 
     def publish_featurestore_sqlview(
         self,
@@ -765,51 +760,47 @@ class Geoserver:
         workspace : str, optional
 
         """
+        if workspace is None:
+            workspace = "default"
+
+        layer_xml = """<featureType>
+        <name>{0}</name>
+        <enabled>true</enabled>
+        <namespace>
+        <name>{5}</name>
+        </namespace>
+        <title>{0}</title>
+        <srs>EPSG:4326</srs>
+        <metadata>
+        <entry key="JDBC_VIRTUAL_TABLE">
+        <virtualTable>
+        <name>{0}</name>
+        <sql>{1}</sql>
+        <escapeSql>true</escapeSql>
+        <keyColumn>{2}</keyColumn>
+        <geometry>
+        <name>{3}</name>
+        <type>{4}</type>
+        <srid>4326</srid>
+        </geometry>
+        </virtualTable>
+        </entry>
+        </metadata>
+        </featureType>""".format(name, sql, key_column, geom_name, geom_type, workspace)
+
+        url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes".format(
+            self.service_url, workspace, store_name)
+
+        headers = {"content-type": "text/xml"}
+
         try:
-            if workspace is None:
-                workspace = "default"
-            c = pycurl.Curl()
-            layer_xml = """<featureType>
-            <name>{0}</name>
-            <enabled>true</enabled>
-            <namespace>
-            <name>{5}</name>
-            </namespace>
-            <title>{0}</title>
-            <srs>EPSG:4326</srs>
-            <metadata>
-            <entry key="JDBC_VIRTUAL_TABLE">
-            <virtualTable>
-            <name>{0}</name>
-            <sql>{1}</sql>
-            <escapeSql>true</escapeSql>
-            <keyColumn>{2}</keyColumn>
-            <geometry>
-            <name>{3}</name>
-            <type>{4}</type>
-            <srid>4326</srid>
-            </geometry>
-            </virtualTable>
-            </entry>
-            </metadata>
-            </featureType>""".format(
-                name, sql, key_column, geom_name, geom_type, workspace
-            )
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
-                    self.service_url, workspace, store_name
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(layer_xml).read_cb)
-            c.setopt(pycurl.POST, 1)
-            c.perform()
-            c.close()
+            r = requests.post(url, data=layer_xml, auth=(
+                self.username, self.password), headers=headers)
+            if r.status_code not in [200, 201]:
+                return '{}: Data can not be published!'.format(r.status_code)
+
         except Exception as e:
-            return "Error:%s" % str(e)
+            return "Error: {}".format(e)
 
     def upload_style(
         self,

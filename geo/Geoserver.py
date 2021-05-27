@@ -468,6 +468,8 @@ class Geoserver:
             if len(f) > 0:
                 layer_name = f[0]
 
+        file_type = file_type.lower()
+
         url = '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}'.format(
             self.service_url, workspace, layer_name, file_type)
 
@@ -480,7 +482,6 @@ class Geoserver:
             with open(path, 'rb') as f:
                 r = requests.put(url, data=f.read(), auth=(
                     self.username, self.password), headers=headers)
-                print(r.content, r.status_code)
 
             if r.status_code != 201:
                 return '{}: The coveragestore can not be created!'.format(r.status_code)

@@ -6,7 +6,7 @@ from geo.Style import catagorize_xml, classified_xml
 Connection
 """
 geo = Geoserver('http://127.0.0.1:8080/geoserver',
-                username='admin', password='geoserver')
+                username='admin', password='admin')
 # pg = Db(dbname='postgres', user='postgres', password='admin', host='localhost')
 # geo.create_workspace('demo2')
 # geo.get_workspace('itc2')
@@ -28,8 +28,8 @@ New get requests
 # a = geo.create_geotiff_coveragestore(
 #     'datastore4', r"http://localhost:8080/geoserver/wfs?request=GetCapabilities", workspace='demo', overwrite=True)
 # a = geo.create_shp_datastore('aaa', 'default')
-a = geo.create_geotiff_coveragestore(path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif',
-                                     name='f_try2', workspace='demo', upload=False,)
+a = geo.create_coveragestore(
+    path=r'C:\Users\tek\Desktop\try\geoserver-rest\data\flood_alert.tif')
 
 print(a)
 # geo.publish_featurestore('datastore2', 'admin_units', workspace='demo')

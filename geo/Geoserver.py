@@ -444,14 +444,11 @@ class Geoserver:
 
             c = pycurl.Curl()
 
-            if layer_name:
-                file_name = layer_name
-
-            else:
+            if layer_name is None:
                 file_name = os.path.basename(path)
-                f = file_name.split(".")
-                if len(f) > 0:
-                    file_name = f[0]
+                layer_name = file_name.split(".")
+                if len(layer_name) > 0:
+                    layer_name = layer_name[0]
 
             if workspace is None:
                 workspace = "default"
@@ -461,7 +458,7 @@ class Geoserver:
             c.setopt(
                 c.URL,
                 "{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}".format(
-                    self.service_url, workspace, file_name, file_type
+                    self.service_url, workspace, layer_name, file_type
                 ),
             )
             c.setopt(pycurl.HTTPHEADER, ["Content-type:{}".format(content_type)])

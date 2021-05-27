@@ -1,27 +1,46 @@
-import pycurl
-import os
+from typing import Dict, Iterable, List, Union
+
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
 
-def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
+def coverage_style_colormapentry(
+    color_ramp: Union[List, Dict, Iterable],
+    min_value: float,
+    max_value: float,
+    number_of_classes: int = None,
+):
     """
+
+    Parameters
+    ----------
+    color_ramp
+    min_value
+    max_value
+    number_of_classes
+
+    Returns
+    -------
+
+    Notes
+    -----
     This is the core function for controlling the layers styles
     The color_ramp can be list or dict or touple or str
     min, max will be dynamically calculated value from raster
     number_of_classes will be available in map legend
     """
     style_append = ""
-    if type(color_ramp) is list:
-        N = len(color_ramp)
+    n = len(color_ramp)
 
-        if N != number_of_classes:
-            number_of_classes = N
+    if isinstance(color_ramp, list):
 
-        interval = (max - min) / (number_of_classes - 1)
+        if n != number_of_classes:
+            number_of_classes = n
+
+        interval = (max_value - min_value) / (number_of_classes - 1)
 
         for i, color in enumerate(color_ramp):
-            value = min + interval * i
+            value = min_value + interval * i
             value = round(value, 1)
 
             style_append += (
@@ -30,16 +49,15 @@ def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
                 )
             )
 
-    elif type(color_ramp) is dict:
-        N = len(color_ramp)
+    elif isinstance(color_ramp, dict):
 
-        if N != number_of_classes:
-            number_of_classes = N
+        if n != number_of_classes:
+            number_of_classes = n
 
-        interval = (max - min) / (number_of_classes - 1)
+        interval = (max_value - min_value) / (number_of_classes - 1)
 
-        for name, color, i in zip(color_ramp.keys(), color_ramp.values(), range(N)):
-            value = min + interval * i
+        for name, color, i in zip(color_ramp.keys(), color_ramp.values(), range(n)):
+            value = min_value + interval * i
 
             style_append += (
                 '<sld:ColorMapEntry color="{}" label=" {}" quantity="{}"/>'.format(
@@ -49,9 +67,8 @@ def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
 
     else:
         for i, color in enumerate(color_ramp):
-            N = number_of_classes
-            interval = (max - min) / (number_of_classes - 1)
-            value = min + interval * i
+            interval = (max_value - min_value) / (number_of_classes - 1)
+            value = min_value + interval * i
 
             style_append += (
                 '<sld:ColorMapEntry color="{}" label="{}" quantity="{}"/>'.format(
@@ -62,8 +79,10 @@ def coverage_style_colormapentry(color_ramp, min, max, number_of_classes):
     return style_append
 
 
-def coverage_style_xml(color_ramp, style_name, cmap_type, min, max, number_of_classes):
-    min_max_difference = max - min
+def coverage_style_xml(
+    color_ramp, style_name, cmap_type, min_value, max_value, number_of_classes
+):
+    min_max_difference = max_value - min_value
     style_append = ""
     interval = min_max_difference / (number_of_classes - 1)  # noqa
 
@@ -73,7 +92,7 @@ def coverage_style_xml(color_ramp, style_name, cmap_type, min, max, number_of_cl
         color_ramp = [rgb2hex(i) for i in palette]
 
     style_append += coverage_style_colormapentry(
-        color_ramp, min, max, number_of_classes
+        color_ramp, min_value, max_value, number_of_classes
     )
 
     style = """
@@ -181,9 +200,14 @@ def outline_only_xml(color, geom_type="polygon"):
         f.write(style)
 
 
-def catagorize_xml(column_name, values, color_ramp, geom_type="polygon"):
-    N = len(values)
-    palette = sns.color_palette(color_ramp, int(N))
+def catagorize_xml(
+    column_name: str,
+    values: List[float],
+    color_ramp: str = None,
+    geom_type: str = "polygon",
+):
+    n = len(values)
+    palette = sns.color_palette(color_ramp, int(n))
     palette_hex = [rgb2hex(i) for i in palette]
     rule = ""
     for value, color in zip(values, palette_hex):
@@ -285,13 +309,19 @@ def catagorize_xml(column_name, values, color_ramp, geom_type="polygon"):
         f.write(style)
 
 
-def classified_xml(style_name, column_name, values, color_ramp, geom_type="polygon"):
+def classified_xml(
+    style_name: str,
+    column_name: str,
+    values: List[float],
+    color_ramp: str = None,
+    geom_type: str = "polygon",
+):
     max_value = max(values)
     min_value = min(values)
     diff = max_value - min_value
-    N = 5
+    n = 5
     interval = diff / 5
-    palette = sns.color_palette(color_ramp, int(N))
+    palette = sns.color_palette(color_ramp, int(n))
     palette_hex = [rgb2hex(i) for i in palette]
     # interval = N/4
     # color_values = [{value: color} for value, color in zip(values, palette_hex)]

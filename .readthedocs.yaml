@@ -1,0 +1,22 @@
+version: 2
+
+# build:
+#   apt_packages:
+#     - libssl-dev
+#     - libcurl4-openssl-dev
+#     - python3-dev
+#     - gdal-bin
+#     - python3-gdal
+#     - gcc 
+#     - zlib1g-dev 
+#     - libgeos-dev 
+#     - libproj-dev
+   
+    
+
+sphinx:
+   configuration: docs/source/conf.py
+
+python:
+   install:
+   - requirements: docs/requirements-docs.txt

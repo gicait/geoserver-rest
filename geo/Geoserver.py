@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 
-import pycurl
 import requests
 
 from .Calculation_gdal import raster_value
@@ -332,6 +331,25 @@ class Geoserver:
         except Exception as e:
             return "get_default_workspace error: {}".format(e)
 
+    def get_workspace(self, workspace):
+        '''
+        get name  workspace if exist
+        Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
+        '''
+        try:
+            payload = {'recurse': 'true'}
+            url = '{0}/rest/workspaces/{1}.json'.format(
+                self.service_url, workspace)
+            r = requests.get(url, auth=(
+                self.username, self.password), params=payload)
+            if r.status_code == 200:
+                return r.json()
+            else:
+                return None
+
+        except Exception as e:
+            return 'Error: {}'.format(e)
+
     def get_workspaces(self):
         """
         Returns all the workspaces.
@@ -418,7 +436,6 @@ class Geoserver:
         layer_name: Optional[str] = None,
         file_type: str = "GeoTIFF",
         content_type: str = "image/tiff",
-        overwrite: bool = False,
     ):
         """
         Creates the coveragestore; Data will uploaded to the server.
@@ -437,40 +454,36 @@ class Geoserver:
         -----
         the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
         """
+        if path is None:
+            raise Exception('You must provide the full path to the raster')
 
-        # overwrite feature needs to be write again
+        if workspace is None:
+            workspace = 'default'
+
+        if layer_name is None:
+            layer_name = os.path.basename(path)
+            f = layer_name.split(".")
+            if len(f) > 0:
+                layer_name = f[0]
+
+        file_type = file_type.lower()
+
+        url = '{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}'.format(
+            self.service_url, workspace, layer_name, file_type)
+
+        headers = {
+            "content-type": content_type
+        }
+
+        r = None
         try:
-            file_size = os.path.getsize(path)
+            with open(path, 'rb') as f:
+                r = requests.put(url, data=f.read(), auth=(
+                    self.username, self.password), headers=headers)
 
-            c = pycurl.Curl()
+            if r.status_code != 201:
+                return '{}: The coveragestore can not be created!'.format(r.status_code)
 
-            if layer_name is None:
-                file_name = os.path.basename(path)
-                layer_name = file_name.split(".")
-                if len(layer_name) > 0:
-                    layer_name = layer_name[0]
-
-            if workspace is None:
-                workspace = "default"
-
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            file_type = file_type.lower()
-            c.setopt(
-                c.URL,
-                "{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}".format(
-                    self.service_url, workspace, layer_name, file_type
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:{}".format(content_type)])
-            c.setopt(pycurl.READFUNCTION, FileReader(open(path, "rb")).read_callback)
-            c.setopt(pycurl.INFILESIZE, file_size)
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.UPLOAD, 1)
-            c.perform()
-            c.close()
         except Exception as e:
             return "Error: {}".format(e)
 
@@ -505,47 +518,51 @@ class Geoserver:
         -----
         After creating feature store, you need to publish it.
         """
+
+        url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)
+
+        headers = {
+            'content-type': 'text/xml'
+        }
+
+        # make the connection with postgis database
+        database_connection = (
+            "<dataStore>"
+            "<name>{0}</name>"
+            "<connectionParameters>"
+            "<host>{1}</host>"
+            "<port>{2}</port>"
+            "<database>{3}</database>"
+            "<schema>{4}</schema>"
+            "<user>{5}</user>"
+            "<passwd>{6}</passwd>"
+            "<dbtype>postgis</dbtype>"
+            "</connectionParameters>"
+            "</dataStore>".format(
+                store_name, host, port, db, schema, pg_user, pg_password
+            )
+        )
+
+        r = None
         try:
-            if workspace is None:
-                workspace = "default"
-
-            c = pycurl.Curl()
-            # connect with geoserver
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
-
-            # make the connection with postgis database
-            database_connection = (
-                "<dataStore>"
-                "<name>{}</name>"
-                "<connectionParameters>"
-                "<host>{}</host>"
-                "<port>{}</port>"
-                "<database>{}</database>"
-                "<schema>{}</schema>"
-                "<user>{}</user>"
-                "<passwd>{}</passwd>"
-                "<dbtype>postgis</dbtype>"
-                "</connectionParameters>"
-                "</dataStore>".format(
-                    store_name, host, port, db, schema, pg_user, pg_password
-                )
-            )
-            c.setopt(pycurl.POSTFIELDSIZE, len(database_connection))
-            c.setopt(pycurl.READFUNCTION, DataProvider(database_connection).read_cb)
-
             if overwrite:
-                c.setopt(pycurl.PUT, 1)
+                url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
+                    self.service_url, workspace, store_name)
+
+                r = requests.put(url, data=database_connection, auth=(
+                    self.username, self.password), headers=headers)
+
+                if r.status_code not in [200, 201]:
+                    return '{}: Datastore can not be updated'.format(r.status_code)
             else:
-                c.setopt(pycurl.POST, 1)
-            c.perform()
-            c.close()
+                r = requests.post(url, data=database_connection, auth=(
+                    self.username, self.password), headers=headers)
+
+                if r.status_code not in [200, 201]:
+                    return '{}: Data store can not be created!'.format(r.status_code)
+
         except Exception as e:
-            return "Error:%s" % str(e)
+            return "Error: {}".format(e)
 
     def create_datastore(
         self,
@@ -683,9 +700,7 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    def publish_featurestore(
-        self, store_name: str, pg_table: str, workspace: Optional[str] = None
-    ):
+    def publish_featurestore(self, store_name: str, pg_table: str, workspace: Optional[str] = None):
         """
 
         Parameters
@@ -702,30 +717,23 @@ class Geoserver:
         Only user for postgis vector data
         input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
         """
+        if workspace is None:
+            workspace = "default"
+
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/".format(
+            self.service_url, workspace, store_name)
+
+        layer_xml = "<featureType><name>{}</name></featureType>".format(pg_table)
+        headers = {"content-type": "text/xml"}
+
         try:
-            if workspace is None:
-                workspace = "default"
-
-            c = pycurl.Curl()
-            layer_xml = "<featureType><name>{}</name></featureType>".format(pg_table)
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-
-            # connecting with the specified store in geoserver
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
-                    self.service_url, workspace, store_name
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(layer_xml).read_cb)
-            c.setopt(pycurl.POST, 1)
-            c.perform()
-            c.close()
+            r = requests.post(url, data=layer_xml, auth=(
+                self.username, self.password), headers=headers)
+            if r.status_code not in [200, 201]:
+                return '{}: Data can not be published!'.format(r.status_code)
 
         except Exception as e:
-            return "Error:%s" % str(e)
+            return "Error: {}".format(e)
 
     def publish_featurestore_sqlview(
         self,
@@ -750,51 +758,47 @@ class Geoserver:
         workspace : str, optional
 
         """
+        if workspace is None:
+            workspace = "default"
+
+        layer_xml = """<featureType>
+        <name>{0}</name>
+        <enabled>true</enabled>
+        <namespace>
+        <name>{5}</name>
+        </namespace>
+        <title>{0}</title>
+        <srs>EPSG:4326</srs>
+        <metadata>
+        <entry key="JDBC_VIRTUAL_TABLE">
+        <virtualTable>
+        <name>{0}</name>
+        <sql>{1}</sql>
+        <escapeSql>true</escapeSql>
+        <keyColumn>{2}</keyColumn>
+        <geometry>
+        <name>{3}</name>
+        <type>{4}</type>
+        <srid>4326</srid>
+        </geometry>
+        </virtualTable>
+        </entry>
+        </metadata>
+        </featureType>""".format(name, sql, key_column, geom_name, geom_type, workspace)
+
+        url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes".format(
+            self.service_url, workspace, store_name)
+
+        headers = {"content-type": "text/xml"}
+
         try:
-            if workspace is None:
-                workspace = "default"
-            c = pycurl.Curl()
-            layer_xml = """<featureType>
-            <name>{0}</name>
-            <enabled>true</enabled>
-            <namespace>
-            <name>{5}</name>
-            </namespace>
-            <title>{0}</title>
-            <srs>EPSG:4326</srs>
-            <metadata>
-            <entry key="JDBC_VIRTUAL_TABLE">
-            <virtualTable>
-            <name>{0}</name>
-            <sql>{1}</sql>
-            <escapeSql>true</escapeSql>
-            <keyColumn>{2}</keyColumn>
-            <geometry>
-            <name>{3}</name>
-            <type>{4}</type>
-            <srid>4326</srid>
-            </geometry>
-            </virtualTable>
-            </entry>
-            </metadata>
-            </featureType>""".format(
-                name, sql, key_column, geom_name, geom_type, workspace
-            )
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
-                    self.service_url, workspace, store_name
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(layer_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(layer_xml).read_cb)
-            c.setopt(pycurl.POST, 1)
-            c.perform()
-            c.close()
+            r = requests.post(url, data=layer_xml, auth=(
+                self.username, self.password), headers=headers)
+            if r.status_code not in [200, 201]:
+                return '{}: Data can not be published!'.format(r.status_code)
+
         except Exception as e:
-            return "Error:%s" % str(e)
+            return "Error: {}".format(e)
 
     def upload_style(
         self,
@@ -802,7 +806,6 @@ class Geoserver:
         name: Optional[str] = None,
         workspace: Optional[str] = None,
         sld_version: str = "1.0.0",
-        overwrite: bool = False,
     ):
         """
 
@@ -811,8 +814,7 @@ class Geoserver:
         path : str
         name : str, optional
         workspace : str, optional
-        sld_version : str
-        overwrite : bool
+        sld_version : str, optional
 
         Notes
         -----
@@ -820,53 +822,43 @@ class Geoserver:
         This function will create the style file in a specified workspace.
         Inputs: path to the sld_file, workspace,
         """
+
+        if name is None:
+            name = os.path.basename(path)
+            f = name.split(".")
+            if len(f) > 0:
+                name = f[0]
+
+        headers = {"content-type": "text/xml"}
+
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+
+        sld_content_type = "application/vnd.ogc.sld+xml"
+        if sld_version == "1.1.0" or sld_version == "1.1":
+            sld_content_type = "application/vnd.ogc.se+xml"
+
+        header_sld = {"content-type": sld_content_type}
+
+        if workspace is None:
+            # workspace = "default"
+            url = "{}/rest/styles".format(self.service_url)
+
+        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+            name, name + ".sld"
+        )
+
+        r = None
         try:
-            if name is None:
-                name = os.path.basename(path)
-                f = name.split(".")
-                if len(f) > 0:
-                    name = f[0]
+            r = requests.post(url, data=style_xml, auth=(
+                self.username, self.password), headers=headers)
 
-            file_size = os.path.getsize(path)
-            url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+            with open(path, 'rb') as f:
+                r_sld = requests.put(url + '/' + name, data=f.read(), auth=(
+                    self.username, self.password), headers=header_sld)
+                if r_sld.status_code not in [200, 201]:
+                    return '{}: Style file can not be uploaded!'.format(r.status_code)
 
-            sld_content_type = "application/vnd.ogc.sld+xml"
-            if sld_version == "1.1.0" or sld_version == "1.1":
-                sld_content_type = "application/vnd.ogc.se+xml"
-
-            if workspace is None:
-                # workspace = "default"
-                url = "{}/rest/styles".format(self.service_url)
-
-            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-                name, name + ".sld"
-            )
-            # create the xml file for associated style
-            c = pycurl.Curl()
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(c.URL, url)
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.perform()
-
-            # upload the style file
-            c.setopt(c.URL, "{}/{}".format(url, name))
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:{}".format(sld_content_type)])
-            c.setopt(pycurl.READFUNCTION, FileReader(open(path, "rb")).read_callback)
-            c.setopt(pycurl.INFILESIZE, file_size)
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.UPLOAD, 1)
-            c.perform()
-            c.close()
+            return r_sld.status_code
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -942,7 +934,6 @@ class Geoserver:
         color_ramp: str = "RdYlGn_r",
         cmap_type: str = "ramp",
         number_of_classes: int = 5,
-        overwrite: bool = False,
     ):
         """
 
@@ -963,62 +954,51 @@ class Geoserver:
         This function will dynamically create the style file for raster.
         Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determins the number of class, min for minimum value of the raster, max for the max value of raster
         """
+        raster = raster_value(raster_path)
+        min_value = raster["min"]
+        max_value = raster["max"]
+        if style_name is None:
+            style_name = raster["file_name"]
+        coverage_style_xml(
+            color_ramp,
+            style_name,
+            cmap_type,
+            min_value,
+            max_value,
+            number_of_classes,
+        )
+        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+            style_name, style_name + ".sld"
+        )
+
+        if style_name is None:
+            style_name = os.path.basename(raster_path)
+            f = style_name.split(".")
+            if len(f) > 0:
+                style_name = f[0]
+
+        headers = {"content-type": "text/xml"}
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+        sld_content_type = "application/vnd.ogc.sld+xml"
+        header_sld = {"content-type": sld_content_type}
+
+        if workspace is None:
+            url = "{}/rest/styles".format(self.service_url)
+
+        r = None
         try:
-            raster = raster_value(raster_path)
-            min_value = raster["min"]
-            max_value = raster["max"]
-            if style_name is None:
-                style_name = raster["file_name"]
-            coverage_style_xml(
-                color_ramp,
-                style_name,
-                cmap_type,
-                min_value,
-                max_value,
-                number_of_classes,
-            )
-            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-                style_name, style_name + ".sld"
-            )
+            r = requests.post(url, data=style_xml, auth=(
+                self.username, self.password), headers=headers)
 
-            # create the xml file for associated style
-            c = pycurl.Curl()
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/styles".format(self.service_url, workspace),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.perform()
+            with open("style.sld", 'rb') as f:
+                r_sld = requests.put(url + '/' + style_name, data=f.read(), auth=(
+                    self.username, self.password), headers=header_sld)
+                if r_sld.status_code not in [200, 201]:
+                    return '{}: Style file can not be uploaded!'.format(r.status_code)
 
-            # upload the style file
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/styles/{}".format(
-                    self.service_url, workspace, style_name
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml"])
-            c.setopt(
-                pycurl.READFUNCTION, FileReader(open("style.sld", "rb")).read_callback
-            )
-            c.setopt(pycurl.INFILESIZE, os.path.getsize("style.sld"))
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.UPLOAD, 1)
-            c.perform()
-            c.close()
+            os.remove('style.sld')
 
-            # remove temporary style created style file
-            os.remove("style.sld")
+            return r_sld.status_code
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -1031,8 +1011,6 @@ class Geoserver:
         workspace: str = None,
         color_ramp: str = "tab20",
         geom_type: str = "polygon",
-        outline_color: str = "#3579b1",
-        overwrite: bool = False,
     ):
         """Dynamically create categorized style for postgis geometry,
 
@@ -1054,52 +1032,35 @@ class Geoserver:
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
+
+        catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
+
+        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+            style_name, style_name + ".sld"
+        )
+
+        headers = {"content-type": "text/xml"}
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+        sld_content_type = "application/vnd.ogc.sld+xml"
+        header_sld = {"content-type": sld_content_type}
+
+        if workspace is None:
+            url = "{}/rest/styles".format(self.service_url)
+
+        r = None
         try:
-            catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
+            r = requests.post(url, data=style_xml, auth=(
+                self.username, self.password), headers=headers)
 
-            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-                style_name, style_name + ".sld"
-            )
+            with open("style.sld", 'rb') as f:
+                r_sld = requests.put(url + '/' + style_name, data=f.read(), auth=(
+                    self.username, self.password), headers=header_sld)
+                if r_sld.status_code not in [200, 201]:
+                    return '{}: Style file can not be uploaded!'.format(r.status_code)
 
-            # create the xml file for associated style
-            c = pycurl.Curl()
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/styles".format(self.service_url, workspace),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.POST, 1)
-            c.perform()
+            os.remove('style.sld')
 
-            # upload the style file
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/styles/{}".format(
-                    self.service_url, workspace, column_name
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml"])
-            c.setopt(
-                pycurl.READFUNCTION, FileReader(open("style.sld", "rb")).read_callback
-            )
-            c.setopt(pycurl.INFILESIZE, os.path.getsize("style.sld"))
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.UPLOAD, 1)
-            c.perform()
-            c.close()
-
-            # remove temporary style created style file
-            os.remove("style.sld")
+            return r_sld.status_code
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -1110,7 +1071,6 @@ class Geoserver:
         color: str = "#3579b1",
         geom_type: str = "polygon",
         workspace: Optional[str] = None,
-        overwrite: bool = False,
     ):
         """Dynamically creates the outline style for postgis geometry
 
@@ -1130,47 +1090,34 @@ class Geoserver:
         The geometry type must be point, line or polygon
         Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
         """
+        outline_only_xml(color, geom_type)
+
+        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+            style_name, style_name + ".sld"
+        )
+
+        headers = {"content-type": "text/xml"}
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+        sld_content_type = "application/vnd.ogc.sld+xml"
+        header_sld = {"content-type": sld_content_type}
+
+        if workspace is None:
+            url = "{}/rest/styles".format(self.service_url)
+
+        r = None
         try:
-            outline_only_xml(color, geom_type)
+            r = requests.post(url, data=style_xml, auth=(
+                self.username, self.password), headers=headers)
 
-            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-                style_name, style_name + ".sld"
-            )
+            with open("style.sld", 'rb') as f:
+                r_sld = requests.put(url + '/' + style_name, data=f.read(), auth=(
+                    self.username, self.password), headers=header_sld)
+                if r_sld.status_code not in [200, 201]:
+                    return '{}: Style file can not be uploaded!'.format(r.status_code)
 
-            url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
-            if workspace is None:
-                url = "{}/rest/styles".format(self.service_url)
+            os.remove('style.sld')
 
-            # create the xml file for associated style
-            c = pycurl.Curl()
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(c.URL, url)
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.perform()
-
-            # upload the style file
-            c.setopt(c.URL, "{}/{}".format(url, style_name))
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml"])
-            c.setopt(
-                pycurl.READFUNCTION, FileReader(open("style.sld", "rb")).read_callback
-            )
-            c.setopt(pycurl.INFILESIZE, os.path.getsize("style.sld"))
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.UPLOAD, 1)
-            c.perform()
-            c.close()
-
-            # remove temporary style created style file
-            os.remove("style.sld")
+            return r_sld.status_code
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -1182,9 +1129,8 @@ class Geoserver:
         column_distinct_values,
         workspace: Optional[str] = None,
         color_ramp: str = "tab20",
-        # geom_type: str = "polygon",
+        geom_type: str = "polygon",
         # outline_color: str = "#3579b1",
-        overwrite: bool = False,
     ):
         """Dynamically creates the classified style for postgis geometries.
 
@@ -1203,58 +1149,40 @@ class Geoserver:
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
+        classified_xml(
+            style_name,
+            column_name,
+            column_distinct_values,
+            color_ramp,
+            geom_type,
+        )
+
+        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+            column_name, column_name + ".sld"
+        )
+
+        headers = {"content-type": "text/xml"}
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+        sld_content_type = "application/vnd.ogc.sld+xml"
+        header_sld = {"content-type": sld_content_type}
+
+        if workspace is None:
+            url = "{}/rest/styles".format(self.service_url)
+
+        r = None
         try:
-            classified_xml(
-                style_name,
-                column_name,
-                column_distinct_values,
-                color_ramp,
-                geom_type="polygon",
-            )
+            r = requests.post(url, data=style_xml, auth=(
+                self.username, self.password), headers=headers)
 
-            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-                column_name, column_name + ".sld"
-            )
+            with open("style.sld", 'rb') as f:
+                r_sld = requests.put(url + '/' + style_name, data=f.read(), auth=(
+                    self.username, self.password), headers=header_sld)
+                if r_sld.status_code not in [200, 201]:
+                    return '{}: Style file can not be uploaded!'.format(r.status_code)
 
-            # create the xml file for associated style
-            c = pycurl.Curl()
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/styles".format(self.service_url, workspace),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:text/xml"])
-            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.POST, 1)
-            c.perform()
+            os.remove('style.sld')
 
-            # upload the style file
-            c.setopt(
-                c.URL,
-                "{}/rest/workspaces/{}/styles/{}".format(
-                    self.service_url, workspace, column_name
-                ),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type:application/vnd.ogc.sld+xml"])
-            c.setopt(
-                pycurl.READFUNCTION, FileReader(open("style.sld", "rb")).read_callback
-            )
-            c.setopt(pycurl.INFILESIZE, os.path.getsize("style.sld"))
-            if overwrite:
-                c.setopt(pycurl.PUT, 1)
-            else:
-                c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.UPLOAD, 1)
-            c.perform()
-            c.close()
-
-            # remove temporary style created style file
-            os.remove("style.sld")
+            return r_sld.status_code
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -1264,7 +1192,6 @@ class Geoserver:
         layer_name: str,
         style_name: str,
         workspace: str,
-        content_type: str = "text/xml",
     ):
         """Publish a raster file to geoserver.
 
@@ -1273,7 +1200,6 @@ class Geoserver:
         layer_name : str
         style_name : str
         workspace : str
-        content_type : str
 
         Notes
         -----
@@ -1283,25 +1209,18 @@ class Geoserver:
 
         """
 
+        headers = {"content-type": "text/xml"}
+        url = "{0}/rest/layers/{1}:{2}".format(self.service_url, workspace, layer_name)
+        style_xml = (
+            "<layer><defaultStyle><name>{}</name></defaultStyle></layer>".format(style_name))
+
+        r = None
         try:
-            c = pycurl.Curl()
-            style_xml = (
-                "<layer><defaultStyle><name>{}</name></defaultStyle></layer>".format(
-                    style_name
-                )
-            )
-            c.setopt(pycurl.USERPWD, self.username + ":" + self.password)
-            c.setopt(
-                c.URL,
-                "{}/rest/layers/{}:{}".format(self.service_url, workspace, layer_name),
-            )
-            c.setopt(pycurl.HTTPHEADER, ["Content-type: {}".format(content_type)])
-            c.setopt(pycurl.POSTFIELDSIZE, len(style_xml))
-            c.setopt(pycurl.READFUNCTION, DataProvider(style_xml).read_cb)
-            # c.setopt(pycurl.CUSTOMREQUEST, "PUT")
-            c.setopt(pycurl.PUT, 1)
-            c.perform()
-            c.close()
+            r = requests.put(url, data=style_xml, auth=(
+                self.username, self.password), headers=headers)
+
+            return r.status_code
+
         except Exception as e:
             return "Error: {}".format(e)
 

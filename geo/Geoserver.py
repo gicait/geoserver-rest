@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 
-import pycurl
 import requests
 
 from .Calculation_gdal import raster_value

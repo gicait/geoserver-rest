@@ -33,11 +33,7 @@ It is helpful for publishing the raster data to the geoserver. Here if you don't
 .. note::
     If your raster is not loading correctly, please make sure you assign the coordinate system for your raster file.
 
-If the `layername` already exists in geoserver, you can additionall pass the parameter ``overwrite=True``,
-
-.. code-block:: python
-
-    geo.create_coveragestore(layer_name='layer1', path=r'path\to\raster\file.tif', workspace='demo', overwrite=True)
+    If the ``layer_name`` already exists in geoserver, it will automatically overwrite the previous one.
 
 
 Creating and publishing featurestores and featurestore layers

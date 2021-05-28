@@ -4,9 +4,16 @@ Change Log
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
 
+``[V2.0.0 - 2021-05-28]``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Fully replaced the `pycurl <http://pycurl.io/>`_ dependency with `request` and `psycopg2 <https://www.psycopg.org/>`_
+* Dropped the PostgreSQL functionalities (deleted ``geo/Postgres.py`` file). I think the functionalities of PostgreSQL is outside the scope of this library. So I initiated the seperated library `postgres-helper <https://postgres-helper.readthedocs.io/en/latest/>`_
+* Documentation adjustments
+* The ``overwrite`` options removed from ``create_coveragestore``, ``create_coveragestyle`` and other style functions
+
 
 ``[V1.6.0 - 2021-04-13]``
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Documentation adjustments (bunch of Sphinx-docs formatting fixes and English corrections)
 * Add black and pre-commit

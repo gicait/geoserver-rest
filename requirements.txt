@@ -1,7 +1,5 @@
 pygments
-pycurl
 requests
 seaborn
 gdal
-psycopg2
 matplotlib

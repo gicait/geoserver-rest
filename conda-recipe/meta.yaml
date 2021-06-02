@@ -22,8 +22,6 @@ requirements:
     - setuptools
     - gdal
     - seaborn
-    - pycurl
-    - psycopg2
 
 about:
   home: https://github.com/gicait/geoserver-rest

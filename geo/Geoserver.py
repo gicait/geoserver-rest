@@ -487,6 +487,70 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
+    def publish_time_dimension_to_coveragestore(
+        self,
+        store_name: Optional[str] = None,
+        workspace: Optional[str] = None,
+        presentation: Optional[str] = 'LIST',
+        units: Optional[str] = 'ISO8601',
+        default_value: Optional[str] = 'MINIMUM',
+        content_type: str = "application/xml; charset=UTF-8"
+    ):
+        """
+        Create time dimension in coverage store to publish time series in geoserver.
+
+        Parameters
+        ----------
+        store_name : str, optional
+        workspace : str, optional
+        presentation : str, optional
+        units : str, optional
+        default_value : str, optional
+        content_type : str
+
+        Notes
+        -----
+        More about time support in geoserver WMS you can read here:
+        https://docs.geoserver.org/master/en/user/services/wms/time.html
+        """
+
+        url = '{0}/rest/workspaces/{1}/coveragestores/{2}/coverages/{2}'.format(self.service_url, workspace, store_name)
+
+        headers = {
+            "content-type": content_type
+        }
+
+        time_dimension_data = (
+            "<coverage>"
+            "<enabled>true</enabled>"
+            "<metadata>"
+            "<entry key='time'>"
+            "<dimensionInfo>"
+            "<enabled>true</enabled>"
+            "<presentation>{0}</presentation>"
+            "<units>{1}</units>"
+            "<defaultValue>"
+            "<strategy>{2}</strategy>"
+            "</defaultValue>"
+            "</dimensionInfo>"
+            "</entry>"
+            "</metadata>"
+            "</coverage>".format(
+                presentation, units, default_value
+            )
+        )
+
+        r = None
+        try:
+            r = requests.put(url, data=time_dimension_data, auth=(
+                self.username, self.password), headers=headers)
+
+            if r.status_code not in [200, 201]:
+                return '{}: The coveragestore can not have time dimension!'.format(r.status_code)
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
     def create_featurestore(
         self,
         store_name: str,

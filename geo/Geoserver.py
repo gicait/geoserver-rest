@@ -562,6 +562,7 @@ class Geoserver:
         pg_user: str = "postgres",
         pg_password: str = "admin",
         overwrite: bool = False,
+        expose_primary_keys: bool = False,
     ):
         """
         Create PostGIS store for connecting postgres with geoserver.
@@ -577,6 +578,7 @@ class Geoserver:
         pg_user : str
         pg_password : str
         overwrite : bool
+        expose_primary_keys: bool
 
         Notes
         -----
@@ -593,17 +595,18 @@ class Geoserver:
         database_connection = (
             "<dataStore>"
             "<name>{0}</name>"
+            "<Expose primary keys>{1}</Expose primary keys>"
             "<connectionParameters>"
-            "<host>{1}</host>"
-            "<port>{2}</port>"
-            "<database>{3}</database>"
-            "<schema>{4}</schema>"
-            "<user>{5}</user>"
-            "<passwd>{6}</passwd>"
+            "<host>{2}</host>"
+            "<port>{3}</port>"
+            "<database>{4}</database>"
+            "<schema>{5}</schema>"
+            "<user>{6}</user>"
+            "<passwd>{7}</passwd>"
             "<dbtype>postgis</dbtype>"
             "</connectionParameters>"
             "</dataStore>".format(
-                store_name, host, port, db, schema, pg_user, pg_password
+                store_name, expose_primary_keys, host, port, db, schema, pg_user, pg_password
             )
         )
 

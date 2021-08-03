@@ -8,10 +8,11 @@ except ImportError:
 
 def raster_value(path):
     file = os.path.basename(path)
-    file_format = file.split(".")[-1]
+    file_format = os.path.splitext(file)[1]
     file_name = file.split(".")[0]
+    valid_extension = ['.tif', '.gtiff']
 
-    if file_format == "tif":
+    if file_format.lower() in valid_extension:
         gtif = gdal.Open(path)
         srcband = gtif.GetRasterBand(1)
         srcband.ComputeStatistics(0)

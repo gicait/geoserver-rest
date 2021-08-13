@@ -546,7 +546,7 @@ class Geoserver:
                 self.username, self.password), headers=headers)
 
             if r.status_code not in [200, 201]:
-                return '{}: The coveragestore can not have time dimension!'.format(r.status_code)
+                return '{}: The coveragestore can not have time dimension! {}'.format(r.status_code, r.content)
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -620,13 +620,13 @@ class Geoserver:
                     self.username, self.password), headers=headers)
 
                 if r.status_code not in [200, 201]:
-                    return '{}: Datastore can not be updated'.format(r.status_code)
+                    return '{}: Datastore can not be updated. {}'.format(r.status_code, r.content)
             else:
                 r = requests.post(url, data=database_connection, auth=(
                     self.username, self.password), headers=headers)
 
                 if r.status_code not in [200, 201]:
-                    return '{}: Data store can not be created!'.format(r.status_code)
+                    return '{}: Data store can not be created! {}'.format(r.status_code, r.content)
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -694,7 +694,7 @@ class Geoserver:
                 return "Data store created/updated successfully"
 
             else:
-                raise Exception("datastore can not be created")
+                raise Exception("datastore can not be created. Status code: {}, {}".format(r.status_code, r.content))
 
         except Exception as e:
             return "Error create_datastore: {}".format(e)
@@ -760,8 +760,8 @@ class Geoserver:
                     return "The shapefile datastore created successfully!"
 
                 else:
-                    return "{}: The shapefile datastore can not be created!".format(
-                        r.status_code
+                    return "{}: The shapefile datastore can not be created! {}".format(
+                        r.status_code, r.content
                     )
 
         except Exception as e:
@@ -797,7 +797,7 @@ class Geoserver:
             r = requests.post(url, data=layer_xml, auth=(
                 self.username, self.password), headers=headers)
             if r.status_code not in [200, 201]:
-                return '{}: Data can not be published!'.format(r.status_code)
+                return '{}: Data can not be published! {}'.format(r.status_code, r.content)
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -862,7 +862,7 @@ class Geoserver:
             r = requests.post(url, data=layer_xml, auth=(
                 self.username, self.password), headers=headers)
             if r.status_code not in [200, 201]:
-                return '{}: Data can not be published!'.format(r.status_code)
+                return '{}: Data can not be published! {}'.format(r.status_code, r.content)
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -923,7 +923,7 @@ class Geoserver:
                 r_sld = requests.put(url + '/' + name, data=f.read(), auth=(
                     self.username, self.password), headers=header_sld)
                 if r_sld.status_code not in [200, 201]:
-                    return '{}: Style file can not be uploaded!'.format(r.status_code)
+                    return '{}: Style file can not be uploaded! {}'.format(r.status_code, r.content)
 
             return r_sld.status_code
 
@@ -1061,7 +1061,7 @@ class Geoserver:
                 r_sld = requests.put(url + '/' + style_name, data=f.read(), auth=(
                     self.username, self.password), headers=header_sld)
                 if r_sld.status_code not in [200, 201]:
-                    return '{}: Style file can not be uploaded!'.format(r.status_code)
+                    return '{}: Style file can not be uploaded! {}'.format(r.status_code, r.content)
 
             os.remove('style.sld')
 
@@ -1123,7 +1123,7 @@ class Geoserver:
                 r_sld = requests.put(url + '/' + style_name, data=f.read(), auth=(
                     self.username, self.password), headers=header_sld)
                 if r_sld.status_code not in [200, 201]:
-                    return '{}: Style file can not be uploaded!'.format(r.status_code)
+                    return '{}: Style file can not be uploaded! {}'.format(r.status_code, r.content)
 
             os.remove('style.sld')
 
@@ -1180,7 +1180,7 @@ class Geoserver:
                 r_sld = requests.put(url + '/' + style_name, data=f.read(), auth=(
                     self.username, self.password), headers=header_sld)
                 if r_sld.status_code not in [200, 201]:
-                    return '{}: Style file can not be uploaded!'.format(r.status_code)
+                    return '{}: Style file can not be uploaded! {}'.format(r.status_code, r.content)
 
             os.remove('style.sld')
 
@@ -1245,7 +1245,7 @@ class Geoserver:
                 r_sld = requests.put(url + '/' + style_name, data=f.read(), auth=(
                     self.username, self.password), headers=header_sld)
                 if r_sld.status_code not in [200, 201]:
-                    return '{}: Style file can not be uploaded!'.format(r.status_code)
+                    return '{}: Style file can not be uploaded! {}'.format(r.status_code, r.content)
 
             os.remove('style.sld')
 

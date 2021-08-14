@@ -4,8 +4,19 @@ Change Log
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
 
+
+``[V2.0.0 - 2021-08-14]``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* Expose primary key option for datastore in ``create_featurestore`` function
+* Time dimention support for the coverage store
+* Bug fixing for the ``.tiff`` datastore
+* Added the request.content to error messages in order to get more information about error
+
+
 ``[V2.0.0 - 2021-05-28]``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 * Fully replaced the `pycurl <http://pycurl.io/>`_ dependency with `request` and `psycopg2 <https://www.psycopg.org/>`_
 * Dropped the PostgreSQL functionalities (deleted ``geo/Postgres.py`` file). I think the functionalities of PostgreSQL is outside the scope of this library. So I initiated the seperated library `postgres-helper <https://postgres-helper.readthedocs.io/en/latest/>`_
 * Documentation adjustments

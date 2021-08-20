@@ -62,15 +62,15 @@ geo.delete_style(style_name='kamal2', workspace='demo')
 
 ```
 @Article{isprs-archives-XLVI-4-W2-2021-91-2021,
-AUTHOR = {Tek Bahadur Kshetri, Angsana Chaksana and Shraddha Sharma},
-TITLE = {THE ROLE OF OPEN-SOURCE PYTHON PACKAGE GEOSERVER-REST IN WEB-GIS DEVELOPMENT},
-JOURNAL = {The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences},
-VOLUME = {XLVI-4/W2-2021},
-YEAR = {2021},
-PAGES = {91--96},
-URL = {https://www.int-arch-photogramm-remote-sens-spatial-inf-sci.net/XLVI-4-W2-2021/91/2021/},
-DOI = {10.5194/isprs-archives-XLVI-4-W2-2021-91-2021}
-}
+      AUTHOR = {Tek Bahadur Kshetri, Angsana Chaksana and Shraddha Sharma},
+      TITLE = {THE ROLE OF OPEN-SOURCE PYTHON PACKAGE GEOSERVER-REST IN WEB-GIS DEVELOPMENT},
+      JOURNAL = {The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences},
+      VOLUME = {XLVI-4/W2-2021},
+      YEAR = {2021},
+      PAGES = {91--96},
+      URL = {https://www.int-arch-photogramm-remote-sens-spatial-inf-sci.net/XLVI-4-W2-2021/91/2021/},
+      DOI = {10.5194/isprs-archives-XLVI-4-W2-2021-91-2021}
+  }
 ```
 
 ### Contribution

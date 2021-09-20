@@ -595,18 +595,36 @@ class Geoserver:
         database_connection = (
             "<dataStore>"
             "<name>{0}</name>"
-            "<Expose primary keys>{1}</Expose primary keys>"
             "<connectionParameters>"
-            "<host>{2}</host>"
-            "<port>{3}</port>"
-            "<database>{4}</database>"
-            "<schema>{5}</schema>"
-            "<user>{6}</user>"
-            "<passwd>{7}</passwd>"
+            "<host>{1}</host>"
+            "<port>{2}</port>"
+            "<database>{3}</database>"
+            "<schema>{4}</schema>"
+            "<user>{5}</user>"
+            "<passwd>{6}</passwd>"
             "<dbtype>postgis</dbtype>"
             "</connectionParameters>"
             "</dataStore>".format(
-                store_name, expose_primary_keys, host, port, db, schema, pg_user, pg_password
+                store_name, host, port, db, schema, pg_user, pg_password
+            )
+        )
+
+        if expose_primary_keys:
+            database_connection = (
+            "<dataStore>"
+            "<name>{0}</name>"
+            "<Expose primary keys>{7}</Expose primary keys>"
+            "<connectionParameters>"
+            "<host>{1}</host>"
+            "<port>{2}</port>"
+            "<database>{3}</database>"
+            "<schema>{4}</schema>"
+            "<user>{5}</user>"
+            "<passwd>{6}</passwd>"
+            "<dbtype>postgis</dbtype>"
+            "</connectionParameters>"
+            "</dataStore>".format(
+                store_name, host, port, db, schema, pg_user, pg_password, expose_primary_keys
             )
         )
 

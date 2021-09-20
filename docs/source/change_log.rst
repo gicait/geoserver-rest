@@ -3,6 +3,7 @@ Change Log
 
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
+* ``create_datastore`` bug on Expose primary key fixed
 
 
 ``[V2.0.0 - 2021-08-14]``

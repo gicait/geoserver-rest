@@ -60,6 +60,8 @@ geo.delete_style(style_name='kamal2', workspace='demo')
 
 ### Citation
 
+Full paper is available here: https://doi.org/10.5194/isprs-archives-XLVI-4-W2-2021-91-2021
+
 ```
 @Article{isprs-archives-XLVI-4-W2-2021-91-2021,
       AUTHOR = {Tek Bahadur Kshetri, Angsana Chaksana and Shraddha Sharma},

@@ -555,6 +555,7 @@ class Geoserver:
         self,
         store_name: str,
         workspace: Optional[str] = None,
+        description: Optional[str] = None,
         db: str = "postgres",
         host: str = "localhost",
         port: int = 5432,
@@ -571,6 +572,7 @@ class Geoserver:
         ----------
         store_name : str
         workspace : str, optional
+        description : str, optional
         db : str
         host : str
         port : int
@@ -595,6 +597,7 @@ class Geoserver:
         database_connection = (
             "<dataStore>"
             "<name>{0}</name>"
+            "<description>{7}</description>"
             "<connectionParameters>"
             "<host>{1}</host>"
             "<port>{2}</port>"
@@ -605,7 +608,7 @@ class Geoserver:
             "<dbtype>postgis</dbtype>"
             "</connectionParameters>"
             "</dataStore>".format(
-                store_name, host, port, db, schema, pg_user, pg_password
+                store_name, host, port, db, schema, pg_user, pg_password, description
             )
         )
 
@@ -819,6 +822,53 @@ class Geoserver:
 
         except Exception as e:
             return "Error: {}".format(e)
+
+    def edit_featuretype(self,
+                        store_name: str,
+                        workspace: Optional[str],
+                        pg_table: str,
+                        name: str,
+                        title: str
+                        ):
+        """
+
+        Parameters
+        ----------
+        store_name : str
+        workspace : str, optional
+        pg_table : str
+        name : str
+        title : str
+
+        Returns
+        -------
+
+        Notes
+        -----
+        """
+
+        if workspace is None:
+            workspace = "default"
+
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.xml".format(
+            self.service_url, workspace, store_name,pg_table)
+
+        layer_xml = """<featureType>
+                    <name>{}</name>
+                    <title>{}</title>
+                    </featureType>""".format(name,title)
+        headers = {"content-type": "text/xml"}
+
+        try:
+            r = requests.put(url, data=layer_xml, auth=(
+                self.username, self.password), headers=headers)
+            if r.status_code not in [200, 201]:
+                return '{}: Data has not been edited! {}'.format(r.status_code, r.content)
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+
 
     def publish_featurestore_sqlview(
         self,

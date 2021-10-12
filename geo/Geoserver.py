@@ -641,7 +641,7 @@ class Geoserver:
                 <entry key="host">{3}</entry>
                 <entry key="port">{4}</entry>
                 <entry key="user">{5}</entry>
-                <entry key="password">{6}</entry>
+                <entry key="passwd">{6}</entry>
                 <entry key="dbtype">postgis</entry>
                 <entry key="schema">{7}</entry>
                 <entry key="database">{8}</entry>

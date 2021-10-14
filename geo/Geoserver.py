@@ -555,7 +555,6 @@ class Geoserver:
         self,
         store_name: str,
         workspace: Optional[str] = None,
-        description: Optional[str] = None,
         db: str = "postgres",
         host: str = "localhost",
         port: int = 5432,
@@ -563,8 +562,9 @@ class Geoserver:
         pg_user: str = "postgres",
         pg_password: str = "admin",
         overwrite: bool = False,
-        expose_primary_keys: str = "false",
 
+        expose_primary_keys: str = "false",
+        description: Optional[str] = None,
         evictor_run_periodicity: Optional[int] = 300,
         max_open_prepared_statements: Optional[int] = 50,
         encode_functions: Optional[str] = "false",
@@ -591,7 +591,6 @@ class Geoserver:
         ----------
         store_name : str
         workspace : str, optional
-        description : str, optional
         db : str
         host : str
         port : int
@@ -599,8 +598,9 @@ class Geoserver:
         pg_user : str
         pg_password : str
         overwrite : bool
-        expose_primary_keys: str
 
+        expose_primary_keys: str
+        description : str, optional
         evictor_run_periodicity : str
         max_open_prepared_statements : int
         encode_functions : str
@@ -623,7 +623,7 @@ class Geoserver:
 
         Notes
         -----
-        After creating feature store, you need to publish it.
+        After creating feature store, you need to publish it. See the layer publish guidline here: https://geoserver-rest.readthedocs.io/en/latest/how_to_use.html#creating-and-publishing-featurestores-and-featurestore-layers 
         """
 
         url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)

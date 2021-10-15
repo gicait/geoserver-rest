@@ -22,6 +22,9 @@ requirements:
     - setuptools
     - gdal
     - seaborn
+    - requests
+    - pygments
+    - matplotlib
 
 about:
   home: https://github.com/gicait/geoserver-rest

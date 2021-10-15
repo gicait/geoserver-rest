@@ -11,9 +11,6 @@ with open(os.path.join(here, "geo", "__version__.py"), "r") as f:
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-reqs = [line.strip() for line in open("requirements.txt")]
-dev_reqs = [line.strip() for line in open("requirements_dev.txt")]
-
 setup(
     name="geoserver-rest",
     version=about["__version__"],
@@ -45,7 +42,19 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=reqs,
-    extras_require={"dev": dev_reqs},
+    install_requires=[
+        'pygments',
+        'requests',
+        'seaborn',
+        'gdal',
+        'matplotlib'
+    ],
+    extras_require={"dev": [
+        "pytest",
+        "black",
+        "flake8",
+        "sphinx>=1.7",
+        "pre-commit"
+    ]},
     python_requires=">=3.6",
 )

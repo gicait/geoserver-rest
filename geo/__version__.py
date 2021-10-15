@@ -6,4 +6,4 @@
 
 __author__ = "Tek Kshetri"
 __email__ = "iamtekson@gmail.com"
-__version__ = "2.1.3"
+__version__ = "2.1.4"

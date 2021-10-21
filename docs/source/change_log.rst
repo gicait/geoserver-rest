@@ -4,6 +4,7 @@ Change Log
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
 
+* Params for `delete_workspace` and `delete_style` changed to `{recursive: true}`
 
 
 ``[V2.1.2 - 2021-10-14]``

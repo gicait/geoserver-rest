@@ -1413,7 +1413,7 @@ class Geoserver:
         try:
             payload = {"recurse": "true"}
             url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
-            r = requests.delete(url, auth=(self.username, self.password), param=payload)
+            r = requests.delete(url, auth=(self.username, self.password), params=payload)
 
             if r.status_code == 200:
                 return "Status code: {}, delete workspace".format(r.status_code)
@@ -1537,7 +1537,7 @@ class Geoserver:
             if workspace is None:
                 url = "{}/rest/styles/{}".format(self.service_url, style_name)
 
-            r = requests.delete(url, auth=(self.username, self.password), param=payload)
+            r = requests.delete(url, auth=(self.username, self.password), params=payload)
 
             if r.status_code == 200:
                 return "Status code: {}, delete style".format(r.status_code)

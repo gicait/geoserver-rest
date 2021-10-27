@@ -656,7 +656,7 @@ class Geoserver:
                 <entry key="validate connections">{17}</entry>
                 <entry key="Support on the fly geometry simplification">{18}</entry>
                 <entry key="Connection timeout">{19}</entry>
-                <entry key="create Database">{20}</entry>
+                <entry key="create database">{20}</entry>
                 <entry key="min connections">{21}</entry>
                 <entry key="max connections">{22}</entry>
                 <entry key="Evictor tests per run">{23}</entry>

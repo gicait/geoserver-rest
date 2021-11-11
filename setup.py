@@ -47,7 +47,8 @@ setup(
         'requests',
         'seaborn',
         'gdal',
-        'matplotlib'
+        'matplotlib',
+        'xmltodict'
     ],
     extras_require={"dev": [
         "pytest",

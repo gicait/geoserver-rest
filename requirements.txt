@@ -3,3 +3,4 @@ requests
 seaborn
 gdal
 matplotlib
+xmltodict

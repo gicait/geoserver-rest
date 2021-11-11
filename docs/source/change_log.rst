@@ -5,6 +5,7 @@ Change Log
 ^^^^^^^^^^^^^^^^^
 
 * Params for `delete_workspace` and `delete_style` changed to `{recursive: true}`
+* Added methods to use REST API for user/group service CRUD operations.
 
 
 ``[V2.1.2 - 2021-10-14]``

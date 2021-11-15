@@ -717,8 +717,7 @@ class Geoserver:
         path : str
             Path to shapefile (.shp) file, GeoPackage (.gpkg) file, WFS url
             (e.g. http://localhost:8080/geoserver/wfs?request=GetCapabilities) or directory containing shapefiles.
-        workspace : str, optional
-            Default: "default".
+        workspace : str, optional default value = "default".
         overwrite : bool
 
         Notes
@@ -1416,7 +1415,8 @@ class Geoserver:
         try:
             payload = {"recurse": "true"}
             url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
-            r = requests.delete(url, auth=(self.username, self.password), params=payload)
+            r = requests.delete(url, auth=(
+                self.username, self.password), params=payload)
 
             if r.status_code == 200:
                 return "Status code: {}, delete workspace".format(r.status_code)
@@ -1540,7 +1540,8 @@ class Geoserver:
             if workspace is None:
                 url = "{}/rest/styles/{}".format(self.service_url, style_name)
 
-            r = requests.delete(url, auth=(self.username, self.password), params=payload)
+            r = requests.delete(url, auth=(
+                self.username, self.password), params=payload)
 
             if r.status_code == 200:
                 return "Status code: {}, delete style".format(r.status_code)
@@ -1550,21 +1551,21 @@ class Geoserver:
 
         except Exception as e:
             return "Error: {}".format(e)
-    
+
     def get_all_users(self, service=None):
         """
-        
+
         Parameters
         ----------
         service: str, optional
 
         Query all users in the provided user/group service, else default user/group service is queried
-        """ 
+        """
         url = "{}/rest/security/usergroup/".format(self.service_url)
         if service is None:
             url += "users/"
         else:
-            url += "service/{}/users/".format(service)       
+            url += "service/{}/users/".format(service)
         try:
             headers = {"accept": "application/xml"}
             r = requests.get(
@@ -1581,7 +1582,7 @@ class Geoserver:
 
     def create_user(self, username: str, password: str, enabled=True, service=None):
         """
-        
+
         Parameters
         ----------
         username : str
@@ -1598,7 +1599,7 @@ class Geoserver:
             url += "service/{}/users/".format(service)
         try:
             data = "<user><userName>{}</userName><password>{}</password><enabled>{}</enabled></user>".format(username,
-            password, enabled)
+                                                                                                             password, enabled)
             headers = {"content-type": "text/xml", "accept": "application/json"}
             r = requests.post(
                 url, data, auth=(self.username, self.password), headers=headers
@@ -1613,9 +1614,9 @@ class Geoserver:
             return "Error: {}".format(e)
 
     def modify_user(self, username: str, new_name=None, new_password=None,
-    enable=None, service=None):
+                    enable=None, service=None):
         """
-        
+
         Parameters
         ----------
         username : str
@@ -1632,7 +1633,7 @@ class Geoserver:
             url += "user/{}".format(username)
         else:
             url += "service/{}/user/{}".format(service, username)
-        
+
         modifications = dict()
         if new_name is not None:
             modifications["userName"] = new_name
@@ -1640,7 +1641,7 @@ class Geoserver:
             modifications["password"] = new_password
         if enable is not None:
             modifications["enabled"] = enable
-        
+
         try:
             data = unparse({"user": modifications})
             print(url, data)
@@ -1659,7 +1660,7 @@ class Geoserver:
 
     def delete_user(self, username: str, service=None):
         """
-        
+
         Parameters
         ----------
         username : str
@@ -1673,7 +1674,7 @@ class Geoserver:
             url += "user/{}".format(username)
         else:
             url += "service/{}/user/{}".format(service, username)
-        
+
         try:
             headers = {"accept": "application/json"}
             r = requests.delete(
@@ -1687,11 +1688,10 @@ class Geoserver:
 
         except Exception as e:
             return "Error: {}".format(e)
-    
 
     def get_all_usergroups(self, service=None):
         """
-        
+
         Parameters
         ----------
         service : str, optional
@@ -1704,7 +1704,7 @@ class Geoserver:
             url += "groups/"
         else:
             url += "service/{}/groups/".format(service)
-        
+
         try:
             r = requests.get(
                 url, auth=(self.username, self.password)
@@ -1720,7 +1720,7 @@ class Geoserver:
 
     def create_usergroup(self, group: str, service=None):
         """
-        
+
         Parameters
         ----------
         group : str
@@ -1749,7 +1749,7 @@ class Geoserver:
 
     def delete_usergroup(self, group: str, service=None):
         """
-        
+
         Parameters
         ----------
         group : str

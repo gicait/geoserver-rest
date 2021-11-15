@@ -1,5 +1,5 @@
-Geoserver API
-==============
+Python API Reference
+====================
 
 
 The ``Geoserver`` class

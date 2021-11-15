@@ -5,16 +5,16 @@ Python API Reference
 The ``Geoserver`` class
 ------------------------
 
-.. autoclass:: geo.Geoserver
+.. autoclass:: geo.Geoserver.Geoserver
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-The ``Style`` class
+The ``Style`` functions
 ----------------
 
-.. autoclass:: geo.Style
+.. automodule:: geo.Style
    :members:
    :undoc-members:
    :show-inheritance:

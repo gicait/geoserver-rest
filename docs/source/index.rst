@@ -18,7 +18,7 @@ Welcome to geoserver-rest documentation!
    license
    contribution
    acknowledgements
-
+   geo
 
 Checkout the video tutorial on geoserver-rest below,
 

@@ -514,7 +514,8 @@ class Geoserver:
         https://docs.geoserver.org/master/en/user/services/wms/time.html
         """
 
-        url = '{0}/rest/workspaces/{1}/coveragestores/{2}/coverages/{2}'.format(self.service_url, workspace, store_name)
+        url = '{0}/rest/workspaces/{1}/coveragestores/{2}/coverages/{2}'.format(
+            self.service_url, workspace, store_name)
 
         headers = {
             "content-type": content_type
@@ -666,12 +667,14 @@ class Geoserver:
                 </connectionParameters>              
                 </dataStore>
                 """.format(
-                store_name, description, expose_primary_keys, host, port, pg_user, pg_password, schema, db,
-                evictor_run_periodicity, max_open_prepared_statements, encode_functions, primary_key_metadata_table,
-                batch_insert_size, preparedstatements, estimated_extends, fetch_size, validate_connections, 
-                support_on_the_fly_geometry_simplification, connection_timeout, create_database, min_connections,
-                max_connections, evictor_tests_per_run, test_while_idle, max_connection_idle_time, loose_bbox
-                 )
+            store_name, description, expose_primary_keys, host, port, pg_user, pg_password, schema, db,
+            evictor_run_periodicity, max_open_prepared_statements, encode_functions, primary_key_metadata_table,
+            batch_insert_size, preparedstatements, estimated_extends, fetch_size, validate_connections,
+            batch_insert_size, preparedstatements, estimated_extends, fetch_size, validate_connections,
+            batch_insert_size, preparedstatements, estimated_extends, fetch_size, validate_connections,
+            support_on_the_fly_geometry_simplification, connection_timeout, create_database, min_connections,
+            max_connections, evictor_tests_per_run, test_while_idle, max_connection_idle_time, loose_bbox
+        )
         )
 
         r = None
@@ -758,7 +761,8 @@ class Geoserver:
                 return "Data store created/updated successfully"
 
             else:
-                raise Exception("datastore can not be created. Status code: {}, {}".format(r.status_code, r.content))
+                raise Exception("datastore can not be created. Status code: {}, {}".format(
+                    r.status_code, r.content))
 
         except Exception as e:
             return "Error create_datastore: {}".format(e)
@@ -867,12 +871,12 @@ class Geoserver:
             return "Error: {}".format(e)
 
     def edit_featuretype(self,
-                        store_name: str,
-                        workspace: Optional[str],
-                        pg_table: str,
-                        name: str,
-                        title: str
-                        ):
+                         store_name: str,
+                         workspace: Optional[str],
+                         pg_table: str,
+                         name: str,
+                         title: str
+                         ):
         """
 
         Parameters
@@ -894,12 +898,12 @@ class Geoserver:
             workspace = "default"
 
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.xml".format(
-            self.service_url, workspace, store_name,pg_table)
+            self.service_url, workspace, store_name, pg_table)
 
         layer_xml = """<featureType>
                     <name>{}</name>
                     <title>{}</title>
-                    </featureType>""".format(name,title)
+                    </featureType>""".format(name, title)
         headers = {"content-type": "text/xml"}
 
         try:
@@ -910,8 +914,6 @@ class Geoserver:
 
         except Exception as e:
             return "Error: {}".format(e)
-
-
 
     def publish_featurestore_sqlview(
         self,

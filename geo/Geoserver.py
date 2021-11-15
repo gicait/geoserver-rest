@@ -2,6 +2,7 @@ import os
 from typing import Optional
 
 import requests
+from xmltodict import unparse, parse
 
 from .Calculation_gdal import raster_value
 from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
@@ -657,7 +658,7 @@ class Geoserver:
                 <entry key="validate connections">{17}</entry>
                 <entry key="Support on the fly geometry simplification">{18}</entry>
                 <entry key="Connection timeout">{19}</entry>
-                <entry key="create Database">{20}</entry>
+                <entry key="create database">{20}</entry>
                 <entry key="min connections">{21}</entry>
                 <entry key="max connections">{22}</entry>
                 <entry key="Evictor tests per run">{23}</entry>
@@ -1415,7 +1416,7 @@ class Geoserver:
         try:
             payload = {"recurse": "true"}
             url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
-            r = requests.delete(url, auth=(self.username, self.password), param=payload)
+            r = requests.delete(url, auth=(self.username, self.password), params=payload)
 
             if r.status_code == 200:
                 return "Status code: {}, delete workspace".format(r.status_code)
@@ -1539,13 +1540,239 @@ class Geoserver:
             if workspace is None:
                 url = "{}/rest/styles/{}".format(self.service_url, style_name)
 
-            r = requests.delete(url, auth=(self.username, self.password), param=payload)
+            r = requests.delete(url, auth=(self.username, self.password), params=payload)
 
             if r.status_code == 200:
                 return "Status code: {}, delete style".format(r.status_code)
 
             else:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
+
+        except Exception as e:
+            return "Error: {}".format(e)
+    
+    def get_all_users(self, service=None):
+        """
+        
+        Parameters
+        ----------
+        service: str, optional
+
+        Query all users in the provided user/group service, else default user/group service is queried
+        """ 
+        url = "{}/rest/security/usergroup/".format(self.service_url)
+        if service is None:
+            url += "users/"
+        else:
+            url += "service/{}/users/".format(service)       
+        try:
+            headers = {"accept": "application/xml"}
+            r = requests.get(
+                url, auth=(self.username, self.password), headers=headers
+            )
+
+            if r.status_code == 200:
+                return parse(r.content)
+            else:
+                raise Exception("Users could not be fetched")
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+    def create_user(self, username: str, password: str, enabled=True, service=None):
+        """
+        
+        Parameters
+        ----------
+        username : str
+        password: str
+        user_service : str, optional
+
+        Add a new user to the provided user/group service
+        If no user/group service is provided, then the users is added to default user service
+        """
+        url = "{}/rest/security/usergroup/".format(self.service_url)
+        if service is None:
+            url += "users/"
+        else:
+            url += "service/{}/users/".format(service)
+        try:
+            data = "<user><userName>{}</userName><password>{}</password><enabled>{}</enabled></user>".format(username,
+            password, enabled)
+            headers = {"content-type": "text/xml", "accept": "application/json"}
+            r = requests.post(
+                url, data, auth=(self.username, self.password), headers=headers
+            )
+
+            if r.status_code == 201:
+                return "User created successfully"
+            else:
+                raise Exception("The user can not be created")
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+    def modify_user(self, username: str, new_name=None, new_password=None,
+    enable=None, service=None):
+        """
+        
+        Parameters
+        ----------
+        username : str
+        new_name : str, optional
+        new_password : str, optional
+        enable : bool, optional
+        service : str, optional
+
+        Modifies a user in the provided user/group service
+        If no user/group service is provided, then the user in the default user service is modified
+        """
+        url = "{}/rest/security/usergroup/".format(self.service_url)
+        if service is None:
+            url += "user/{}".format(username)
+        else:
+            url += "service/{}/user/{}".format(service, username)
+        
+        modifications = dict()
+        if new_name is not None:
+            modifications["userName"] = new_name
+        if new_password is not None:
+            modifications["password"] = new_password
+        if enable is not None:
+            modifications["enabled"] = enable
+        
+        try:
+            data = unparse({"user": modifications})
+            print(url, data)
+            headers = {"content-type": "text/xml", "accept": "application/json"}
+            r = requests.post(
+                url, data, auth=(self.username, self.password), headers=headers
+            )
+
+            if r.status_code == 200:
+                return "User modified successfully"
+            else:
+                raise Exception("The user can not be modified")
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+    def delete_user(self, username: str, service=None):
+        """
+        
+        Parameters
+        ----------
+        username : str
+        user_service : str, optional
+
+        Deletes user from the provided user/group service
+        If no user/group service is provided, then the users is deleted from default user service
+        """
+        url = "{}/rest/security/usergroup/".format(self.service_url)
+        if service is None:
+            url += "user/{}".format(username)
+        else:
+            url += "service/{}/user/{}".format(service, username)
+        
+        try:
+            headers = {"accept": "application/json"}
+            r = requests.delete(
+                url, auth=(self.username, self.password), headers=headers
+            )
+
+            if r.status_code == 200:
+                return "User deleted successfully"
+            else:
+                raise Exception("The user could not be deleted")
+
+        except Exception as e:
+            return "Error: {}".format(e)
+    
+
+    def get_all_usergroups(self, service=None):
+        """
+        
+        Parameters
+        ----------
+        service : str, optional
+
+        Queries all the groups in the given user/group service
+        If no user/group service is provided, default user/group service is used
+        """
+        url = "{}/rest/security/usergroup/".format(self.service_url)
+        if service is None:
+            url += "groups/"
+        else:
+            url += "service/{}/groups/".format(service)
+        
+        try:
+            r = requests.get(
+                url, auth=(self.username, self.password)
+            )
+
+            if r.status_code == 200:
+                return parse(r.content)
+            else:
+                raise Exception("The groups could not be fetched")
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+    def create_usergroup(self, group: str, service=None):
+        """
+        
+        Parameters
+        ----------
+        group : str
+        service : str, optional
+
+        Add a new usergroup to the provided user/group service
+        If no user/group service is provided, then the usergroup is added to default user service
+        """
+        url = "{}/rest/security/usergroup/".format(self.service_url)
+        if service is None:
+            url += "group/{}".format(group)
+        else:
+            url += "service/{}/group/{}".format(service, group)
+        try:
+            r = requests.post(
+                url, auth=(self.username, self.password)
+            )
+
+            if r.status_code == 201:
+                return "Group created successfully"
+            else:
+                raise Exception("The group can not be created")
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+    def delete_usergroup(self, group: str, service=None):
+        """
+        
+        Parameters
+        ----------
+        group : str
+        service : str, optional
+
+        Deletes given usergroup from provided user/group service
+        If no user/group service is provided, then the usergroup deleted from default user service
+        """
+        url = "{}/rest/security/usergroup/".format(self.service_url)
+        if service is None:
+            url += "group/{}".format(group)
+        else:
+            url += "service/{}/group/{}".format(service, group)
+
+        try:
+            r = requests.delete(
+                url, auth=(self.username, self.password)
+            )
+
+            if r.status_code == 200:
+                return "Group deleted successfully"
+            else:
+                raise Exception("The group could not be deleted")
 
         except Exception as e:
             return "Error: {}".format(e)

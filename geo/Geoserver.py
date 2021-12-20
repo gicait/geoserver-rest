@@ -479,7 +479,7 @@ class Geoserver:
         r = None
         try:
             with open(path, 'rb') as f:
-                r = requests.put(url, data=f.read(), auth=(
+                r = requests.put(url, data=f, auth=(
                     self.username, self.password), headers=headers)
 
             if r.status_code != 201:

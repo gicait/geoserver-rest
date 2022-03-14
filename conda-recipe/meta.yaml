@@ -25,6 +25,7 @@ requirements:
     - requests
     - pygments
     - matplotlib
+    - xmltodict
 
 about:
   home: https://github.com/gicait/geoserver-rest

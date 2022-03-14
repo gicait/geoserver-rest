@@ -920,9 +920,9 @@ class Geoserver:
         name: str,
         store_name: str,
         sql: str,
-        key_column: str,
         geom_name: str = "geom",
         geom_type: str = "Geometry",
+        srid: Optional[int] = 4326,
         workspace: Optional[str] = None,
     ):
         """
@@ -932,7 +932,6 @@ class Geoserver:
         name : str
         store_name : str
         sql : str
-        key_column : str
         geom_name : str
         geom_type : str
         workspace : str, optional
@@ -945,26 +944,25 @@ class Geoserver:
         <name>{0}</name>
         <enabled>true</enabled>
         <namespace>
-        <name>{5}</name>
+            <name>{4}</name>
         </namespace>
         <title>{0}</title>
-        <srs>EPSG:4326</srs>
+        <srs>EPSG:{5}</srs>
         <metadata>
-        <entry key="JDBC_VIRTUAL_TABLE">
-        <virtualTable>
-        <name>{0}</name>
-        <sql>{1}</sql>
-        <escapeSql>true</escapeSql>
-        <keyColumn>{2}</keyColumn>
-        <geometry>
-        <name>{3}</name>
-        <type>{4}</type>
-        <srid>4326</srid>
-        </geometry>
-        </virtualTable>
-        </entry>
+            <entry key="JDBC_VIRTUAL_TABLE">
+                <virtualTable>
+                    <name>{0}</name>
+                    <sql>{1}</sql>
+                    <escapeSql>true</escapeSql>
+                    <geometry>
+                        <name>{2}</name>
+                        <type>{3}</type>
+                        <srid>{5}</srid>
+                    </geometry>
+                </virtualTable>
+            </entry>
         </metadata>
-        </featureType>""".format(name, sql, key_column, geom_name, geom_type, workspace)
+        </featureType>""".format(name, sql, geom_name, geom_type, workspace, srid)
 
         url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes".format(
             self.service_url, workspace, store_name)

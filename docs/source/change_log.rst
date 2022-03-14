@@ -6,6 +6,7 @@ Change Log
 
 * Params for `delete_workspace` and `delete_style` changed to `{recursive: true}`
 * Added methods to use REST API for user/group service CRUD operations.
+* Removed ``key_column`` parameter and added ``srid`` parameter (coordinate system of the layer, default is 4326) from ``publish_featurestore_sqlview`` function
 
 
 ``[V2.1.2 - 2021-10-14]``

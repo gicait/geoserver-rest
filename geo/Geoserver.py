@@ -671,8 +671,6 @@ class Geoserver:
             store_name, description, expose_primary_keys, host, port, pg_user, pg_password, schema, db,
             evictor_run_periodicity, max_open_prepared_statements, encode_functions, primary_key_metadata_table,
             batch_insert_size, preparedstatements, estimated_extends, fetch_size, validate_connections,
-            batch_insert_size, preparedstatements, estimated_extends, fetch_size, validate_connections,
-            batch_insert_size, preparedstatements, estimated_extends, fetch_size, validate_connections,
             support_on_the_fly_geometry_simplification, connection_timeout, create_database, min_connections,
             max_connections, evictor_tests_per_run, test_while_idle, max_connection_idle_time, loose_bbox
         )

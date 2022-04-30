@@ -8,6 +8,7 @@ Change Log
 * Added methods to use REST API for user/group service CRUD operations.
 * Removed ``key_column`` parameter and added ``srid`` parameter (coordinate system of the layer, default is 4326) from ``publish_featurestore_sqlview`` function
 * Solved the Bug `#73 <https://github.com/gicait/geoserver-rest/issues/73>`_ and `#69 <https://github.com/gicait/geoserver-rest/issues/69>`_
+* ``create_layergroup`` function added
 
 
 ``[V2.1.2 - 2021-10-14]``

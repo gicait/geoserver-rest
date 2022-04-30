@@ -1,11 +1,13 @@
 import os
+from typing import Dict
 
 from setuptools import setup
 
-here = os.path.abspath(os.path.dirname(__file__))
+HERE = os.path.abspath(os.path.dirname(__file__))
 
-about = dict()
-with open(os.path.join(here, "geo", "__version__.py"), "r") as f:
+about:Dict = dict()
+
+with open(os.path.join(HERE, "geo", "__version__.py"), "r") as f:
     exec(f.read(), about)
 
 with open("README.md", "r") as fh:

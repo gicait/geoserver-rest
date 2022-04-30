@@ -2096,4 +2096,4 @@ class Geoserver:
             return "Error: {}".format(e)
 
 
-print(Geoserver().create_layergroup(name="test2", layers=["tiger:giant_polygon"]))
+#print(Geoserver().create_layergroup(name="test2", layers=["tiger:giant_polygon"]))

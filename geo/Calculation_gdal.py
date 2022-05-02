@@ -10,7 +10,7 @@ def raster_value(path: str) -> dict:
     file = os.path.basename(path)
     file_format = os.path.splitext(file)[1]
     file_name = file.split(".")[0]
-    valid_extension = [".tif", ".gtiff"]
+    valid_extension = [".tif", ".tiff", ".gtiff"]
 
     if file_format.lower() in valid_extension:
         try:

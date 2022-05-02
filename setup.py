@@ -5,7 +5,7 @@ from setuptools import setup
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
-about:Dict = dict()
+about = dict()
 
 with open(os.path.join(HERE, "geo", "__version__.py"), "r") as f:
     exec(f.read(), about)

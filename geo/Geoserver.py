@@ -1,4 +1,4 @@
-# inbult libraries
+# inbuilt libraries
 import os
 from typing import List, Optional, Set
 
@@ -69,13 +69,11 @@ class Geoserver:
         elif method == "put":
             return requests.put(url, auth=(self.username, self.password), **kwargs)
 
-    """
-    _______________________________________________________________________________________________
-
-       GEOSERVER AND SERVER SPECIFIC METHODS
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #       GEOSERVER AND SERVER SPECIFIC METHODS
+    # _______________________________________________________________________________________________
+    #
 
     def get_manifest(self):
         """
@@ -158,13 +156,11 @@ class Geoserver:
         except Exception as e:
             return "reload error: {}".format(e)
 
-    """
-    _______________________________________________________________________________________________
-
-        DATASTORES
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #       DATASTORES
+    # _______________________________________________________________________________________________
+    #
 
     def get_datastore(self, store_name: str, workspace: Optional[str] = None):
         """
@@ -205,13 +201,11 @@ class Geoserver:
         except Exception as e:
             return "get_datastores error: {}".format(e)
 
-    """
-    _______________________________________________________________________________________________
-
-       COVERAGE STORES
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #       COVERAGE STORES
+    # _______________________________________________________________________________________________
+    #
 
     def get_coveragestore(
         self, coveragestore_name: str, workspace: Optional[str] = None
@@ -377,13 +371,11 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    """
-    _______________________________________________________________________________________________
-
-        LAYERS
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #       LAYERS
+    # _______________________________________________________________________________________________
+    #
 
     def get_layer(self, layer_name: str, workspace: Optional[str] = None):
         """
@@ -447,13 +439,11 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    """
-    _______________________________________________________________________________________________
-
-        LAYER GROUPS
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #       LAYER GROUPS
+    # _______________________________________________________________________________________________
+    #
 
     def get_layergroups(self, workspace: Optional[str] = None):
         """
@@ -639,13 +629,11 @@ class Geoserver:
         else:
             return "Error creating layergroup"
 
-    """
-    _______________________________________________________________________________________________
-
-        STYLES
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #      STYLES
+    # _______________________________________________________________________________________________
+    #
 
     def get_style(self, style_name, workspace: Optional[str] = None):
         """
@@ -1126,13 +1114,11 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    """
-    _______________________________________________________________________________________________
-
-        WORKSPACES
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #      WORKSPACES
+    # _______________________________________________________________________________________________
+    #
 
     def get_default_workspace(self):
         """
@@ -1248,13 +1234,11 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    """
-    _______________________________________________________________________________________________
-
-        FEATURES AND DATASTORES
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #      FEATURES AND DATASTORES
+    # _______________________________________________________________________________________________
+    #
 
     def create_featurestore(
         self,
@@ -1336,35 +1320,35 @@ class Geoserver:
 
         database_connection = """
                 <dataStore>
-                <name>{}</name>
-                <description>{}</description>
+                <name>{0}</name>
+                <description>{1}</description>
                 <connectionParameters>
-                <entry key="Expose primary keys">{}</entry>
-                <entry key="host">{}</entry>
-                <entry key="port">{}</entry>
-                <entry key="user">{}</entry>
-                <entry key="passwd">{}</entry>
+                <entry key="Expose primary keys">{2}</entry>
+                <entry key="host">{3}</entry>
+                <entry key="port">{4}</entry>
+                <entry key="user">{5}</entry>
+                <entry key="passwd">{6}</entry>
                 <entry key="dbtype">postgis</entry>
-                <entry key="schema">{}</entry>
-                <entry key="database">{}</entry>
-                <entry key="Evictor run periodicity">{}</entry>
-                <entry key="Max open prepared statements">{}</entry>
-                <entry key="encode functions">{}</entry>
-                <entry key="Primary key metadata table">{}</entry>
-                <entry key="Batch insert size">{}</entry>
-                <entry key="preparedStatements">{}</entry>
-                <entry key="Estimated extends">{}</entry>
-                <entry key="fetch size">{}</entry>
-                <entry key="validate connections">{}</entry>
-                <entry key="Support on the fly geometry simplification">{}</entry>
-                <entry key="Connection timeout">{}</entry>
-                <entry key="create database">{}</entry>
-                <entry key="min connections">{}</entry>
-                <entry key="max connections">{}</entry>
-                <entry key="Evictor tests per run">{}</entry>
-                <entry key="Test while idle">{}</entry>
-                <entry key="Max connection idle time">{}</entry>
-                <entry key="Loose bbox">{}</entry>
+                <entry key="schema">{7}</entry>
+                <entry key="database">{8}</entry>
+                <entry key="Evictor run periodicity">{9}</entry>
+                <entry key="Max open prepared statements">{10}</entry>
+                <entry key="encode functions">{11}</entry>
+                <entry key="Primary key metadata table">{12}</entry>
+                <entry key="Batch insert size">{13}</entry>
+                <entry key="preparedStatements">{14}</entry>
+                <entry key="Estimated extends">{15}</entry>
+                <entry key="fetch size">{16}</entry>
+                <entry key="validate connections">{17}</entry>
+                <entry key="Support on the fly geometry simplification">{18}</entry>
+                <entry key="Connection timeout">{19}</entry>
+                <entry key="create database">{20}</entry>
+                <entry key="min connections">{21}</entry>
+                <entry key="max connections">{22}</entry>
+                <entry key="Evictor tests per run">{23}</entry>
+                <entry key="Test while idle">{24}</entry>
+                <entry key="Max connection idle time">{25}</entry>
+                <entry key="Loose bbox">{26}</entry>
                 </connectionParameters>
                 </dataStore>
                 """.format(
@@ -1868,13 +1852,11 @@ class Geoserver:
         except Exception as e:
             return "Error: {}".format(e)
 
-    """
-    _______________________________________________________________________________________________
-
-        USERS AND USERGROUPS
-    _______________________________________________________________________________________________
-
-    """
+    # _______________________________________________________________________________________________
+    #
+    #      USERS AND USERGROUPS
+    # _______________________________________________________________________________________________
+    #
 
     def get_all_users(self, service=None):
         """
@@ -2094,6 +2076,3 @@ class Geoserver:
 
         except Exception as e:
             return "Error: {}".format(e)
-
-
-print(Geoserver().create_layergroup(name="test2", layers=["tiger:giant_polygon"]))

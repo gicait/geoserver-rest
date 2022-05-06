@@ -93,7 +93,7 @@ class Geoserver:
         Returns the version of the geoserver as JSON. It contains only the details of the high level components: GeoServer, GeoTools, and GeoWebCache
         """
         try:
-            url = "{}/rest/about/version.json".format(self.service_url)
+            url = "{}/about/version.json".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -384,7 +384,7 @@ class Geoserver:
         try:
             url = "{}/layers/{}".format(self.service_url, layer_name)
             if workspace is not None:
-                url = "{}/rest/workspaces/{}/layers/{}".format(
+                url = "{}/workspaces/{}/layers/{}".format(
                     self.service_url, workspace, layer_name
                 )
 

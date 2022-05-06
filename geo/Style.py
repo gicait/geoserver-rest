@@ -1,5 +1,7 @@
+# inbuilt libraries
 from typing import Dict, Iterable, List, Union
 
+# third-party libraries
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
@@ -87,7 +89,7 @@ def coverage_style_xml(
     interval = min_max_difference / (number_of_classes - 1)  # noqa
 
     # The main style of the coverage style
-    if type(color_ramp) is str:
+    if isinstance(color_ramp, str):
         palette = sns.color_palette(color_ramp, int(number_of_classes))
         color_ramp = [rgb2hex(i) for i in palette]
 

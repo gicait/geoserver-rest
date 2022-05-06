@@ -4,6 +4,8 @@ Change Log
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
 
+
+``[v2.3.0 - 2022-05-06]``
 * Params for `delete_workspace` and `delete_style` changed to `{recursive: true}`
 * Added methods to use REST API for user/group service CRUD operations.
 * Removed ``key_column`` parameter and added ``srid`` parameter (coordinate system of the layer, default is 4326) from ``publish_featurestore_sqlview`` function

@@ -3,6 +3,7 @@ Change Log
 
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
+* Fix the import issue, close `#76 <https://github.com/gicait/geoserver-rest/issues/76>`_
 
 
 ``[v2.3.0 - 2022-05-06]``

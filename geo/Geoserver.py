@@ -4,12 +4,12 @@ from typing import List, Optional, Set
 
 # third-party libraries
 import requests
+from xmltodict import parse, unparse
 
 # custom functions
-from Calculation_gdal import raster_value
-from Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
-from supports import prepare_zip_file
-from xmltodict import parse, unparse
+from .Calculation_gdal import raster_value
+from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
+from .supports import prepare_zip_file
 
 
 # call back class for read the data

@@ -51,7 +51,7 @@ class Geoserver:
 
     def __init__(
         self,
-        service_url: str = "http://localhost:8080/geoserver/rest",  # default deployment url during installation
+        service_url: str = "http://localhost:8080/geoserver",  # default deployment url during installation
         username: str = "admin",  # default username during geoserver installation
         password: str = "geoserver",  # default password during geoserver installation
     ):
@@ -81,7 +81,7 @@ class Geoserver:
 
         """
         try:
-            url = "{}/about/manifest.json".format(self.service_url)
+            url = "{}/rest/about/manifest.json".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -93,7 +93,7 @@ class Geoserver:
         Returns the version of the geoserver as JSON. It contains only the details of the high level components: GeoServer, GeoTools, and GeoWebCache
         """
         try:
-            url = "{}/about/version.json".format(self.service_url)
+            url = "{}/rest/about/version.json".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -105,7 +105,7 @@ class Geoserver:
         Returns the status of the geoserver. It shows the status details of all installed and configured modules.
         """
         try:
-            url = "{}/about/status.json".format(self.service_url)
+            url = "{}/rest/about/status.json".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -117,7 +117,7 @@ class Geoserver:
         It returns the system status of the geoserver. It returns a list of system-level information. Major operating systems (Linux, Windows and MacOX) are supported out of the box.
         """
         try:
-            url = "{}/about/system-status.json".format(self.service_url)
+            url = "{}/rest/about/system-status.json".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -133,7 +133,7 @@ class Geoserver:
         curl -X POST http://localhost:8080/geoserver/rest/reload -H  "accept: application/json" -H  "content-type: application/json"
         """
         try:
-            url = "{}/reload".format(self.service_url)
+            url = "{}/rest/reload".format(self.service_url)
             r = requests.post(url, auth=(self.username, self.password))
             return "Status code: {}".format(r.status_code)
 
@@ -149,7 +149,7 @@ class Geoserver:
         curl -X POST http://localhost:8080/geoserver/rest/reset -H  "accept: application/json" -H  "content-type: application/json"
         """
         try:
-            url = "{}/reset".format(self.service_url)
+            url = "{}/rest/reset".format(self.service_url)
             r = requests.post(url, auth=(self.username, self.password))
             return "Status code: {}".format(r.status_code)
 
@@ -173,7 +173,7 @@ class Geoserver:
             if workspace is None:
                 workspace = "default"
 
-            url = "{}/workspaces/{}/datastores/{}".format(
+            url = "{}/rest/workspaces/{}/datastores/{}".format(
                 self.service_url, workspace, store_name
             )
 
@@ -194,7 +194,7 @@ class Geoserver:
             if workspace is None:
                 workspace = "default"
 
-            url = "{}/workspaces/{}/datastores.json".format(self.service_url, workspace)
+            url = "{}/rest/workspaces/{}/datastores.json".format(self.service_url, workspace)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -217,7 +217,7 @@ class Geoserver:
             payload = {"recurse": "true"}
             if workspace is None:
                 workspace = "default"
-            url = "{}/workspaces/{}/coveragestores/{}.json".format(
+            url = "{}/rest/workspaces/{}/coveragestores/{}.json".format(
                 self.service_url, workspace, coveragestore_name
             )
             r = requests.get(url, auth=(self.username, self.password), params=payload)
@@ -236,7 +236,7 @@ class Geoserver:
             if workspace is None:
                 workspace = "default"
 
-            url = "{}/workspaces/{}/coveragestores".format(self.service_url, workspace)
+            url = "{}/rest/workspaces/{}/coveragestores".format(self.service_url, workspace)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -282,7 +282,7 @@ class Geoserver:
 
         file_type = file_type.lower()
 
-        url = "{0}/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}".format(
+        url = "{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}".format(
             self.service_url, workspace, layer_name, file_type
         )
 
@@ -330,7 +330,7 @@ class Geoserver:
         https://docs.geoserver.org/master/en/user/services/wms/time.html
         """
 
-        url = "{0}/workspaces/{1}/coveragestores/{2}/coverages/{2}".format(
+        url = "{0}/rest/workspaces/{1}/coveragestores/{2}/coverages/{2}".format(
             self.service_url, workspace, store_name
         )
 
@@ -382,9 +382,9 @@ class Geoserver:
         Returns the layer by layer name.
         """
         try:
-            url = "{}/layers/{}".format(self.service_url, layer_name)
+            url = "{}/rest/layers/{}".format(self.service_url, layer_name)
             if workspace is not None:
-                url = "{}/workspaces/{}/layers/{}".format(
+                url = "{}/rest/workspaces/{}/layers/{}".format(
                     self.service_url, workspace, layer_name
                 )
 
@@ -400,10 +400,10 @@ class Geoserver:
         If workspace is None, it will listout all the layers from geoserver
         """
         try:
-            url = "{}/layers".format(self.service_url)
+            url = "{}/rest/layers".format(self.service_url)
 
             if workspace is not None:
-                url = "{}/workspaces/{}/layers".format(self.service_url, workspace)
+                url = "{}/rest/workspaces/{}/layers".format(self.service_url, workspace)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -421,11 +421,11 @@ class Geoserver:
         """
         try:
             payload = {"recurse": "true"}
-            url = "{}/workspaces/{}/layers/{}".format(
+            url = "{}/rest/workspaces/{}/layers/{}".format(
                 self.service_url, workspace, layer_name
             )
             if workspace is None:
-                url = "{}/layers/{}".format(self.service_url, layer_name)
+                url = "{}/rest/layers/{}".format(self.service_url, layer_name)
 
             r = requests.delete(
                 url, auth=(self.username, self.password), params=payload
@@ -454,10 +454,10 @@ class Geoserver:
         If workspace is None, it will list all the layer groups from geoserver.
         """
         try:
-            url = "{}/layergroups".format(self.service_url)
+            url = "{}/rest/layergroups".format(self.service_url)
 
             if workspace is not None:
-                url = "{}/workspaces/{}/layergroups".format(self.service_url, workspace)
+                url = "{}/rest/workspaces/{}/layergroups".format(self.service_url, workspace)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -469,7 +469,7 @@ class Geoserver:
         Returns the layer group by layer group name.
         """
         try:
-            url = "{}/layergroups/{}".format(self.service_url, layer_name)
+            url = "{}/rest/layergroups/{}".format(self.service_url, layer_name)
             if workspace is not None:
                 url = "{}/workspaces/{}/layergroups/{}".format(
                     self.service_url, workspace, layer_name
@@ -617,7 +617,7 @@ class Geoserver:
                     </layerGroup>
                 """
 
-        url = f"{self.service_url}/layergroups/"
+        url = f"{self.service_url}/rest/layergroups/"
 
         response = self._requests(
             method="post", url=url, data=data, headers={"content-type": "text/xml"}
@@ -640,7 +640,7 @@ class Geoserver:
         Returns the style by style name.
         """
         try:
-            url = "{}/styles/{}.json".format(self.service_url, style_name)
+            url = "{}/rest/styles/{}.json".format(self.service_url, style_name)
             if workspace is not None:
                 url = "{}/workspaces/{}/styles/{}.json".format(
                     self.service_url, workspace, style_name
@@ -657,10 +657,10 @@ class Geoserver:
         Returns all loaded styles from geoserver.
         """
         try:
-            url = "{}/styles.json".format(self.service_url)
+            url = "{}/rest/styles.json".format(self.service_url)
 
             if workspace is not None:
-                url = "{}/workspaces/{}/styles.json".format(self.service_url, workspace)
+                url = "{}/rest/workspaces/{}/styles.json".format(self.service_url, workspace)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -698,7 +698,7 @@ class Geoserver:
 
         headers = {"content-type": "text/xml"}
 
-        url = "{}/workspaces/{}/styles".format(self.service_url, workspace)
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
 
         sld_content_type = "application/vnd.ogc.sld+xml"
         if sld_version == "1.1.0" or sld_version == "1.1":
@@ -708,7 +708,7 @@ class Geoserver:
 
         if workspace is None:
             # workspace = "default"
-            url = "{}/styles".format(self.service_url)
+            url = "{}/rest/styles".format(self.service_url)
 
         style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
             name, name + ".sld"
@@ -792,12 +792,12 @@ class Geoserver:
                 style_name = f[0]
 
         headers = {"content-type": "text/xml"}
-        url = "{}/workspaces/{}/styles".format(self.service_url, workspace)
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
         sld_content_type = "application/vnd.ogc.sld+xml"
         header_sld = {"content-type": sld_content_type}
 
         if workspace is None:
-            url = "{}/styles".format(self.service_url)
+            url = "{}/rest/styles".format(self.service_url)
 
         r = None
         try:
@@ -864,12 +864,12 @@ class Geoserver:
         )
 
         headers = {"content-type": "text/xml"}
-        url = "{}/workspaces/{}/styles".format(self.service_url, workspace)
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
         sld_content_type = "application/vnd.ogc.sld+xml"
         header_sld = {"content-type": sld_content_type}
 
         if workspace is None:
-            url = "{}/styles".format(self.service_url)
+            url = "{}/rest/styles".format(self.service_url)
 
         r = None
         try:
@@ -931,12 +931,12 @@ class Geoserver:
         )
 
         headers = {"content-type": "text/xml"}
-        url = "{}/workspaces/{}/styles".format(self.service_url, workspace)
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
         sld_content_type = "application/vnd.ogc.sld+xml"
         header_sld = {"content-type": sld_content_type}
 
         if workspace is None:
-            url = "{}/styles".format(self.service_url)
+            url = "{}/rest/styles".format(self.service_url)
 
         r = None
         try:
@@ -1006,12 +1006,12 @@ class Geoserver:
         )
 
         headers = {"content-type": "text/xml"}
-        url = "{}/workspaces/{}/styles".format(self.service_url, workspace)
+        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
         sld_content_type = "application/vnd.ogc.sld+xml"
         header_sld = {"content-type": sld_content_type}
 
         if workspace is None:
-            url = "{}/styles".format(self.service_url)
+            url = "{}/rest/styles".format(self.service_url)
 
         r = None
         try:
@@ -1064,7 +1064,7 @@ class Geoserver:
         """
 
         headers = {"content-type": "text/xml"}
-        url = "{}/layers/{}:{}".format(self.service_url, workspace, layer_name)
+        url = "{}/rest/layers/{}:{}".format(self.service_url, workspace, layer_name)
         style_xml = (
             "<layer><defaultStyle><name>{}</name></defaultStyle></layer>".format(
                 style_name
@@ -1095,11 +1095,11 @@ class Geoserver:
         """
         try:
             payload = {"recurse": "true"}
-            url = "{}/workspaces/{}/styles/{}".format(
+            url = "{}/rest/workspaces/{}/styles/{}".format(
                 self.service_url, workspace, style_name
             )
             if workspace is None:
-                url = "{}/styles/{}".format(self.service_url, style_name)
+                url = "{}/rest/styles/{}".format(self.service_url, style_name)
 
             r = requests.delete(
                 url, auth=(self.username, self.password), params=payload
@@ -1125,7 +1125,7 @@ class Geoserver:
         Returns the default workspace.
         """
         try:
-            url = "{}/workspaces/default".format(self.service_url)
+            url = "{}/rest/workspaces/default".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -1139,7 +1139,7 @@ class Geoserver:
         """
         try:
             payload = {"recurse": "true"}
-            url = "{}/workspaces/{}.json".format(self.service_url, workspace)
+            url = "{}/rest/workspaces/{}.json".format(self.service_url, workspace)
             r = requests.get(url, auth=(self.username, self.password), params=payload)
             if r.status_code == 200:
                 return r.json()
@@ -1154,7 +1154,7 @@ class Geoserver:
         Returns all the workspaces.
         """
         try:
-            url = "{}/workspaces".format(self.service_url)
+            url = "{}/rest/workspaces".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
             return r.json()
 
@@ -1166,7 +1166,7 @@ class Geoserver:
         Set the default workspace.
         """
         try:
-            url = "{}/workspaces/default".format(self.service_url)
+            url = "{}/rest/workspaces/default".format(self.service_url)
             data = "<workspace><name>{}</name></workspace>".format(workspace)
             print(url, data)
             r = requests.put(
@@ -1191,7 +1191,7 @@ class Geoserver:
         The geoserver workspace url will be same as the name of the workspace.
         """
         try:
-            url = "{}/workspaces".format(self.service_url)
+            url = "{}/rest/workspaces".format(self.service_url)
             data = "<workspace><name>{}</name></workspace>".format(workspace)
             headers = {"content-type": "text/xml"}
             r = requests.post(
@@ -1220,7 +1220,7 @@ class Geoserver:
         """
         try:
             payload = {"recurse": "true"}
-            url = "{}/workspaces/{}".format(self.service_url, workspace)
+            url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
             r = requests.delete(
                 url, auth=(self.username, self.password), params=payload
             )
@@ -1384,7 +1384,7 @@ class Geoserver:
         r = None
         try:
             if overwrite:
-                url = "{}/workspaces/{}/datastores/{}".format(
+                url = "{}/rest/workspaces/{}/datastores/{}".format(
                     self.service_url, workspace, store_name
                 )
 
@@ -1458,7 +1458,7 @@ class Geoserver:
 
         try:
             if overwrite:
-                url = "{}/workspaces/{}/datastores/{}".format(
+                url = "{}/rest/workspaces/{}/datastores/{}".format(
                     self.service_url, workspace, name
                 )
                 r = requests.put(
@@ -1466,7 +1466,7 @@ class Geoserver:
                 )
 
             else:
-                url = "{}/workspaces/{}/datastores".format(self.service_url, workspace)
+                url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)
                 r = requests.post(
                     url, data, auth=(self.username, self.password), headers=headers
                 )
@@ -1529,7 +1529,7 @@ class Geoserver:
             if isinstance(path, dict):
                 path = prepare_zip_file(store_name, path)
 
-            url = "{0}/workspaces/{1}/datastores/{2}/file.{3}?filename={2}&update=overwrite".format(
+            url = "{0}/rest/workspaces/{1}/datastores/{2}/file.{3}?filename={2}&update=overwrite".format(
                 self.service_url, workspace, store_name, file_extension
             )
 
@@ -1574,7 +1574,7 @@ class Geoserver:
         if workspace is None:
             workspace = "default"
 
-        url = "{}/workspaces/{}/datastores/{}/featuretypes/".format(
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/".format(
             self.service_url, workspace, store_name
         )
 
@@ -1624,7 +1624,7 @@ class Geoserver:
         if workspace is None:
             workspace = "default"
 
-        url = "{}/workspaces/{}/datastores/{}/featuretypes/{}.xml".format(
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.xml".format(
             self.service_url, workspace, store_name, pg_table
         )
 
@@ -1702,7 +1702,7 @@ class Geoserver:
             name, sql, geom_name, geom_type, workspace, srid
         )
 
-        url = "{}/workspaces/{}/datastores/{}/featuretypes".format(
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
             self.service_url, workspace, store_name
         )
 
@@ -1732,7 +1732,7 @@ class Geoserver:
         store_name : str
 
         """
-        url = "{}/workspaces/{}/datastores/{}/featuretypes.json".format(
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes.json".format(
             self.service_url, workspace, store_name
         )
         r = requests.get(url, auth=(self.username, self.password))
@@ -1754,7 +1754,7 @@ class Geoserver:
         store_name : str
 
         """
-        url = "{}/workspaces/{}/datastores/{}/featuretypes/{}.json".format(
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.json".format(
             self.service_url, workspace, store_name, feature_type_name
         )
         r = requests.get(url, auth=(self.username, self.password))
@@ -1775,7 +1775,7 @@ class Geoserver:
         workspace : str
 
         """
-        url = "{}/workspaces/{}/datastores/{}".format(
+        url = "{}/rest/workspaces/{}/datastores/{}".format(
             self.service_url, workspace, store_name
         )
         r = requests.get(url, auth=(self.username, self.password))
@@ -1799,7 +1799,7 @@ class Geoserver:
         """
         try:
             payload = {"recurse": "true"}
-            url = "{}/workspaces/{}/datastores/{}".format(
+            url = "{}/rest/workspaces/{}/datastores/{}".format(
                 self.service_url, workspace, featurestore_name
             )
             if workspace is None:
@@ -1830,12 +1830,12 @@ class Geoserver:
         """
         try:
             payload = {"recurse": "true"}
-            url = "{}/workspaces/{}/coveragestores/{}".format(
+            url = "{}/rest/workspaces/{}/coveragestores/{}".format(
                 self.service_url, workspace, coveragestore_name
             )
 
             if workspace is None:
-                url = "{}/coveragestores/{}".format(
+                url = "{}/rest/coveragestores/{}".format(
                     self.service_url, coveragestore_name
                 )
 
@@ -1867,7 +1867,7 @@ class Geoserver:
 
         Query all users in the provided user/group service, else default user/group service is queried
         """
-        url = "{}/security/usergroup/".format(self.service_url)
+        url = "{}/rest/security/usergroup/".format(self.service_url)
         if service is None:
             url += "users/"
         else:
@@ -1896,7 +1896,7 @@ class Geoserver:
         Add a new user to the provided user/group service
         If no user/group service is provided, then the users is added to default user service
         """
-        url = "{}/security/usergroup/".format(self.service_url)
+        url = "{}/rest/security/usergroup/".format(self.service_url)
         if service is None:
             url += "users/"
         else:
@@ -1934,7 +1934,7 @@ class Geoserver:
         Modifies a user in the provided user/group service
         If no user/group service is provided, then the user in the default user service is modified
         """
-        url = "{}/security/usergroup/".format(self.service_url)
+        url = "{}/rest/security/usergroup/".format(self.service_url)
         if service is None:
             url += "user/{}".format(username)
         else:
@@ -1975,7 +1975,7 @@ class Geoserver:
         Deletes user from the provided user/group service
         If no user/group service is provided, then the users is deleted from default user service
         """
-        url = "{}/security/usergroup/".format(self.service_url)
+        url = "{}/rest/security/usergroup/".format(self.service_url)
         if service is None:
             url += "user/{}".format(username)
         else:
@@ -2005,7 +2005,7 @@ class Geoserver:
         Queries all the groups in the given user/group service
         If no user/group service is provided, default user/group service is used
         """
-        url = "{}/security/usergroup/".format(self.service_url)
+        url = "{}/rest/security/usergroup/".format(self.service_url)
         if service is None:
             url += "groups/"
         else:
@@ -2033,7 +2033,7 @@ class Geoserver:
         Add a new usergroup to the provided user/group service
         If no user/group service is provided, then the usergroup is added to default user service
         """
-        url = "{}/security/usergroup/".format(self.service_url)
+        url = "{}/rest/security/usergroup/".format(self.service_url)
         if service is None:
             url += "group/{}".format(group)
         else:
@@ -2060,7 +2060,7 @@ class Geoserver:
         Deletes given usergroup from provided user/group service
         If no user/group service is provided, then the usergroup deleted from default user service
         """
-        url = "{}/security/usergroup/".format(self.service_url)
+        url = "{}/rest/security/usergroup/".format(self.service_url)
         if service is None:
             url += "group/{}".format(group)
         else:

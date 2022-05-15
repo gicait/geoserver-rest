@@ -68,6 +68,8 @@ class Geoserver:
             return requests.get(url, auth=(self.username, self.password), **kwargs)
         elif method == "put":
             return requests.put(url, auth=(self.username, self.password), **kwargs)
+        elif method == "delete":
+            return requests.delete(url, auth=(self.username, self.password), **kwargs)
 
     # _______________________________________________________________________________________________
     #
@@ -82,7 +84,7 @@ class Geoserver:
         """
         try:
             url = "{}/about/manifest.json".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -94,7 +96,7 @@ class Geoserver:
         """
         try:
             url = "{}/rest/about/version.json".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -106,7 +108,7 @@ class Geoserver:
         """
         try:
             url = "{}/about/status.json".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -118,7 +120,7 @@ class Geoserver:
         """
         try:
             url = "{}/about/system-status.json".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -134,7 +136,7 @@ class Geoserver:
         """
         try:
             url = "{}/reload".format(self.service_url)
-            r = requests.post(url, auth=(self.username, self.password))
+            r = self._requests("post", url)
             return "Status code: {}".format(r.status_code)
 
         except Exception as e:
@@ -177,7 +179,7 @@ class Geoserver:
                 self.service_url, workspace, store_name
             )
 
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -195,7 +197,7 @@ class Geoserver:
                 workspace = "default"
 
             url = "{}/workspaces/{}/datastores.json".format(self.service_url, workspace)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -220,7 +222,7 @@ class Geoserver:
             url = "{}/workspaces/{}/coveragestores/{}.json".format(
                 self.service_url, workspace, coveragestore_name
             )
-            r = requests.get(url, auth=(self.username, self.password), params=payload)
+            r = self._requests(method="get", url=url, params=payload)
             # print("Status code: {}, Get coverage store".format(r.status_code))
 
             return r.json()
@@ -237,7 +239,7 @@ class Geoserver:
                 workspace = "default"
 
             url = "{}/workspaces/{}/coveragestores".format(self.service_url, workspace)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -291,14 +293,14 @@ class Geoserver:
         r = None
         try:
             with open(path, "rb") as f:
-                r = requests.put(
-                    url, data=f, auth=(self.username, self.password), headers=headers
-                )
+                r = self._requests(method="put", url=url, data=f, headers=headers)
 
-            if r.status_code != 201:
-                return "{}: The coveragestore can not be created!".format(r.status_code)
-            else:
-                return "The coveragestore has been created successfully!"
+                if r.status_code != 201:
+                    return "{}: The coveragestore can not be created!".format(
+                        r.status_code
+                    )
+                else:
+                    return "The coveragestore has been created successfully!"
 
         except Exception as e:
             return "Error: {}".format(e)
@@ -356,11 +358,8 @@ class Geoserver:
 
         r = None
         try:
-            r = requests.put(
-                url,
-                data=time_dimension_data,
-                auth=(self.username, self.password),
-                headers=headers,
+            r = self._requests(
+                method="put", url=url, data=time_dimension_data, headers=headers
             )
 
             if r.status_code not in [200, 201]:
@@ -388,7 +387,7 @@ class Geoserver:
                     self.service_url, workspace, layer_name
                 )
 
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -404,7 +403,7 @@ class Geoserver:
 
             if workspace is not None:
                 url = "{}/workspaces/{}/layers".format(self.service_url, workspace)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -427,9 +426,7 @@ class Geoserver:
             if workspace is None:
                 url = "{}/layers/{}".format(self.service_url, layer_name)
 
-            r = requests.delete(
-                url, auth=(self.username, self.password), params=payload
-            )
+            r = self._requests(method="delete", url=url, params=payload)
             if r.status_code == 200:
                 return "Status code: {}, delete layer".format(r.status_code)
 
@@ -458,7 +455,7 @@ class Geoserver:
 
             if workspace is not None:
                 url = "{}/workspaces/{}/layergroups".format(self.service_url, workspace)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -475,7 +472,7 @@ class Geoserver:
                     self.service_url, workspace, layer_name
                 )
 
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -646,7 +643,7 @@ class Geoserver:
                     self.service_url, workspace, style_name
                 )
 
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -661,7 +658,7 @@ class Geoserver:
 
             if workspace is not None:
                 url = "{}/workspaces/{}/styles.json".format(self.service_url, workspace)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -716,13 +713,7 @@ class Geoserver:
 
         r = None
         try:
-            r = requests.post(
-                url,
-                data=style_xml,
-                auth=(self.username, self.password),
-                headers=headers,
-            )
-
+            r = self._requests(method="post", url=url, data=style_xml, headers=headers)
             with open(path, "rb") as f:
                 r_sld = requests.put(
                     url + "/" + name,
@@ -801,10 +792,10 @@ class Geoserver:
 
         r = None
         try:
-            r = requests.post(
+            r = self._requests(
+                "post",
                 url,
                 data=style_xml,
-                auth=(self.username, self.password),
                 headers=headers,
             )
 
@@ -873,18 +864,18 @@ class Geoserver:
 
         r = None
         try:
-            r = requests.post(
+            r = self._requests(
+                "post",
                 url,
                 data=style_xml,
-                auth=(self.username, self.password),
                 headers=headers,
             )
 
             with open("style.sld", "rb") as f:
-                r_sld = requests.put(
+                r_sld = self._requests(
+                    "put",
                     url + "/" + style_name,
                     data=f.read(),
-                    auth=(self.username, self.password),
                     headers=header_sld,
                 )
                 if r_sld.status_code not in [200, 201]:
@@ -940,18 +931,18 @@ class Geoserver:
 
         r = None
         try:
-            r = requests.post(
+            r = self._requests(
+                "post",
                 url,
                 data=style_xml,
-                auth=(self.username, self.password),
                 headers=headers,
             )
 
             with open("style.sld", "rb") as f:
-                r_sld = requests.put(
+                r_sld = self._requests(
+                    "put",
                     url + "/" + style_name,
                     data=f.read(),
-                    auth=(self.username, self.password),
                     headers=header_sld,
                 )
                 if r_sld.status_code not in [200, 201]:
@@ -1015,18 +1006,18 @@ class Geoserver:
 
         r = None
         try:
-            r = requests.post(
+            r = self._requests(
+                "post",
                 url,
                 data=style_xml,
-                auth=(self.username, self.password),
                 headers=headers,
             )
 
             with open("style.sld", "rb") as f:
-                r_sld = requests.put(
+                r_sld = self._requests(
+                    "put",
                     url + "/" + style_name,
                     data=f.read(),
-                    auth=(self.username, self.password),
                     headers=header_sld,
                 )
                 if r_sld.status_code not in [200, 201]:
@@ -1073,10 +1064,10 @@ class Geoserver:
 
         r = None
         try:
-            r = requests.put(
+            r = self._requests(
+                "put",
                 url,
                 data=style_xml,
-                auth=(self.username, self.password),
                 headers=headers,
             )
 
@@ -1101,9 +1092,7 @@ class Geoserver:
             if workspace is None:
                 url = "{}/styles/{}".format(self.service_url, style_name)
 
-            r = requests.delete(
-                url, auth=(self.username, self.password), params=payload
-            )
+            r = self._requests("delete", url, params=payload)
 
             if r.status_code == 200:
                 return "Status code: {}, delete style".format(r.status_code)
@@ -1126,7 +1115,7 @@ class Geoserver:
         """
         try:
             url = "{}/workspaces/default".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -1140,7 +1129,7 @@ class Geoserver:
         try:
             payload = {"recurse": "true"}
             url = "{}/workspaces/{}.json".format(self.service_url, workspace)
-            r = requests.get(url, auth=(self.username, self.password), params=payload)
+            r = self._requests("get", url, params=payload)
             if r.status_code == 200:
                 return r.json()
             else:
@@ -1155,7 +1144,7 @@ class Geoserver:
         """
         try:
             url = "{}/workspaces".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = self._requests("get", url)
             return r.json()
 
         except Exception as e:
@@ -1169,10 +1158,10 @@ class Geoserver:
             url = "{}/workspaces/default".format(self.service_url)
             data = "<workspace><name>{}</name></workspace>".format(workspace)
             print(url, data)
-            r = requests.put(
+            r = self._requests(
+                "put",
                 url,
-                data,
-                auth=(self.username, self.password),
+                data=data,
                 headers={"content-type": "text/xml"},
             )
 
@@ -1194,9 +1183,7 @@ class Geoserver:
             url = "{}/workspaces".format(self.service_url)
             data = "<workspace><name>{}</name></workspace>".format(workspace)
             headers = {"content-type": "text/xml"}
-            r = requests.post(
-                url, data, auth=(self.username, self.password), headers=headers
-            )
+            r = self._requests("post", url, data=data, headers=headers)
 
             if r.status_code == 201:
                 return "{} Workspace {} created!".format(r.status_code, workspace)
@@ -1221,9 +1208,7 @@ class Geoserver:
         try:
             payload = {"recurse": "true"}
             url = "{}/workspaces/{}".format(self.service_url, workspace)
-            r = requests.delete(
-                url, auth=(self.username, self.password), params=payload
-            )
+            r = self._requests("delete", url, params=payload)
 
             if r.status_code == 200:
                 return "Status code: {}, delete workspace".format(r.status_code)
@@ -1388,10 +1373,10 @@ class Geoserver:
                     self.service_url, workspace, store_name
                 )
 
-                r = requests.put(
+                r = self._requests(
+                    "put",
                     url,
                     data=database_connection,
-                    auth=(self.username, self.password),
                     headers=headers,
                 )
 
@@ -1400,10 +1385,10 @@ class Geoserver:
                         r.status_code, r.content
                     )
             else:
-                r = requests.post(
+                r = self._requests(
+                    "post",
                     url,
                     data=database_connection,
-                    auth=(self.username, self.password),
                     headers=headers,
                 )
 
@@ -1461,15 +1446,11 @@ class Geoserver:
                 url = "{}/workspaces/{}/datastores/{}".format(
                     self.service_url, workspace, name
                 )
-                r = requests.put(
-                    url, data, auth=(self.username, self.password), headers=headers
-                )
+                r = self._requests("put", url, data=data, headers=headers)
 
             else:
                 url = "{}/workspaces/{}/datastores".format(self.service_url, workspace)
-                r = requests.post(
-                    url, data, auth=(self.username, self.password), headers=headers
-                )
+                r = self._requests("post", url, data=data, headers=headers)
 
             if r.status_code in [200, 201]:
                 return "Data store created/updated successfully"
@@ -2076,3 +2057,6 @@ class Geoserver:
 
         except Exception as e:
             return "Error: {}".format(e)
+
+
+print(Geoserver().get_manifest())

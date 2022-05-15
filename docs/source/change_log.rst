@@ -3,7 +3,12 @@ Change Log
 
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
+* Fix the import issue, close `#76 <https://github.com/gicait/geoserver-rest/issues/76>`_
+* Removed the ``rest`` from Geoserver class URL, Revert back to previous state. Close `#77 <https://github.com/gicait/geoserver-rest/issues/76>`_
 
+
+``[v2.3.0 - 2022-05-06]``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Params for `delete_workspace` and `delete_style` changed to `{recursive: true}`
 * Added methods to use REST API for user/group service CRUD operations.
 * Removed ``key_column`` parameter and added ``srid`` parameter (coordinate system of the layer, default is 4326) from ``publish_featurestore_sqlview`` function

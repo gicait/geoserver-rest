@@ -14,6 +14,9 @@ Change Log
 * Removed ``key_column`` parameter and added ``srid`` parameter (coordinate system of the layer, default is 4326) from ``publish_featurestore_sqlview`` function
 * Solved the Bug `#73 <https://github.com/gicait/geoserver-rest/issues/73>`_ and `#69 <https://github.com/gicait/geoserver-rest/issues/69>`_
 * ``create_layergroup`` function added
+* ``update_layergroup`` function added
+* ``delete_layergroup`` function added
+*  Added layer and workspace checks to layergroup methods 
 
 
 ``[V2.1.2 - 2021-10-14]``

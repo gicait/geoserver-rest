@@ -12,7 +12,7 @@ from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_o
 from .supports import prepare_zip_file
 
 
-# call back class for read the data
+# call back class for reading the data
 class DataProvider(object):
     def __init__(self, data):
         self.data = data
@@ -157,6 +157,124 @@ class Geoserver:
 
         except Exception as e:
             return "reload error: {}".format(e)
+
+    # _______________________________________________________________________________________________
+    #
+    #      WORKSPACES
+    # _______________________________________________________________________________________________
+    #
+
+    def get_default_workspace(self):
+        """
+        Returns the default workspace.
+        """
+        try:
+            url = "{}/rest/workspaces/default".format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return "get_default_workspace error: {}".format(e)
+
+    def get_workspace(self, workspace):
+        """
+        get name  workspace if exist
+        Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
+        """
+        try:
+            payload = {"recurse": "true"}
+            url = "{}/rest/workspaces/{}.json".format(self.service_url, workspace)
+            r = requests.get(url, auth=(self.username, self.password), params=payload)
+            if r.status_code == 200:
+                return r.json()
+            else:
+                return None
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+    def get_workspaces(self):
+        """
+        Returns all the workspaces.
+        """
+        try:
+            url = "{}/rest/workspaces".format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            return r.json()
+
+        except Exception as e:
+            return "get_workspaces error: {}".format(e)
+
+    def set_default_workspace(self, workspace: str):
+        """
+        Set the default workspace.
+        """
+        try:
+            url = "{}/rest/workspaces/default".format(self.service_url)
+            data = "<workspace><name>{}</name></workspace>".format(workspace)
+            print(url, data)
+            r = self._requests(
+                "put",
+                url,
+                data=data,
+                headers={"content-type": "text/xml"},
+            )
+
+            if r.status_code == 200:
+                return "Status code: {}, default workspace {} set!".format(
+                    r.status_code, workspace
+                )
+
+        except Exception as e:
+            return "reload error: {}".format(e)
+
+    def create_workspace(self, workspace: str):
+        """
+        Create a new workspace in geoserver.
+
+        The geoserver workspace url will be same as the name of the workspace.
+        """
+        try:
+            url = "{}/rest/workspaces".format(self.service_url)
+            data = "<workspace><name>{}</name></workspace>".format(workspace)
+            headers = {"content-type": "text/xml"}
+            r = self._requests("post", url, data=data, headers=headers)
+
+            if r.status_code == 201:
+                return "{} Workspace {} created!".format(r.status_code, workspace)
+
+            if r.status_code == 401:
+                raise Exception("The workspace already exist")
+
+            else:
+                raise Exception("The workspace can not be created")
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+    def delete_workspace(self, workspace: str):
+        """
+
+        Parameters
+        ----------
+        workspace : str
+
+        """
+        try:
+            payload = {"recurse": "true"}
+            url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
+            r = requests.delete(
+                url, auth=(self.username, self.password), params=payload
+            )
+
+            if r.status_code == 200:
+                return "Status code: {}, delete workspace".format(r.status_code)
+
+            else:
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
+
+        except Exception as e:
+            return "Error: {}".format(e)
 
     # _______________________________________________________________________________________________
     #
@@ -392,7 +510,10 @@ class Geoserver:
                 )
 
             r = self._requests("get", url)
-            return r.json()
+            if r.status_code in [200, 201]:
+                return r.json()
+            else:
+                return None
 
         except Exception as e:
             return "get_layer error: {}".format(e)
@@ -479,14 +600,17 @@ class Geoserver:
                 )
 
             r = self._requests("get", url)
-            return r.json()
+            if r.status_code in [200, 201]:
+                return r.json()
+            else:
+                return None
 
         except Exception as e:
             return "get_layer error: {}".format(e)
 
     def create_layergroup(
         self,
-        name: str = "geoserver-rest layergroup",
+        name: str = "geoserver-rest-layergroup",
         mode: str = "single",
         title: str = "geoserver-rest layer group",
         abstract_text: str = "A new layergroup created with geoserver-rest python package",
@@ -535,6 +659,9 @@ class Geoserver:
 
         if workspace:
             assert isinstance(workspace, str), "Workspace must be of type String:''"
+            # check if the workspace is valid in Geoserver
+            if self.get_workspace(workspace) is None:
+                raise Exception("Workspace is not valid in Geoserver Instance")
 
         supported_modes: Set = {
             "single",
@@ -556,19 +683,37 @@ class Geoserver:
             raise Exception(
                 f"Format not supported. Acceptable formats are : {supported_formats}"
             )
+        # check if it already exist in Geoserver
+        if self.get_layergroup(name) is not None:
+            raise Exception(f"Layergroup: {name} already exist in Geoserver instance")
+
         if len(layers) == 0:
             raise Exception("No layer provided!")
+        else:
+            for layer in layers:
+                # check if it is valid in geoserver
+
+                if (
+                    self.get_layer(
+                        layer_name=layer,
+                        workspace=workspace if workspace is not None else None,
+                    )
+                    is not None
+                ):
+                    ...
+                else:
+                    raise Exception(
+                        f"Layer: {layer} is not a valid layer in the Geoserver instance"
+                    )
 
         skeleton = ""
 
         if workspace:
-            # TODO: check if it is valid in geoserver
             skeleton += f"<workspace><name>{workspace}</name></workspace>"
-
         # metadata structure = [{about:"",content_url:""},{...}]
         metadata_xml_list = []
 
-        if len(metadata) > 1:
+        if len(metadata) >= 1:
             for meta in metadata:
                 metadata_about = meta.get("about")
                 metadata_content_url = meta.get("content_url")
@@ -585,8 +730,6 @@ class Geoserver:
 
             metadata_xml = f"<metadataLinks>{''.join(['{}']*len(metadata_xml_list)).format(*metadata_xml_list)}</metadataLinks>"
             skeleton += metadata_xml
-
-        # TODO: check if Layer exist in Geoserver
         layers_xml_list: List[str] = []
 
         for layer in layers:
@@ -602,7 +745,7 @@ class Geoserver:
         layers_xml: str = f"<publishables>{''.join(['{}']*len(layers)).format(*layers_xml_list)}</publishables>"
         skeleton += layers_xml
 
-        if len(keywords) > 1:
+        if len(keywords) >= 1:
 
             keyword_xml_list: List[str] = [
                 f"<keyword>{keyword}</keyword>" for keyword in keywords
@@ -627,10 +770,136 @@ class Geoserver:
         )
 
         if response.status_code in [200, 201]:
-            layergroup_url = f"{self.service_url}/layergroups/{name}.{formats}"
+            layergroup_url = f"{self.service_url}/rest/layergroups/{name}.{formats}"
             return f"layergroup created successfully! Layergroup link: {layergroup_url}"
         else:
             return "Error creating layergroup"
+
+    def update_layergroup(
+        self,
+        layergroup_name,
+        title: Optional[str] = None,
+        abstract_text: Optional[str] = None,
+        formats: str = "html",
+        metadata: List[dict] = [],
+        keywords: List[str] = [],
+    ) -> str:
+        """
+        Updates a Layergroup.
+
+        Parameters
+        ----------
+        layergroup_name: str, required
+        mode : str, optional
+        title : str, optional
+        abstract_text : str, optional
+        formats : str, optional
+        metadata : list, optional
+        keywords : list, optional
+
+        """
+
+        # check if layergroup is valid in Geoserver
+
+        if self.get_layergroup(layer_name=layergroup_name) is None:
+            raise Exception(
+                f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
+            )
+        if title is not None:
+            assert isinstance(title, str), "Title must be of type String:''"
+        if abstract_text is not None:
+            assert isinstance(
+                abstract_text, str
+            ), "Abstract text must be of type String:''"
+        assert isinstance(formats, str), "Format must be of type String:''"
+        assert isinstance(
+            metadata, list
+        ), "Metadata must be of type List of dict:[{'about':'geoserver rest data metadata','content_url':'lint to content url'}]"
+        assert isinstance(
+            keywords, list
+        ), "Keywords must be of type List:['keyword1','keyword2'...]"
+
+        supported_formats: Set = {"html", "json", "xml"}
+
+        if formats.lower() != "html" and formats.lower() not in supported_formats:
+
+            raise Exception(
+                f"Format not supported. Acceptable formats are : {supported_formats}"
+            )
+
+        skeleton = ""
+
+        if title:
+            skeleton += f"<title>{title}</title>"
+        if abstract_text:
+            skeleton += f"<abstractTxt>{abstract_text}</abstractTxt>"
+
+        metadata_xml_list = []
+
+        if len(metadata) >= 1:
+            for meta in metadata:
+                metadata_about = meta.get("about")
+                metadata_content_url = meta.get("content_url")
+                metadata_xml_list.append(
+                    f"""
+                            <metadataLink>
+                                <type>text/plain</type>
+                                <about>{metadata_about}</about>
+                                <metadataType>ISO19115:2003</metadataType>
+                                <content>{metadata_content_url}</content>
+                            </metadataLink>
+                            """
+                )
+
+            metadata_xml = f"<metadataLinks>{''.join(['{}']*len(metadata_xml_list)).format(*metadata_xml_list)}</metadataLinks>"
+            skeleton += metadata_xml
+
+        if len(keywords) >= 1:
+
+            keyword_xml_list: List[str] = [
+                f"<keyword>{keyword}</keyword>" for keyword in keywords
+            ]
+            keywords_xml: str = f"<keywords>{''.join(['{}']*len(keywords)).format(*keyword_xml_list)}</keywords>"
+            skeleton += keywords_xml
+
+        data = f"""
+                    <layerGroup>
+                        {skeleton}
+                    </layerGroup>
+                """
+
+        url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+
+        response = self._requests(
+            method="put",
+            url=url,
+            data=data,
+            headers={"content-type": "text/xml", "accept": "application/xml"},
+        )
+        if response.status_code in [200, 201]:
+            layergroup_url = (
+                f"{self.service_url}/rest/layergroups/{layergroup_name}.{formats}"
+            )
+            return f"layergroup updated successfully! Layergroup link: {layergroup_url}"
+        else:
+            return "Error updating layergroup"
+
+    def delete_layergroup(
+        self,
+        layergroup_name: str,
+    ) -> str:
+        if self.get_layergroup(layer_name=layergroup_name) is None:
+            raise Exception(
+                f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
+            )
+
+        url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+
+        response = self._requests(url=url, method="delete")
+        if response.status_code in [200, 201]:
+            return "Layer group deleted successfully"
+        else:
+            return "Error deleting layer group"
 
     # _______________________________________________________________________________________________
     #
@@ -1104,124 +1373,6 @@ class Geoserver:
 
             if r.status_code == 200:
                 return "Status code: {}, delete style".format(r.status_code)
-
-            else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
-
-        except Exception as e:
-            return "Error: {}".format(e)
-
-    # _______________________________________________________________________________________________
-    #
-    #      WORKSPACES
-    # _______________________________________________________________________________________________
-    #
-
-    def get_default_workspace(self):
-        """
-        Returns the default workspace.
-        """
-        try:
-            url = "{}/rest/workspaces/default".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
-
-        except Exception as e:
-            return "get_default_workspace error: {}".format(e)
-
-    def get_workspace(self, workspace):
-        """
-        get name  workspace if exist
-        Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
-        """
-        try:
-            payload = {"recurse": "true"}
-            url = "{}/rest/workspaces/{}.json".format(self.service_url, workspace)
-            r = requests.get(url, auth=(self.username, self.password), params=payload)
-            if r.status_code == 200:
-                return r.json()
-            else:
-                return None
-
-        except Exception as e:
-            return "Error: {}".format(e)
-
-    def get_workspaces(self):
-        """
-        Returns all the workspaces.
-        """
-        try:
-            url = "{}/rest/workspaces".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
-
-        except Exception as e:
-            return "get_workspaces error: {}".format(e)
-
-    def set_default_workspace(self, workspace: str):
-        """
-        Set the default workspace.
-        """
-        try:
-            url = "{}/rest/workspaces/default".format(self.service_url)
-            data = "<workspace><name>{}</name></workspace>".format(workspace)
-            print(url, data)
-            r = self._requests(
-                "put",
-                url,
-                data=data,
-                headers={"content-type": "text/xml"},
-            )
-
-            if r.status_code == 200:
-                return "Status code: {}, default workspace {} set!".format(
-                    r.status_code, workspace
-                )
-
-        except Exception as e:
-            return "reload error: {}".format(e)
-
-    def create_workspace(self, workspace: str):
-        """
-        Create a new workspace in geoserver.
-
-        The geoserver workspace url will be same as the name of the workspace.
-        """
-        try:
-            url = "{}/rest/workspaces".format(self.service_url)
-            data = "<workspace><name>{}</name></workspace>".format(workspace)
-            headers = {"content-type": "text/xml"}
-            r = self._requests("post", url, data=data, headers=headers)
-
-            if r.status_code == 201:
-                return "{} Workspace {} created!".format(r.status_code, workspace)
-
-            if r.status_code == 401:
-                raise Exception("The workspace already exist")
-
-            else:
-                raise Exception("The workspace can not be created")
-
-        except Exception as e:
-            return "Error: {}".format(e)
-
-    def delete_workspace(self, workspace: str):
-        """
-
-        Parameters
-        ----------
-        workspace : str
-
-        """
-        try:
-            payload = {"recurse": "true"}
-            url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
-            r = requests.delete(
-                url, auth=(self.username, self.password), params=payload
-            )
-
-            if r.status_code == 200:
-                return "Status code: {}, delete workspace".format(r.status_code)
 
             else:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
@@ -2071,6 +2222,3 @@ class Geoserver:
 
         except Exception as e:
             return "Error: {}".format(e)
-
-
-print(Geoserver().get_manifest())

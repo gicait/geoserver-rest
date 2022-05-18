@@ -1314,7 +1314,7 @@ class Geoserver:
         After creating feature store, you need to publish it. See the layer publish guidline here: https://geoserver-rest.readthedocs.io/en/latest/how_to_use.html#creating-and-publishing-featurestores-and-featurestore-layers
         """
 
-        url = "{}/workspaces/{}/datastores".format(self.service_url, workspace)
+        url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)
 
         headers = {"content-type": "text/xml"}
 

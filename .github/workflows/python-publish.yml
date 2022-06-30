@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Publish geoTile to PyPI / GitHub
+name: Publish geoserver-rest to PyPI / GitHub
 
 on:
   push:

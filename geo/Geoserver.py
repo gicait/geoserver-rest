@@ -914,7 +914,7 @@ class Geoserver:
         try:
             url = "{}/rest/styles/{}.json".format(self.service_url, style_name)
             if workspace is not None:
-                url = "{}/workspaces/{}/styles/{}.json".format(
+                url = "{}/rest/workspaces/{}/styles/{}.json".format(
                     self.service_url, workspace, style_name
                 )
 

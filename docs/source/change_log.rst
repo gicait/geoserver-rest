@@ -5,7 +5,7 @@ Change Log
 ^^^^^^^^^^^^^^^^^
 * Fix the import issue, close `#76 <https://github.com/gicait/geoserver-rest/issues/76>`_
 * Removed the ``rest`` from Geoserver class URL, Revert back to previous state. Close `#77 <https://github.com/gicait/geoserver-rest/issues/76>`_
-
+* Added header to fix issue `https://github.com/gicait/geoserver-rest/issues/86`
 
 ``[v2.3.0 - 2022-05-06]``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

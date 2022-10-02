@@ -894,113 +894,113 @@ class Geoserver:
         else:
             return "Error updating layergroup"
 
-    def add_layer_to_layergroup(
-        self,
-        layergroup_name,
-        layer=None,
-        formats: str = "html",
-    ) -> str:
-        """
-        Adds a layer to a Layergroup.
+    # def add_layer_to_layergroup(
+    #     self,
+    #     layergroup_name,
+    #     layer=None,
+    #     formats: str = "html",
+    # ) -> str:
+    #     """
+    #     Adds a layer to a Layergroup.
 
-        Parameters
-        ----------
-        layergroup_name: str, required
-        layer : str, required
-        formats : str, optional
-        """
-        if layer is None:
-            raise Exception(f"Layer is required")
+    #     Parameters
+    #     ----------
+    #     layergroup_name: str, required
+    #     layer : str, required
+    #     formats : str, optional
+    #     """
+    #     if layer is None:
+    #         raise Exception(f"Layer is required")
 
-        if not isinstance(layer, str):
-            raise Exception(f"Layer must be of type string")
+    #     if not isinstance(layer, str):
+    #         raise Exception(f"Layer must be of type string")
 
-        if self.get_layer(layer) is None:
-            raise Exception(
-                f"Layer: {layer} is not a valid layer in the Geoserver instance"
-            )
+    #     if self.get_layer(layer) is None:
+    #         raise Exception(
+    #             f"Layer: {layer} is not a valid layer in the Geoserver instance"
+    #         )
 
-        valid_layers = []
+    #     valid_layers = []
 
-        if self.get_layergroup(layergroup_name=layergroup_name) is None:
-            raise Exception(
-                f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
-            )
-        else:
-            layergroup_info = self.get_layergroup(layergroup_name=layergroup_name)
+    #     if self.get_layergroup(layergroup_name=layergroup_name) is None:
+    #         raise Exception(
+    #             f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
+    #         )
+    #     else:
+    #         layergroup_info = self.get_layergroup(layergroup_name=layergroup_name)
 
-            # get the already published layers
-            publishables = (
-                layergroup_info["layerGroup"].get("publishables").get("published")
-            )
-            if isinstance(publishables, list):
-                for published_layers in publishables:
-                    layer_name = published_layers.get("name")
-                    href = published_layers.get("href")
-                    if layer_name != layer:
-                        valid_layers.append({"name": layer_name, "href": href})
-            else:
-                layer_name = publishables.get("name")
-                href = publishables.get("href")
-                if layer_name != layer:
-                    valid_layers.append({"name": layer_name, "href": href})
+    #         # get the already published layers
+    #         publishables = (
+    #             layergroup_info["layerGroup"].get("publishables").get("published")
+    #         )
+    #         if isinstance(publishables, list):
+    #             for published_layers in publishables:
+    #                 layer_name = published_layers.get("name")
+    #                 href = published_layers.get("href")
+    #                 if layer_name != layer:
+    #                     valid_layers.append({"name": layer_name, "href": href})
+    #         else:
+    #             layer_name = publishables.get("name")
+    #             href = publishables.get("href")
+    #             if layer_name != layer:
+    #                 valid_layers.append({"name": layer_name, "href": href})
 
-        supported_formats = {"html", "json", "xml"}
+    #     supported_formats = {"html", "json", "xml"}
 
-        if formats.lower() != "html" and formats.lower() not in supported_formats:
+    #     if formats.lower() != "html" and formats.lower() not in supported_formats:
 
-            raise Exception(
-                f"Format not supported. Acceptable formats are : {supported_formats}"
-            )
+    #         raise Exception(
+    #             f"Format not supported. Acceptable formats are : {supported_formats}"
+    #         )
 
-        # geoserver overrides existing layers when adding layers to a layer group, so to ensure the layers remain
-        # we need to fetch all the current layers in the layergroup, append the new layer and PUT on the layergroup
+    #     # geoserver overrides existing layers when adding layers to a layer group, so to ensure the layers remain
+    #     # we need to fetch all the current layers in the layergroup, append the new layer and PUT on the layergroup
 
-        layers_xml_list: List[str] = []
+    #     layers_xml_list: List[str] = []
 
-        for layer in valid_layers:
+    #     for layer in valid_layers:
 
-            layers_xml_list.append(
+    #         layers_xml_list.append(
 
-                f"""<published type="layer">
-                            <name>{layer.get('name')}</name>
-                            <link>{layer.get('href')}</link>
-                    </published>
-                """
-            )
+    #             f"""<published type="layer">
+    #                         <name>{layer.get('name')}</name>
+    #                         <link>{layer.get('href')}</link>
+    #                 </published>
+    #             """
+    #         )
 
-        layers_xml = f"""
-                        <publishables>
-                            <published type="layer">
-                                <name>{layer}</name>
-                                <link>{self.service_url}/layers/{layer}.xml</link>
-                            </published>
-                            {''.join(['{}']*len(valid_layers)).format(*layers_xml_list)}
-                        </publishables>
+    #     layers_xml = f"""
+    #                     <publishables>
+    #                         <published type="layer">
+    #                             <name>{layer}</name>
+    #                             <link>{self.service_url}/layers/{layer}.xml</link>
+    #                         </published>
+    #                         {''.join(['{}']*len(valid_layers)).format(*layers_xml_list)}
+    #                     </publishables>
 
-                        """
+    #                     """
 
-        data = f"""
-                    <layerGroup>
-                        {layers_xml}
-                    </layerGroup>
-                """
+    #     data = f"""
+    #                 <layerGroup>
+    #                     {layers_xml}
+    #                 </layerGroup>
+    #             """
 
-        url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+    #     url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
 
-        response = self._requests(
-            method="put",
-            url=url,
-            data=data,
-            headers={"content-type": "text/xml", "accept": "application/xml"},
-        )
-        if response.status_code in [200, 201]:
-            layergroup_url = (
-                f"{self.service_url}/rest/layergroups/{layergroup_name}.{formats}"
-            )
-            return f"layer added to layergroup successfully! Layergroup link: {layergroup_url}"
-        else:
-            return "Error adding layer to layergroup"
+    #     response = self._requests(
+    #         method="put",
+    #         url=url,
+    #         data=data,
+    #         headers={"content-type": "text/xml", "accept": "application/xml"},
+    #     )
+    #     if response.status_code in [200, 201]:
+    #         layergroup_url = (
+    #             f"{self.service_url}/rest/layergroups/{layergroup_name}.{formats}"
+    #         )
+    #         return f"layer added to layergroup successfully! Layergroup link: {layergroup_url}"
+    #     else:
+    #         return "Error adding layer to layergroup"
 
     def delete_layergroup(
         self,

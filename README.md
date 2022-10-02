@@ -41,7 +41,7 @@ geo.publish_featurestore(workspace='demo', store_name='geo_data', pg_table='geod
 
 # For uploading SLD file and connect it with layer
 geo.upload_style(path=r'path\to\sld\file.sld', workspace='demo')
-geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo', sld_version='1.0.0')
+geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo')
 
 # For creating the style file for raster data dynamically and connect it with layer
 geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo',

@@ -102,7 +102,7 @@ Before uploading ``SLD`` file, please check the version of your sld file. By def
 .. code-block:: python3
 
     geo.upload_style(path=r'path\to\sld\file.sld', workspace='demo')
-    geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo', sld_version='1.0.0')
+    geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo')
 
 Creating and applying dynamic styles based on the raster coverages
 ------------------------------------------------------------------
@@ -111,7 +111,7 @@ It is used to create the style file for raster data. You can get the ``color_ram
 
 .. code-block:: python
 
-    geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn')
+    geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdBu_r')
     geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
 
 
@@ -194,9 +194,9 @@ It is used for creating the style for ``point``, ``line`` and ``polygon`` dynami
 
 .. code-block:: python
 
-    geo.create_outline_featurestyle(style_name='new_style' color="#3579b1" geom_type='polygon', workspace='demo')
+    geo.create_outline_featurestyle(style_name='new_style', color="#3579b1", geom_type='polygon', workspace='demo')
     geo.create_catagorized_featurestyle(style_name='name_of_style', column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo')
-    geo.create_classified_featurestyle(style_name='name_of_style' column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo')
+    geo.create_classified_featurestyle(style_name='name_of_style', column_name='name_of_column', column_distinct_values=[1,2,3,4,5,6,7], workspace='demo')
 
 .. note::
 

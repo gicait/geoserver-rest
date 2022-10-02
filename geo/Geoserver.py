@@ -1,4 +1,5 @@
 # inbuilt libraries
+import json
 import os
 from typing import List, Optional, Set
 
@@ -7,9 +8,9 @@ import requests
 from xmltodict import parse, unparse
 
 # custom functions
-from .Calculation_gdal import raster_value
-from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
-from .supports import prepare_zip_file
+from Calculation_gdal import raster_value
+from Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
+from supports import prepare_zip_file
 
 
 # call back class for reading the data
@@ -108,7 +109,7 @@ class Geoserver:
         """
         try:
             url = "{}/rest/about/status.json".format(self.service_url)
-            r = requests.get(url, auth=(self.username, self.password))
+            r = requests.get(url, auth=(self.username, self.password),headers={"Accept": "application/json"})
             return r.json()
 
         except Exception as e:
@@ -588,15 +589,15 @@ class Geoserver:
         except Exception as e:
             return "get_layers error: {}".format(e)
 
-    def get_layergroup(self, layer_name: str, workspace: Optional[str] = None):
+    def get_layergroup(self, layergroup_name: str, workspace: Optional[str] = None):
         """
         Returns the layer group by layer group name.
         """
         try:
-            url = "{}/rest/layergroups/{}".format(self.service_url, layer_name)
+            url = "{}/rest/layergroups/{}".format(self.service_url, layergroup_name)
             if workspace is not None:
                 url = "{}/workspaces/{}/layergroups/{}".format(
-                    self.service_url, workspace, layer_name
+                    self.service_url, workspace, layergroup_name
                 )
 
             r = self._requests("get", url)
@@ -614,11 +615,11 @@ class Geoserver:
         mode: str = "single",
         title: str = "geoserver-rest layer group",
         abstract_text: str = "A new layergroup created with geoserver-rest python package",
-        layers: List[str] = [],
+        layers: List[str] = None,
         workspace: Optional[str] = None,
         formats: str = "html",
-        metadata: List[dict] = [],
-        keywords: List[str] = [],
+        metadata: List[dict] = None,
+        keywords: List[str] = None,
     ) -> str:
         """
         Creates the Layergroup.
@@ -641,6 +642,12 @@ class Geoserver:
         abstract_text is a long text, like a brief info about the layergroup
         workspace is Optional(Global Layergroups don't need workspace).A layergroup can exist without a workspace.
         """
+        if layers is None:
+            layers = []
+        if metadata is None:
+            metadata = []
+        if keywords is None:
+            keywords = []
 
         assert isinstance(name, str), "Name must be of type String:''"
         assert isinstance(mode, str), "Mode must be of type String:''"
@@ -798,7 +805,10 @@ class Geoserver:
         keywords : list, optional
 
         """
-
+        if metadata is None:
+            metadata = []
+        if keywords is None:
+            keywords = []
         # check if layergroup is valid in Geoserver
 
         if self.get_layergroup(layer_name=layergroup_name) is None:
@@ -884,11 +894,119 @@ class Geoserver:
         else:
             return "Error updating layergroup"
 
+    def add_layer_to_layergroup(
+        self,
+        layergroup_name,
+        layer=None,
+        formats: str = "html",
+    ) -> str:
+        """
+        Adds a layer to a Layergroup.
+
+        Parameters
+        ----------
+        layergroup_name: str, required
+        layer : str, required
+        formats : str, optional
+        """
+        if layer is None:
+            raise Exception(f"Layer is required")
+
+        if not isinstance(layer, str):
+            raise Exception(f"Layer must be of type string")
+
+        if self.get_layer(layer) is None:
+            raise Exception(
+                f"Layer: {layer} is not a valid layer in the Geoserver instance"
+            )
+
+        valid_layers = []
+
+        if self.get_layergroup(layergroup_name=layergroup_name) is None:
+            raise Exception(
+                f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
+            )
+        else:
+            layergroup_info = self.get_layergroup(layergroup_name=layergroup_name)
+
+            # get the already published layers
+            publishables = (
+                layergroup_info["layerGroup"].get("publishables").get("published")
+            )
+            if isinstance(publishables, list):
+                for published_layers in publishables:
+                    layer_name = published_layers.get("name")
+                    href = published_layers.get("href")
+                    if layer_name != layer:
+                        valid_layers.append({"name": layer_name, "href": href})
+            else:
+                layer_name = publishables.get("name")
+                href = publishables.get("href")
+                if layer_name != layer:
+                    valid_layers.append({"name": layer_name, "href": href})
+
+        supported_formats = {"html", "json", "xml"}
+
+        if formats.lower() != "html" and formats.lower() not in supported_formats:
+
+            raise Exception(
+                f"Format not supported. Acceptable formats are : {supported_formats}"
+            )
+
+        # geoserver overrides existing layers when adding layers to a layer group, so to ensure the layers remain
+        # we need to fetch all the current layers in the layergroup, append the new layer and PUT on the layergroup
+
+        layers_xml_list: List[str] = []
+
+        for layer in valid_layers:
+
+            layers_xml_list.append(
+                
+                f"""<published type="layer">
+                            <name>{layer.get('name')}</name>
+                            <link>{layer.get('href')}</link>
+                    </published>
+                """
+            )
+
+        layers_xml = f"""
+                        <publishables>
+                            <published type="layer">
+                                <name>{layer}</name>
+                                <link>{self.service_url}/layers/{layer}.xml</link>
+                            </published>
+                            {''.join(['{}']*len(valid_layers)).format(*layers_xml_list)}
+                        </publishables>
+                        
+                        """
+
+        data = f"""
+                    <layerGroup>
+                        {layers_xml}
+                    </layerGroup>
+                """
+
+        url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+
+        response = self._requests(
+            method="put",
+            url=url,
+            data=data,
+            headers={"content-type": "text/xml", "accept": "application/xml"},
+        )
+        if response.status_code in [200, 201]:
+            layergroup_url = (
+                f"{self.service_url}/rest/layergroups/{layergroup_name}.{formats}"
+            )
+            return f"layer added to layergroup successfully! Layergroup link: {layergroup_url}"
+        else:
+            return "Error adding layer to layergroup"
+
     def delete_layergroup(
         self,
         layergroup_name: str,
     ) -> str:
-        if self.get_layergroup(layer_name=layergroup_name) is None:
+        if self.get_layergroup(layergroup_name=layergroup_name) is None:
             raise Exception(
                 f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
             )
@@ -2222,3 +2340,6 @@ class Geoserver:
 
         except Exception as e:
             return "Error: {}".format(e)
+
+
+print(Geoserver().add_layer_to_layergroup(layergroup_name="test2", layer="sf:streams"))

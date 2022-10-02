@@ -16,7 +16,7 @@ Change Log
 * ``create_layergroup`` function added
 * ``update_layergroup`` function added
 * ``delete_layergroup`` function added
-*  Added layer and workspace checks to layergroup methods 
+*  Added layer and workspace checks to layergroup methods
 
 
 ``[V2.1.2 - 2021-10-14]``

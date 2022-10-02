@@ -5,12 +5,12 @@ from typing import List, Optional, Set
 
 # third-party libraries
 import requests
-from xmltodict import parse, unparse
 
 # custom functions
 from Calculation_gdal import raster_value
 from Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
 from supports import prepare_zip_file
+from xmltodict import parse, unparse
 
 
 # call back class for reading the data
@@ -961,7 +961,7 @@ class Geoserver:
         for layer in valid_layers:
 
             layers_xml_list.append(
-                
+
                 f"""<published type="layer">
                             <name>{layer.get('name')}</name>
                             <link>{layer.get('href')}</link>
@@ -977,7 +977,7 @@ class Geoserver:
                             </published>
                             {''.join(['{}']*len(valid_layers)).format(*layers_xml_list)}
                         </publishables>
-                        
+
                         """
 
         data = f"""
@@ -1584,35 +1584,35 @@ class Geoserver:
 
         database_connection = """
                 <dataStore>
-                <name>{0}</name>
-                <description>{1}</description>
+                <name>{}</name>
+                <description>{}</description>
                 <connectionParameters>
-                <entry key="Expose primary keys">{2}</entry>
-                <entry key="host">{3}</entry>
-                <entry key="port">{4}</entry>
-                <entry key="user">{5}</entry>
-                <entry key="passwd">{6}</entry>
+                <entry key="Expose primary keys">{}</entry>
+                <entry key="host">{}</entry>
+                <entry key="port">{}</entry>
+                <entry key="user">{}</entry>
+                <entry key="passwd">{}</entry>
                 <entry key="dbtype">postgis</entry>
-                <entry key="schema">{7}</entry>
-                <entry key="database">{8}</entry>
-                <entry key="Evictor run periodicity">{9}</entry>
-                <entry key="Max open prepared statements">{10}</entry>
-                <entry key="encode functions">{11}</entry>
-                <entry key="Primary key metadata table">{12}</entry>
-                <entry key="Batch insert size">{13}</entry>
-                <entry key="preparedStatements">{14}</entry>
-                <entry key="Estimated extends">{15}</entry>
-                <entry key="fetch size">{16}</entry>
-                <entry key="validate connections">{17}</entry>
-                <entry key="Support on the fly geometry simplification">{18}</entry>
-                <entry key="Connection timeout">{19}</entry>
-                <entry key="create database">{20}</entry>
-                <entry key="min connections">{21}</entry>
-                <entry key="max connections">{22}</entry>
-                <entry key="Evictor tests per run">{23}</entry>
-                <entry key="Test while idle">{24}</entry>
-                <entry key="Max connection idle time">{25}</entry>
-                <entry key="Loose bbox">{26}</entry>
+                <entry key="schema">{}</entry>
+                <entry key="database">{}</entry>
+                <entry key="Evictor run periodicity">{}</entry>
+                <entry key="Max open prepared statements">{}</entry>
+                <entry key="encode functions">{}</entry>
+                <entry key="Primary key metadata table">{}</entry>
+                <entry key="Batch insert size">{}</entry>
+                <entry key="preparedStatements">{}</entry>
+                <entry key="Estimated extends">{}</entry>
+                <entry key="fetch size">{}</entry>
+                <entry key="validate connections">{}</entry>
+                <entry key="Support on the fly geometry simplification">{}</entry>
+                <entry key="Connection timeout">{}</entry>
+                <entry key="create database">{}</entry>
+                <entry key="min connections">{}</entry>
+                <entry key="max connections">{}</entry>
+                <entry key="Evictor tests per run">{}</entry>
+                <entry key="Test while idle">{}</entry>
+                <entry key="Max connection idle time">{}</entry>
+                <entry key="Loose bbox">{}</entry>
                 </connectionParameters>
                 </dataStore>
                 """.format(

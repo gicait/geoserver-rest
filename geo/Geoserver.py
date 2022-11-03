@@ -1699,7 +1699,7 @@ class Geoserver:
             return "Error: {}".format(e)
 
     def publish_featurestore(
-        self, store_name: str, pg_table: str, workspace: Optional[str] = None
+        self, store_name: str, pg_table: str, workspace: Optional[str] = None, title: Optional[str] = None
     ):
         """
 
@@ -1708,6 +1708,7 @@ class Geoserver:
         store_name : str
         pg_table : str
         workspace : str, optional
+        title : str, optional
 
         Returns
         -------
@@ -1719,12 +1720,14 @@ class Geoserver:
         """
         if workspace is None:
             workspace = "default"
+        if title is None:
+            title = pg_table
 
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/".format(
             self.service_url, workspace, store_name
         )
 
-        layer_xml = "<featureType><name>{}</name></featureType>".format(pg_table)
+        layer_xml = "<featureType><name>{}</name><title>{}</title></featureType>".format(pg_table,title)
         headers = {"content-type": "text/xml"}
 
         try:

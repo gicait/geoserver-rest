@@ -13,7 +13,7 @@ Welcome to geoserver-rest documentation!
    about
    installation
    how_to_use
-   advance_use
+   advanced_uses
    change_log
    license
    contribution

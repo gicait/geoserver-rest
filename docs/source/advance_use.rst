@@ -17,8 +17,8 @@ The following code will first convert all the ``.rst`` data format inside ``C:\U
     # geo.create_workspace('geonode')
 
     for rst in rst_files:
-        file_name = os.path.basename(file_name)
+        file_name = os.path.basename(rst_files)
         src = gdal.Open(rst)
         tiff = r'C:\Users\tek\Desktop\try\{}'.format(file_name)
         gdal.Translate(tiff, src)
-        geo.create_coveragestore(lyr_name=file_name, path=tiff, workspace='geonode')    #, overwrite=True
+        geo.create_coveragestore(layer_name=file_name, path=tiff, workspace='geonode')    #, overwrite=True

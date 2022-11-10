@@ -24,7 +24,7 @@ The following code will first convert all the ``.rst`` data format inside ``C:\U
         geo.create_coveragestore(layer_name=file_name, path=tiff, workspace='geonode')    #, overwrite=True
 
 
-The following code will upload all the ``tiff`` files (with extension .tiff or .tif) located in data/landuse to the GeoServer.
+The following code will upload all the ``tiff`` files (with extension .tiff or .tif) located in ``data/landuse`` to the GeoServer.
 
 
 .. code-block:: python3

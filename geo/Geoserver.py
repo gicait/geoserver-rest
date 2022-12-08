@@ -88,7 +88,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_manifest error: ", e
+            raise Exception(e)
 
     def get_version(self):
         """
@@ -100,7 +100,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_version error: ", e
+            raise Exception(e)
 
     def get_status(self):
         """
@@ -112,7 +112,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_status error: ", e
+            raise Exception(e)
 
     def get_system_status(self):
         """
@@ -124,7 +124,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_system_status error: ", e
+            raise Exception(e)
 
     def reload(self):
         """
@@ -140,7 +140,7 @@ class Geoserver:
             return "Status code: {}".format(r.status_code)
 
         except Exception as e:
-            return "reload error: {}".format(e)
+            raise Exception(e)
 
     def reset(self):
         """
@@ -156,7 +156,7 @@ class Geoserver:
             return "Status code: {}".format(r.status_code)
 
         except Exception as e:
-            return "reload error: {}".format(e)
+            raise Exception(e)
 
     # _______________________________________________________________________________________________
     #
@@ -174,7 +174,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_default_workspace error: {}".format(e)
+            raise Exception(e)
 
     def get_workspace(self, workspace):
         """
@@ -191,7 +191,7 @@ class Geoserver:
                 return None
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception(e)
 
     def get_workspaces(self):
         """
@@ -203,7 +203,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_workspaces error: {}".format(e)
+            raise Exception(e)
 
     def set_default_workspace(self, workspace: str):
         """
@@ -224,9 +224,11 @@ class Geoserver:
                 return "Status code: {}, default workspace {} set!".format(
                     r.status_code, workspace
                 )
+            else:
+                raise Exception("Error : {} - {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "reload error: {}".format(e)
+            raise Exception(e)
 
     def create_workspace(self, workspace: str):
         """
@@ -250,7 +252,7 @@ class Geoserver:
                 raise Exception("The workspace can not be created")
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception(e)
 
     def delete_workspace(self, workspace: str):
         """
@@ -274,7 +276,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception(e)
 
     # _______________________________________________________________________________________________
     #
@@ -298,10 +300,14 @@ class Geoserver:
             )
 
             r = self._requests("get", url)
-            return r.json()
+
+            if r.status_code in [200, 201]:
+                return r.json()
+            else:
+                return None
 
         except Exception as e:
-            return "get_datastores error: {}".format(e)
+            raise Exception("Error : get_datastores - {}".format(e))
 
     def get_datastores(self, workspace: Optional[str] = None):
         """
@@ -321,7 +327,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_datastores error: {}".format(e)
+            raise Exception("Error : get_datastores - {}".format(e))
 
     # _______________________________________________________________________________________________
     #
@@ -345,10 +351,13 @@ class Geoserver:
             r = self._requests(method="get", url=url, params=payload)
             # print("Status code: {}, Get coverage store".format(r.status_code))
 
-            return r.json()
+            if r.status_code in [200, 201]:
+                return r.json()
+            else:
+                return None
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error: {}".format(e))
 
     def get_coveragestores(self, workspace: str = None):
         """
@@ -365,7 +374,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_coveragestores error: {}".format(e)
+            raise Exception("Error : get_coveragestores - {}".format(e))
 
     def create_coveragestore(
         self,
@@ -418,14 +427,14 @@ class Geoserver:
                 r = self._requests(method="put", url=url, data=f, headers=headers)
 
                 if r.status_code != 201:
-                    return "{}: The coveragestore can not be created!".format(
-                        r.status_code
-                    )
+                    raise Exception("{} - {}".format(
+                        r.status_code, r.content
+                    ))
                 else:
-                    return "The coveragestore has been created successfully!"
+                    raise Exception("{} - {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def publish_time_dimension_to_coveragestore(
         self,
@@ -485,12 +494,10 @@ class Geoserver:
             )
 
             if r.status_code not in [200, 201]:
-                return "{}: The coveragestore can not have time dimension! {}".format(
-                    r.status_code, r.content
-                )
+                raise Exception("{} - {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     # _______________________________________________________________________________________________
     #
@@ -516,7 +523,7 @@ class Geoserver:
                 return None
 
         except Exception as e:
-            return "get_layer error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def get_layers(self, workspace: Optional[str] = None):
         """
@@ -532,7 +539,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_layers error: {}".format(e)
+            raise Exception("Error get_layer : {}".format(e))
 
     def delete_layer(self, layer_name: str, workspace: Optional[str] = None):
         """
@@ -559,7 +566,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     # _______________________________________________________________________________________________
     #
@@ -586,7 +593,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_layers error: {}".format(e)
+            raise Exception("Error get_layer : {}".format(e))
 
     def get_layergroup(self, layer_name: str, workspace: Optional[str] = None):
         """
@@ -606,7 +613,7 @@ class Geoserver:
                 return None
 
         except Exception as e:
-            return "get_layer error: {}".format(e)
+            raise Exception("Error get_layer : {}".format(e))
 
     def create_layergroup(
         self,
@@ -773,7 +780,7 @@ class Geoserver:
             layergroup_url = f"{self.service_url}/rest/layergroups/{name}.{formats}"
             return f"layergroup created successfully! Layergroup link: {layergroup_url}"
         else:
-            return "Error creating layergroup"
+            raise Exception("Error: {} {}".format(response.status_code, response.content))
 
     def update_layergroup(
         self,
@@ -882,7 +889,7 @@ class Geoserver:
             )
             return f"layergroup updated successfully! Layergroup link: {layergroup_url}"
         else:
-            return "Error updating layergroup"
+            raise Exception("Error: {} {}".format(response.status_code, response.content))
 
     def delete_layergroup(
         self,
@@ -899,7 +906,7 @@ class Geoserver:
         if response.status_code in [200, 201]:
             return "Layer group deleted successfully"
         else:
-            return "Error deleting layer group"
+            raise Exception("Error: {} {}".format(response.status_code, response.content))
 
     # _______________________________________________________________________________________________
     #
@@ -919,10 +926,14 @@ class Geoserver:
                 )
 
             r = self._requests("get", url)
-            return r.json()
+            
+            if r.status_code in [200, 201]:
+                return r.json()
+            else:
+                return None
 
         except Exception as e:
-            return "get_style error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def get_styles(self, workspace: Optional[str] = None):
         """
@@ -939,7 +950,7 @@ class Geoserver:
             return r.json()
 
         except Exception as e:
-            return "get_styles error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def upload_style(
         self,
@@ -999,14 +1010,12 @@ class Geoserver:
                     headers=header_sld,
                 )
                 if r_sld.status_code not in [200, 201]:
-                    return "{}: Style file can not be uploaded! {}".format(
-                        r.status_code, r.content
-                    )
+                    raise Exception("Error: {} {}".format(r.status_code, r.content))
 
             return r_sld.status_code
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def create_coveragestyle(
         self,
@@ -1084,16 +1093,14 @@ class Geoserver:
                     headers=header_sld,
                 )
                 if r_sld.status_code not in [200, 201]:
-                    return "{}: Style file can not be uploaded! {}".format(
-                        r.status_code, r.content
-                    )
+                    raise Exception("Error: {} {}".format(r.status_code, r.content))
 
             os.remove("style.sld")
 
             return r_sld.status_code
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def create_catagorized_featurestyle(
         self,
@@ -1156,16 +1163,14 @@ class Geoserver:
                     headers=header_sld,
                 )
                 if r_sld.status_code not in [200, 201]:
-                    return "{}: Style file can not be uploaded! {}".format(
-                        r.status_code, r.content
-                    )
+                    raise Exception("Error: {} {}".format(r.status_code, r.content))
 
             os.remove("style.sld")
 
             return r_sld.status_code
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def create_outline_featurestyle(
         self,
@@ -1223,16 +1228,14 @@ class Geoserver:
                     headers=header_sld,
                 )
                 if r_sld.status_code not in [200, 201]:
-                    return "{}: Style file can not be uploaded! {}".format(
-                        r.status_code, r.content
-                    )
+                    raise Exception("Error: {} {}".format(r.status_code, r.content))
 
             os.remove("style.sld")
 
             return r_sld.status_code
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def create_classified_featurestyle(
         self,
@@ -1298,16 +1301,14 @@ class Geoserver:
                     headers=header_sld,
                 )
                 if r_sld.status_code not in [200, 201]:
-                    return "{}: Style file can not be uploaded! {}".format(
-                        r.status_code, r.content
-                    )
+                    raise Exception("Error: {} {}".format(r.status_code, r.content))
 
             os.remove("style.sld")
 
             return r_sld.status_code
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def publish_style(
         self,
@@ -1351,7 +1352,7 @@ class Geoserver:
             return r.status_code
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def delete_style(self, style_name: str, workspace: Optional[str] = None):
         """
@@ -1378,7 +1379,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     # _______________________________________________________________________________________________
     #
@@ -1542,9 +1543,7 @@ class Geoserver:
                 )
 
                 if r.status_code not in [200, 201]:
-                    return "{}: Datastore can not be updated. {}".format(
-                        r.status_code, r.content
-                    )
+                    raise Exception("Error: {} {}".format(r.status_code, r.content))
             else:
                 r = self._requests(
                     "post",
@@ -1554,12 +1553,10 @@ class Geoserver:
                 )
 
                 if r.status_code not in [200, 201]:
-                    return "{}: Data store can not be created! {}".format(
-                        r.status_code, r.content
-                    )
+                    raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def create_datastore(
         self,
@@ -1628,7 +1625,7 @@ class Geoserver:
                 )
 
         except Exception as e:
-            return "Error create_datastore: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def create_shp_datastore(
         self,
@@ -1691,12 +1688,10 @@ class Geoserver:
                     return "The shapefile datastore created successfully!"
 
                 else:
-                    return "{}: The shapefile datastore can not be created! {}".format(
-                        r.status_code, r.content
-                    )
+                    raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def publish_featurestore(
         self, store_name: str, pg_table: str, workspace: Optional[str] = None, title: Optional[str] = None
@@ -1738,12 +1733,10 @@ class Geoserver:
                 headers=headers,
             )
             if r.status_code not in [200, 201]:
-                return "{}: Data can not be published! {}".format(
-                    r.status_code, r.content
-                )
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def edit_featuretype(
         self,
@@ -1793,12 +1786,10 @@ class Geoserver:
                 headers=headers,
             )
             if r.status_code not in [200, 201]:
-                return "{}: Data has not been edited! {}".format(
-                    r.status_code, r.content
-                )
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def publish_featurestore_sqlview(
         self,
@@ -1865,12 +1856,10 @@ class Geoserver:
                 headers=headers,
             )
             if r.status_code not in [200, 201]:
-                return "{}: Data can not be published! {}".format(
-                    r.status_code, r.content
-                )
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def get_featuretypes(self, workspace: str = None, store_name: str = None):
         """
@@ -1933,7 +1922,7 @@ class Geoserver:
             return r_dict["dataStore"]
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def delete_featurestore(
         self, featurestore_name: str, workspace: Optional[str] = None
@@ -1964,7 +1953,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def delete_coveragestore(
         self, coveragestore_name: str, workspace: Optional[str] = None
@@ -1999,7 +1988,7 @@ class Geoserver:
                 raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     # _______________________________________________________________________________________________
     #
@@ -2028,10 +2017,10 @@ class Geoserver:
             if r.status_code == 200:
                 return parse(r.content)
             else:
-                raise Exception("Users could not be fetched")
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def create_user(self, username: str, password: str, enabled=True, service=None):
         """
@@ -2062,10 +2051,10 @@ class Geoserver:
             if r.status_code == 201:
                 return "User created successfully"
             else:
-                raise Exception("The user can not be created")
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def modify_user(
         self, username: str, new_name=None, new_password=None, enable=None, service=None
@@ -2108,10 +2097,10 @@ class Geoserver:
             if r.status_code == 200:
                 return "User modified successfully"
             else:
-                raise Exception("The user can not be modified")
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def delete_user(self, username: str, service=None):
         """
@@ -2139,10 +2128,10 @@ class Geoserver:
             if r.status_code == 200:
                 return "User deleted successfully"
             else:
-                raise Exception("The user could not be deleted")
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def get_all_usergroups(self, service=None):
         """
@@ -2166,10 +2155,10 @@ class Geoserver:
             if r.status_code == 200:
                 return parse(r.content)
             else:
-                raise Exception("The groups could not be fetched")
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def create_usergroup(self, group: str, service=None):
         """
@@ -2193,10 +2182,10 @@ class Geoserver:
             if r.status_code == 201:
                 return "Group created successfully"
             else:
-                raise Exception("The group can not be created")
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))
 
     def delete_usergroup(self, group: str, service=None):
         """
@@ -2221,7 +2210,7 @@ class Geoserver:
             if r.status_code == 200:
                 return "Group deleted successfully"
             else:
-                raise Exception("The group could not be deleted")
+                raise Exception("Error: {} {}".format(r.status_code, r.content))
 
         except Exception as e:
-            return "Error: {}".format(e)
+            raise Exception("Error : {}".format(e))

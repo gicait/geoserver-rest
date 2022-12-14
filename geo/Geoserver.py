@@ -602,10 +602,9 @@ class Geoserver:
         try:
             url = "{}/rest/layergroups/{}".format(self.service_url, layer_name)
             if workspace is not None:
-                url = "{}/workspaces/{}/layergroups/{}".format(
+                url = "{}/rest/workspaces/{}/layergroups/{}".format(
                     self.service_url, workspace, layer_name
                 )
-
             r = self._requests("get", url)
             if r.status_code in [200, 201]:
                 return r.json()

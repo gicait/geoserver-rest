@@ -12,6 +12,15 @@ from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_o
 from .supports import prepare_zip_file
 
 
+
+# Custom exceptions.
+class GeoserverException(Exception):
+    def __init__(self, status, message):
+        self.status = status
+        self.message = message
+        super().__init__(f"Status : {self.status} - {self.message}")
+
+
 # call back class for reading the data
 class DataProvider(object):
     def __init__(self, data):
@@ -85,7 +94,10 @@ class Geoserver:
         try:
             url = "{}/rest/about/manifest.json".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -97,7 +109,10 @@ class Geoserver:
         try:
             url = "{}/rest/about/version.json".format(self.service_url)
             r = self._requests("get", url)
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -109,7 +124,10 @@ class Geoserver:
         try:
             url = "{}/rest/about/status.json".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -121,7 +139,10 @@ class Geoserver:
         try:
             url = "{}/rest/about/system-status.json".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -137,7 +158,10 @@ class Geoserver:
         try:
             url = "{}/rest/reload".format(self.service_url)
             r = requests.post(url, auth=(self.username, self.password))
-            return "Status code: {}".format(r.status_code)
+            if r.status_code == 200:
+                return "Status code: {}".format(r.status_code)
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -153,8 +177,10 @@ class Geoserver:
         try:
             url = "{}/rest/reset".format(self.service_url)
             r = requests.post(url, auth=(self.username, self.password))
-            return "Status code: {}".format(r.status_code)
-
+            if r.status_code == 200:
+                return "Status code: {}".format(r.status_code)
+            else:
+                raise GeoserverException(r.status_code, r.content)
         except Exception as e:
             raise Exception(e)
 
@@ -171,7 +197,10 @@ class Geoserver:
         try:
             url = "{}/rest/workspaces/default".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -188,7 +217,7 @@ class Geoserver:
             if r.status_code == 200:
                 return r.json()
             else:
-                return None
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -200,7 +229,10 @@ class Geoserver:
         try:
             url = "{}/rest/workspaces".format(self.service_url)
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -221,11 +253,11 @@ class Geoserver:
             )
 
             if r.status_code == 200:
-                return "Status code: {}, default workspace {} set!".format(
+                 return "Status code: {}, default workspace {} set!".format(
                     r.status_code, workspace
                 )
             else:
-                raise Exception("Error : {} - {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -244,12 +276,8 @@ class Geoserver:
 
             if r.status_code == 201:
                 return "{} Workspace {} created!".format(r.status_code, workspace)
-
-            if r.status_code == 401:
-                raise Exception("The workspace already exist")
-
             else:
-                raise Exception("The workspace can not be created")
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -273,7 +301,7 @@ class Geoserver:
                 return "Status code: {}, delete workspace".format(r.status_code)
 
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
@@ -301,13 +329,13 @@ class Geoserver:
 
             r = self._requests("get", url)
 
-            if r.status_code in [200, 201]:
+            if r.status_code == 200:
                 return r.json()
             else:
-                return None
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : get_datastores - {}".format(e))
+            raise Exception(e)
 
     def get_datastores(self, workspace: Optional[str] = None):
         """
@@ -324,10 +352,13 @@ class Geoserver:
                 self.service_url, workspace
             )
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : get_datastores - {}".format(e))
+            raise Exception(e)
 
     # _______________________________________________________________________________________________
     #
@@ -351,13 +382,13 @@ class Geoserver:
             r = self._requests(method="get", url=url, params=payload)
             # print("Status code: {}, Get coverage store".format(r.status_code))
 
-            if r.status_code in [200, 201]:
+            if r.status_code == 200:
                 return r.json()
             else:
-                return None
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error: {}".format(e))
+            raise Exception(e)
 
     def get_coveragestores(self, workspace: str = None):
         """
@@ -371,10 +402,14 @@ class Geoserver:
                 self.service_url, workspace
             )
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
+
 
         except Exception as e:
-            raise Exception("Error : get_coveragestores - {}".format(e))
+            raise Exception(e)
 
     def create_coveragestore(
         self,
@@ -426,15 +461,13 @@ class Geoserver:
             with open(path, "rb") as f:
                 r = self._requests(method="put", url=url, data=f, headers=headers)
 
-                if r.status_code != 201:
-                    raise Exception("{} - {}".format(
-                        r.status_code, r.content
-                    ))
+                if r.status_code == 201:
+                    return r.json()
                 else:
-                    raise Exception("{} - {}".format(r.status_code, r.content))
+                    raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def publish_time_dimension_to_coveragestore(
         self,
@@ -492,12 +525,13 @@ class Geoserver:
             r = self._requests(
                 method="put", url=url, data=time_dimension_data, headers=headers
             )
-
-            if r.status_code not in [200, 201]:
-                raise Exception("{} - {}".format(r.status_code, r.content))
+            if r.status_code == in [200, 201]:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     # _______________________________________________________________________________________________
     #
@@ -517,13 +551,13 @@ class Geoserver:
                 )
 
             r = self._requests("get", url)
-            if r.status_code in [200, 201]:
+            if r.status_code == 200:
                 return r.json()
             else:
-                return None
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def get_layers(self, workspace: Optional[str] = None):
         """
@@ -536,10 +570,13 @@ class Geoserver:
             if workspace is not None:
                 url = "{}/rest/workspaces/{}/layers".format(self.service_url, workspace)
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error get_layer : {}".format(e))
+            raise Exception(e)
 
     def delete_layer(self, layer_name: str, workspace: Optional[str] = None):
         """
@@ -561,12 +598,11 @@ class Geoserver:
             r = self._requests(method="delete", url=url, params=payload)
             if r.status_code == 200:
                 return "Status code: {}, delete layer".format(r.status_code)
-
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     # _______________________________________________________________________________________________
     #
@@ -590,10 +626,13 @@ class Geoserver:
                     self.service_url, workspace
                 )
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error get_layer : {}".format(e))
+            raise Exception(e)
 
     def get_layergroup(self, layer_name: str, workspace: Optional[str] = None):
         """
@@ -606,13 +645,13 @@ class Geoserver:
                     self.service_url, workspace, layer_name
                 )
             r = self._requests("get", url)
-            if r.status_code in [200, 201]:
+            if r.status_code == 200:
                 return r.json()
             else:
-                return None
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error get_layer : {}".format(e))
+            raise Exception(e)
 
     def create_layergroup(
         self,
@@ -647,139 +686,141 @@ class Geoserver:
         abstract_text is a long text, like a brief info about the layergroup
         workspace is Optional(Global Layergroups don't need workspace).A layergroup can exist without a workspace.
         """
+        try:
+            assert isinstance(name, str), "Name must be of type String:''"
+            assert isinstance(mode, str), "Mode must be of type String:''"
+            assert isinstance(title, str), "Title must be of type String:''"
+            assert isinstance(abstract_text, str), "Abstract text must be of type String:''"
+            assert isinstance(formats, str), "Format must be of type String:''"
+            assert isinstance(
+                metadata, list
+            ), "Metadata must be of type List of dict:[{'about':'geoserver rest data metadata','content_url':'lint to content url'}]"
+            assert isinstance(
+                keywords, list
+            ), "Keywords must be of type List:['keyword1','keyword2'...]"
+            assert isinstance(
+                layers, list
+            ), "Layers must be of type List:['layer1','layer2'...]"
 
-        assert isinstance(name, str), "Name must be of type String:''"
-        assert isinstance(mode, str), "Mode must be of type String:''"
-        assert isinstance(title, str), "Title must be of type String:''"
-        assert isinstance(abstract_text, str), "Abstract text must be of type String:''"
-        assert isinstance(formats, str), "Format must be of type String:''"
-        assert isinstance(
-            metadata, list
-        ), "Metadata must be of type List of dict:[{'about':'geoserver rest data metadata','content_url':'lint to content url'}]"
-        assert isinstance(
-            keywords, list
-        ), "Keywords must be of type List:['keyword1','keyword2'...]"
-        assert isinstance(
-            layers, list
-        ), "Layers must be of type List:['layer1','layer2'...]"
+            if workspace:
+                assert isinstance(workspace, str), "Workspace must be of type String:''"
+                # check if the workspace is valid in Geoserver
+                if self.get_workspace(workspace) is None:
+                    raise Exception("Workspace is not valid in Geoserver Instance")
 
-        if workspace:
-            assert isinstance(workspace, str), "Workspace must be of type String:''"
-            # check if the workspace is valid in Geoserver
-            if self.get_workspace(workspace) is None:
-                raise Exception("Workspace is not valid in Geoserver Instance")
+            supported_modes: Set = {
+                "single",
+                "opaque container",
+                "named tree",
+                "container tree",
+                "earth observation tree",
+            }
+            supported_formats: Set = {"html", "json", "xml"}
 
-        supported_modes: Set = {
-            "single",
-            "opaque container",
-            "named tree",
-            "container tree",
-            "earth observation tree",
-        }
-        supported_formats: Set = {"html", "json", "xml"}
+            if mode.lower() != "single" and mode.lower() not in supported_modes:
 
-        if mode.lower() != "single" and mode.lower() not in supported_modes:
-
-            raise Exception(
-                f"Mode not supported. Acceptable modes are : {supported_modes}"
-            )
-
-        if formats.lower() != "html" and formats.lower() not in supported_formats:
-
-            raise Exception(
-                f"Format not supported. Acceptable formats are : {supported_formats}"
-            )
-        # check if it already exist in Geoserver
-        if self.get_layergroup(name) is not None:
-            raise Exception(f"Layergroup: {name} already exist in Geoserver instance")
-
-        if len(layers) == 0:
-            raise Exception("No layer provided!")
-        else:
-            for layer in layers:
-                # check if it is valid in geoserver
-
-                if (
-                    self.get_layer(
-                        layer_name=layer,
-                        workspace=workspace if workspace is not None else None,
-                    )
-                    is not None
-                ):
-                    ...
-                else:
-                    raise Exception(
-                        f"Layer: {layer} is not a valid layer in the Geoserver instance"
-                    )
-
-        skeleton = ""
-
-        if workspace:
-            skeleton += f"<workspace><name>{workspace}</name></workspace>"
-        # metadata structure = [{about:"",content_url:""},{...}]
-        metadata_xml_list = []
-
-        if len(metadata) >= 1:
-            for meta in metadata:
-                metadata_about = meta.get("about")
-                metadata_content_url = meta.get("content_url")
-                metadata_xml_list.append(
-                    f"""
-                            <metadataLink>
-                                <type>text/plain</type>
-                                <about>{metadata_about}</about>
-                                <metadataType>ISO19115:2003</metadataType>
-                                <content>{metadata_content_url}</content>
-                            </metadataLink>
-                            """
+                raise Exception(
+                    f"Mode not supported. Acceptable modes are : {supported_modes}"
                 )
 
-            metadata_xml = f"<metadataLinks>{''.join(['{}']*len(metadata_xml_list)).format(*metadata_xml_list)}</metadataLinks>"
-            skeleton += metadata_xml
-        layers_xml_list: List[str] = []
+            if formats.lower() != "html" and formats.lower() not in supported_formats:
 
-        for layer in layers:
+                raise Exception(
+                    f"Format not supported. Acceptable formats are : {supported_formats}"
+                )
+            # check if it already exist in Geoserver
+            if self.get_layergroup(name) is not None:
+                raise Exception(f"Layergroup: {name} already exist in Geoserver instance")
 
-            layers_xml_list.append(
-                f"""<published type="layer">
-                            <name>{layer}</name>
-                            <link>{self.service_url}/layers/{layer}.xml</link>
-                        </published>
+            if len(layers) == 0:
+                raise Exception("No layer provided!")
+            else:
+                for layer in layers:
+                    # check if it is valid in geoserver
+
+                    if (
+                        self.get_layer(
+                            layer_name=layer,
+                            workspace=workspace if workspace is not None else None,
+                        )
+                        is not None
+                    ):
+                        ...
+                    else:
+                        raise Exception(
+                            f"Layer: {layer} is not a valid layer in the Geoserver instance"
+                        )
+
+            skeleton = ""
+
+            if workspace:
+                skeleton += f"<workspace><name>{workspace}</name></workspace>"
+            # metadata structure = [{about:"",content_url:""},{...}]
+            metadata_xml_list = []
+
+            if len(metadata) >= 1:
+                for meta in metadata:
+                    metadata_about = meta.get("about")
+                    metadata_content_url = meta.get("content_url")
+                    metadata_xml_list.append(
+                        f"""
+                                <metadataLink>
+                                    <type>text/plain</type>
+                                    <about>{metadata_about}</about>
+                                    <metadataType>ISO19115:2003</metadataType>
+                                    <content>{metadata_content_url}</content>
+                                </metadataLink>
+                                """
+                    )
+
+                metadata_xml = f"<metadataLinks>{''.join(['{}']*len(metadata_xml_list)).format(*metadata_xml_list)}</metadataLinks>"
+                skeleton += metadata_xml
+            layers_xml_list: List[str] = []
+
+            for layer in layers:
+
+                layers_xml_list.append(
+                    f"""<published type="layer">
+                                <name>{layer}</name>
+                                <link>{self.service_url}/layers/{layer}.xml</link>
+                            </published>
+                        """
+                )
+
+            layers_xml: str = f"<publishables>{''.join(['{}']*len(layers)).format(*layers_xml_list)}</publishables>"
+            skeleton += layers_xml
+
+            if len(keywords) >= 1:
+
+                keyword_xml_list: List[str] = [
+                    f"<keyword>{keyword}</keyword>" for keyword in keywords
+                ]
+                keywords_xml: str = f"<keywords>{''.join(['{}']*len(keywords)).format(*keyword_xml_list)}</keywords>"
+                skeleton += keywords_xml
+
+            data = f"""
+                        <layerGroup>
+                            <name>{name}</name>
+                            <mode>{mode}</mode>
+                            <title>{title}</title>
+                            <abstractTxt>{abstract_text}</abstractTxt>
+                            {skeleton}
+                        </layerGroup>
                     """
+
+            url = f"{self.service_url}/rest/layergroups/"
+
+            response = self._requests(
+                method="post", url=url, data=data, headers={"content-type": "text/xml"}
             )
+            if r.status_code == 201:
+                layergroup_url = f"{self.service_url}/rest/layergroups/{name}.{formats}"
+                return f"layergroup created successfully! Layergroup link: {layergroup_url}"
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
-        layers_xml: str = f"<publishables>{''.join(['{}']*len(layers)).format(*layers_xml_list)}</publishables>"
-        skeleton += layers_xml
-
-        if len(keywords) >= 1:
-
-            keyword_xml_list: List[str] = [
-                f"<keyword>{keyword}</keyword>" for keyword in keywords
-            ]
-            keywords_xml: str = f"<keywords>{''.join(['{}']*len(keywords)).format(*keyword_xml_list)}</keywords>"
-            skeleton += keywords_xml
-
-        data = f"""
-                    <layerGroup>
-                        <name>{name}</name>
-                        <mode>{mode}</mode>
-                        <title>{title}</title>
-                        <abstractTxt>{abstract_text}</abstractTxt>
-                        {skeleton}
-                    </layerGroup>
-                """
-
-        url = f"{self.service_url}/rest/layergroups/"
-
-        response = self._requests(
-            method="post", url=url, data=data, headers={"content-type": "text/xml"}
-        )
-
-        if response.status_code in [200, 201]:
-            layergroup_url = f"{self.service_url}/rest/layergroups/{name}.{formats}"
-            return f"layergroup created successfully! Layergroup link: {layergroup_url}"
-        else:
-            raise Exception("Error: {} {}".format(response.status_code, response.content))
+        except Exception as e:
+            raise Exception(e)
 
     def update_layergroup(
         self,
@@ -804,108 +845,116 @@ class Geoserver:
         keywords : list, optional
 
         """
+        try:
+            # check if layergroup is valid in Geoserver
 
-        # check if layergroup is valid in Geoserver
-
-        if self.get_layergroup(layer_name=layergroup_name) is None:
-            raise Exception(
-                f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
-            )
-        if title is not None:
-            assert isinstance(title, str), "Title must be of type String:''"
-        if abstract_text is not None:
+            if self.get_layergroup(layer_name=layergroup_name) is None:
+                raise Exception(
+                    f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
+                )
+            if title is not None:
+                assert isinstance(title, str), "Title must be of type String:''"
+            if abstract_text is not None:
+                assert isinstance(
+                    abstract_text, str
+                ), "Abstract text must be of type String:''"
+            assert isinstance(formats, str), "Format must be of type String:''"
             assert isinstance(
-                abstract_text, str
-            ), "Abstract text must be of type String:''"
-        assert isinstance(formats, str), "Format must be of type String:''"
-        assert isinstance(
-            metadata, list
-        ), "Metadata must be of type List of dict:[{'about':'geoserver rest data metadata','content_url':'lint to content url'}]"
-        assert isinstance(
-            keywords, list
-        ), "Keywords must be of type List:['keyword1','keyword2'...]"
+                metadata, list
+            ), "Metadata must be of type List of dict:[{'about':'geoserver rest data metadata','content_url':'lint to content url'}]"
+            assert isinstance(
+                keywords, list
+            ), "Keywords must be of type List:['keyword1','keyword2'...]"
 
-        supported_formats: Set = {"html", "json", "xml"}
+            supported_formats: Set = {"html", "json", "xml"}
 
-        if formats.lower() != "html" and formats.lower() not in supported_formats:
+            if formats.lower() != "html" and formats.lower() not in supported_formats:
 
-            raise Exception(
-                f"Format not supported. Acceptable formats are : {supported_formats}"
-            )
-
-        skeleton = ""
-
-        if title:
-            skeleton += f"<title>{title}</title>"
-        if abstract_text:
-            skeleton += f"<abstractTxt>{abstract_text}</abstractTxt>"
-
-        metadata_xml_list = []
-
-        if len(metadata) >= 1:
-            for meta in metadata:
-                metadata_about = meta.get("about")
-                metadata_content_url = meta.get("content_url")
-                metadata_xml_list.append(
-                    f"""
-                            <metadataLink>
-                                <type>text/plain</type>
-                                <about>{metadata_about}</about>
-                                <metadataType>ISO19115:2003</metadataType>
-                                <content>{metadata_content_url}</content>
-                            </metadataLink>
-                            """
+                raise Exception(
+                    f"Format not supported. Acceptable formats are : {supported_formats}"
                 )
 
-            metadata_xml = f"<metadataLinks>{''.join(['{}']*len(metadata_xml_list)).format(*metadata_xml_list)}</metadataLinks>"
-            skeleton += metadata_xml
+            skeleton = ""
 
-        if len(keywords) >= 1:
+            if title:
+                skeleton += f"<title>{title}</title>"
+            if abstract_text:
+                skeleton += f"<abstractTxt>{abstract_text}</abstractTxt>"
 
-            keyword_xml_list: List[str] = [
-                f"<keyword>{keyword}</keyword>" for keyword in keywords
-            ]
-            keywords_xml: str = f"<keywords>{''.join(['{}']*len(keywords)).format(*keyword_xml_list)}</keywords>"
-            skeleton += keywords_xml
+            metadata_xml_list = []
 
-        data = f"""
-                    <layerGroup>
-                        {skeleton}
-                    </layerGroup>
-                """
+            if len(metadata) >= 1:
+                for meta in metadata:
+                    metadata_about = meta.get("about")
+                    metadata_content_url = meta.get("content_url")
+                    metadata_xml_list.append(
+                        f"""
+                                <metadataLink>
+                                    <type>text/plain</type>
+                                    <about>{metadata_about}</about>
+                                    <metadataType>ISO19115:2003</metadataType>
+                                    <content>{metadata_content_url}</content>
+                                </metadataLink>
+                                """
+                    )
 
-        url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+                metadata_xml = f"<metadataLinks>{''.join(['{}']*len(metadata_xml_list)).format(*metadata_xml_list)}</metadataLinks>"
+                skeleton += metadata_xml
 
-        response = self._requests(
-            method="put",
-            url=url,
-            data=data,
-            headers={"content-type": "text/xml", "accept": "application/xml"},
-        )
-        if response.status_code in [200, 201]:
-            layergroup_url = (
-                f"{self.service_url}/rest/layergroups/{layergroup_name}.{formats}"
+            if len(keywords) >= 1:
+
+                keyword_xml_list: List[str] = [
+                    f"<keyword>{keyword}</keyword>" for keyword in keywords
+                ]
+                keywords_xml: str = f"<keywords>{''.join(['{}']*len(keywords)).format(*keyword_xml_list)}</keywords>"
+                skeleton += keywords_xml
+
+            data = f"""
+                        <layerGroup>
+                            {skeleton}
+                        </layerGroup>
+                    """
+
+            url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+
+            response = self._requests(
+                method="put",
+                url=url,
+                data=data,
+                headers={"content-type": "text/xml", "accept": "application/xml"},
             )
-            return f"layergroup updated successfully! Layergroup link: {layergroup_url}"
-        else:
-            raise Exception("Error: {} {}".format(response.status_code, response.content))
+            if r.status_code == 200:
+                layergroup_url = (
+                    f"{self.service_url}/rest/layergroups/{layergroup_name}.{formats}"
+                )
+                return f"layergroup updated successfully! Layergroup link: {layergroup_url}"
+            else:
+                raise GeoserverException(r.status_code, r.content)
+
+        except Exception as e:
+            raise Exception(e)
 
     def delete_layergroup(
         self,
         layergroup_name: str,
     ) -> str:
-        if self.get_layergroup(layer_name=layergroup_name) is None:
-            raise Exception(
-                f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
-            )
+        try:
+            if self.get_layergroup(layer_name=layergroup_name) is None:
+                raise Exception(
+                    f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
+                )
 
-        url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+            url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
 
-        response = self._requests(url=url, method="delete")
-        if response.status_code in [200, 201]:
-            return "Layer group deleted successfully"
-        else:
-            raise Exception("Error: {} {}".format(response.status_code, response.content))
+            response = self._requests(url=url, method="delete")
+            if r.status_code == 200:
+                return "Layer group deleted successfully"
+            else:
+                raise GeoserverException(r.status_code, r.content)
+
+        except Exception as e:
+            raise Exception(e)
+
 
     # _______________________________________________________________________________________________
     #
@@ -926,10 +975,10 @@ class Geoserver:
 
             r = self._requests("get", url)
             
-            if r.status_code in [200, 201]:
+            if r.status_code == 200:
                 return r.json()
             else:
-                return None
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception("Error : {}".format(e))
@@ -946,10 +995,13 @@ class Geoserver:
                     self.service_url, workspace
                 )
             r = requests.get(url, auth=(self.username, self.password))
-            return r.json()
+            if r.status_code == 200:
+                return r.json()
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def upload_style(
         self,
@@ -973,48 +1025,50 @@ class Geoserver:
         This function will create the style file in a specified workspace.
         Inputs: path to the sld_file, workspace,
         """
-
-        if name is None:
-            name = os.path.basename(path)
-            f = name.split(".")
-            if len(f) > 0:
-                name = f[0]
-
-        headers = {"content-type": "text/xml"}
-
-        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
-
-        sld_content_type = "application/vnd.ogc.sld+xml"
-        if sld_version == "1.1.0" or sld_version == "1.1":
-            sld_content_type = "application/vnd.ogc.se+xml"
-
-        header_sld = {"content-type": sld_content_type}
-
-        if workspace is None:
-            # workspace = "default"
-            url = "{}/rest/styles".format(self.service_url)
-
-        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-            name, name + ".sld"
-        )
-
-        r = None
         try:
-            r = self._requests(method="post", url=url, data=style_xml, headers=headers)
-            with open(path, "rb") as f:
-                r_sld = requests.put(
-                    url + "/" + name,
-                    data=f.read(),
-                    auth=(self.username, self.password),
-                    headers=header_sld,
-                )
-                if r_sld.status_code not in [200, 201]:
-                    raise Exception("Error: {} {}".format(r.status_code, r.content))
+            if name is None:
+                name = os.path.basename(path)
+                f = name.split(".")
+                if len(f) > 0:
+                    name = f[0]
 
-            return r_sld.status_code
+            headers = {"content-type": "text/xml"}
+
+            url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+
+            sld_content_type = "application/vnd.ogc.sld+xml"
+            if sld_version == "1.1.0" or sld_version == "1.1":
+                sld_content_type = "application/vnd.ogc.se+xml"
+
+            header_sld = {"content-type": sld_content_type}
+
+            if workspace is None:
+                # workspace = "default"
+                url = "{}/rest/styles".format(self.service_url)
+
+            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+                name, name + ".sld"
+            )
+
+            r = self._requests(method="post", url=url, data=style_xml, headers=headers)
+            if r.status_code == 201:
+                with open(path, "rb") as f:
+                    r_sld = requests.put(
+                        url + "/" + name,
+                        data=f.read(),
+                        auth=(self.username, self.password),
+                        headers=header_sld,
+                    )
+                if r_sld.status_code == 200:
+                    return r_sld.status_code
+                else:
+                    raise GeoserverException(r_sld.status_code, r_sld.content)
+
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def create_coveragestyle(
         self,
@@ -1044,62 +1098,63 @@ class Geoserver:
         This function will dynamically create the style file for raster.
         Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determines the number of class, min for minimum value of the raster, max for the max value of raster
         """
-        raster = raster_value(raster_path)
-        min_value = raster["min"]
-        max_value = raster["max"]
-        if style_name is None:
-            style_name = raster["file_name"]
-        coverage_style_xml(
-            color_ramp,
-            style_name,
-            cmap_type,
-            min_value,
-            max_value,
-            number_of_classes,
-        )
-        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-            style_name, style_name + ".sld"
-        )
-
-        if style_name is None:
-            style_name = os.path.basename(raster_path)
-            f = style_name.split(".")
-            if len(f) > 0:
-                style_name = f[0]
-
-        headers = {"content-type": "text/xml"}
-        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
-        sld_content_type = "application/vnd.ogc.sld+xml"
-        header_sld = {"content-type": sld_content_type}
-
-        if workspace is None:
-            url = "{}/rest/styles".format(self.service_url)
-
-        r = None
         try:
+            raster = raster_value(raster_path)
+            min_value = raster["min"]
+            max_value = raster["max"]
+            if style_name is None:
+                style_name = raster["file_name"]
+            coverage_style_xml(
+                color_ramp,
+                style_name,
+                cmap_type,
+                min_value,
+                max_value,
+                number_of_classes,
+            )
+            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+                style_name, style_name + ".sld"
+            )
+
+            if style_name is None:
+                style_name = os.path.basename(raster_path)
+                f = style_name.split(".")
+                if len(f) > 0:
+                    style_name = f[0]
+
+            headers = {"content-type": "text/xml"}
+            url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+            sld_content_type = "application/vnd.ogc.sld+xml"
+            header_sld = {"content-type": sld_content_type}
+
+            if workspace is None:
+                url = "{}/rest/styles".format(self.service_url)
+        
             r = self._requests(
                 "post",
                 url,
                 data=style_xml,
                 headers=headers,
             )
+            if r.status_code == 201:
+                with open("style.sld", "rb") as f:
+                    r_sld = requests.put(
+                        url + "/" + style_name,
+                        data=f.read(),
+                        auth=(self.username, self.password),
+                        headers=header_sld,
+                    )
+                os.remove("style.sld")
+                if r_sld.status_code == 200:
+                    return r_sld.status_code
+                else:
+                    raise GeoserverException(r_sld.status_code, r_sld.content)
 
-            with open("style.sld", "rb") as f:
-                r_sld = requests.put(
-                    url + "/" + style_name,
-                    data=f.read(),
-                    auth=(self.username, self.password),
-                    headers=header_sld,
-                )
-                if r_sld.status_code not in [200, 201]:
-                    raise Exception("Error: {} {}".format(r.status_code, r.content))
-
-            os.remove("style.sld")
-
-            return r_sld.status_code
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def create_catagorized_featurestyle(
         self,
@@ -1130,46 +1185,47 @@ class Geoserver:
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
-
-        catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
-
-        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-            style_name, style_name + ".sld"
-        )
-
-        headers = {"content-type": "text/xml"}
-        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
-        sld_content_type = "application/vnd.ogc.sld+xml"
-        header_sld = {"content-type": sld_content_type}
-
-        if workspace is None:
-            url = "{}/rest/styles".format(self.service_url)
-
-        r = None
         try:
+            catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
+
+            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+                style_name, style_name + ".sld"
+            )
+
+            headers = {"content-type": "text/xml"}
+            url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+            sld_content_type = "application/vnd.ogc.sld+xml"
+            header_sld = {"content-type": sld_content_type}
+
+            if workspace is None:
+                url = "{}/rest/styles".format(self.service_url)
+
             r = self._requests(
                 "post",
                 url,
                 data=style_xml,
                 headers=headers,
             )
+            if r.status_code == 201:
+                with open("style.sld", "rb") as f:
+                    r_sld = self._requests(
+                        "put",
+                        url + "/" + style_name,
+                        data=f.read(),
+                        headers=header_sld,
+                    )
+                os.remove("style.sld")
+                if r_sld.status_code == 200:
+                    return r_sld.status_code
+                else:
+                    raise GeoserverException(r_sld.status_code, r_sld.content)
 
-            with open("style.sld", "rb") as f:
-                r_sld = self._requests(
-                    "put",
-                    url + "/" + style_name,
-                    data=f.read(),
-                    headers=header_sld,
-                )
-                if r_sld.status_code not in [200, 201]:
-                    raise Exception("Error: {} {}".format(r.status_code, r.content))
-
-            os.remove("style.sld")
-
-            return r_sld.status_code
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def create_outline_featurestyle(
         self,
@@ -1196,45 +1252,47 @@ class Geoserver:
         The geometry type must be point, line or polygon
         Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
         """
-        outline_only_xml(color, geom_type)
-
-        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-            style_name, style_name + ".sld"
-        )
-
-        headers = {"content-type": "text/xml"}
-        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
-        sld_content_type = "application/vnd.ogc.sld+xml"
-        header_sld = {"content-type": sld_content_type}
-
-        if workspace is None:
-            url = "{}/rest/styles".format(self.service_url)
-
-        r = None
         try:
+            outline_only_xml(color, geom_type)
+
+            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+                style_name, style_name + ".sld"
+            )
+
+            headers = {"content-type": "text/xml"}
+            url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+            sld_content_type = "application/vnd.ogc.sld+xml"
+            header_sld = {"content-type": sld_content_type}
+
+            if workspace is None:
+                url = "{}/rest/styles".format(self.service_url)
+
             r = self._requests(
                 "post",
                 url,
                 data=style_xml,
                 headers=headers,
             )
+            if r.status_code == 201:
+                with open("style.sld", "rb") as f:
+                    r_sld = self._requests(
+                        "put",
+                        url + "/" + style_name,
+                        data=f.read(),
+                        headers=header_sld,
+                    )
+                os.remove("style.sld")
+                if r_sld.status_code == 200:
+                    return r_sld.status_code
+                else:
+                    raise GeoserverException(r_sld.status_code, r_sld.content)
 
-            with open("style.sld", "rb") as f:
-                r_sld = self._requests(
-                    "put",
-                    url + "/" + style_name,
-                    data=f.read(),
-                    headers=header_sld,
-                )
-                if r_sld.status_code not in [200, 201]:
-                    raise Exception("Error: {} {}".format(r.status_code, r.content))
-
-            os.remove("style.sld")
-
-            return r_sld.status_code
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def create_classified_featurestyle(
         self,
@@ -1263,51 +1321,52 @@ class Geoserver:
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
-        classified_xml(
-            style_name,
-            column_name,
-            column_distinct_values,
-            color_ramp,
-            geom_type,
-        )
-
-        style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
-            column_name, column_name + ".sld"
-        )
-
-        headers = {"content-type": "text/xml"}
-        url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
-        sld_content_type = "application/vnd.ogc.sld+xml"
-        header_sld = {"content-type": sld_content_type}
-
-        if workspace is None:
-            url = "{}/rest/styles".format(self.service_url)
-
-        r = None
         try:
+            classified_xml(
+                style_name,
+                column_name,
+                column_distinct_values,
+                color_ramp,
+                geom_type,
+            )
+
+            style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
+                column_name, column_name + ".sld"
+            )
+
+            headers = {"content-type": "text/xml"}
+            url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
+            sld_content_type = "application/vnd.ogc.sld+xml"
+            header_sld = {"content-type": sld_content_type}
+
+            if workspace is None:
+                url = "{}/rest/styles".format(self.service_url)
+
             r = self._requests(
                 "post",
                 url,
                 data=style_xml,
                 headers=headers,
             )
+            if r.status_code == 201:
+                with open("style.sld", "rb") as f:
+                    r_sld = self._requests(
+                        "put",
+                        url + "/" + style_name,
+                        data=f.read(),
+                        headers=header_sld,
+                    )
+                os.remove("style.sld")
+                if r_sld.status_code == 200:
+                    return r_sld.status_code
+                else:
+                    raise GeoserverException(r_sld.status_code, r_sld.content)
 
-            with open("style.sld", "rb") as f:
-                r_sld = self._requests(
-                    "put",
-                    url + "/" + style_name,
-                    data=f.read(),
-                    headers=header_sld,
-                )
-                if r_sld.status_code not in [200, 201]:
-                    raise Exception("Error: {} {}".format(r.status_code, r.content))
-
-            os.remove("style.sld")
-
-            return r_sld.status_code
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def publish_style(
         self,
@@ -1330,28 +1389,28 @@ class Geoserver:
         the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type.
 
         """
-
-        headers = {"content-type": "text/xml"}
-        url = "{}/rest/layers/{}:{}".format(self.service_url, workspace, layer_name)
-        style_xml = (
-            "<layer><defaultStyle><name>{}</name></defaultStyle></layer>".format(
-                style_name
-            )
-        )
-
-        r = None
         try:
+            headers = {"content-type": "text/xml"}
+            url = "{}/rest/layers/{}:{}".format(self.service_url, workspace, layer_name)
+            style_xml = (
+                "<layer><defaultStyle><name>{}</name></defaultStyle></layer>".format(
+                    style_name
+                )
+            )
+
             r = self._requests(
                 "put",
                 url,
                 data=style_xml,
                 headers=headers,
             )
-
-            return r.status_code
+            if r.status_code == 200:
+                return r.status_code
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def delete_style(self, style_name: str, workspace: Optional[str] = None):
         """
@@ -1373,12 +1432,11 @@ class Geoserver:
 
             if r.status_code == 200:
                 return "Status code: {}, delete style".format(r.status_code)
-
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     # _______________________________________________________________________________________________
     #
@@ -1459,76 +1517,74 @@ class Geoserver:
         -----
         After creating feature store, you need to publish it. See the layer publish guidline here: https://geoserver-rest.readthedocs.io/en/latest/how_to_use.html#creating-and-publishing-featurestores-and-featurestore-layers
         """
-
-        url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)
-
-        headers = {"content-type": "text/xml"}
-
-        database_connection = """
-                <dataStore>
-                <name>{0}</name>
-                <description>{1}</description>
-                <connectionParameters>
-                <entry key="Expose primary keys">{2}</entry>
-                <entry key="host">{3}</entry>
-                <entry key="port">{4}</entry>
-                <entry key="user">{5}</entry>
-                <entry key="passwd">{6}</entry>
-                <entry key="dbtype">postgis</entry>
-                <entry key="schema">{7}</entry>
-                <entry key="database">{8}</entry>
-                <entry key="Evictor run periodicity">{9}</entry>
-                <entry key="Max open prepared statements">{10}</entry>
-                <entry key="encode functions">{11}</entry>
-                <entry key="Primary key metadata table">{12}</entry>
-                <entry key="Batch insert size">{13}</entry>
-                <entry key="preparedStatements">{14}</entry>
-                <entry key="Estimated extends">{15}</entry>
-                <entry key="fetch size">{16}</entry>
-                <entry key="validate connections">{17}</entry>
-                <entry key="Support on the fly geometry simplification">{18}</entry>
-                <entry key="Connection timeout">{19}</entry>
-                <entry key="create database">{20}</entry>
-                <entry key="min connections">{21}</entry>
-                <entry key="max connections">{22}</entry>
-                <entry key="Evictor tests per run">{23}</entry>
-                <entry key="Test while idle">{24}</entry>
-                <entry key="Max connection idle time">{25}</entry>
-                <entry key="Loose bbox">{26}</entry>
-                </connectionParameters>
-                </dataStore>
-                """.format(
-            store_name,
-            description,
-            expose_primary_keys,
-            host,
-            port,
-            pg_user,
-            pg_password,
-            schema,
-            db,
-            evictor_run_periodicity,
-            max_open_prepared_statements,
-            encode_functions,
-            primary_key_metadata_table,
-            batch_insert_size,
-            preparedstatements,
-            estimated_extends,
-            fetch_size,
-            validate_connections,
-            support_on_the_fly_geometry_simplification,
-            connection_timeout,
-            create_database,
-            min_connections,
-            max_connections,
-            evictor_tests_per_run,
-            test_while_idle,
-            max_connection_idle_time,
-            loose_bbox,
-        )
-
-        r = None
         try:
+            url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)
+
+            headers = {"content-type": "text/xml"}
+
+            database_connection = """
+                    <dataStore>
+                    <name>{0}</name>
+                    <description>{1}</description>
+                    <connectionParameters>
+                    <entry key="Expose primary keys">{2}</entry>
+                    <entry key="host">{3}</entry>
+                    <entry key="port">{4}</entry>
+                    <entry key="user">{5}</entry>
+                    <entry key="passwd">{6}</entry>
+                    <entry key="dbtype">postgis</entry>
+                    <entry key="schema">{7}</entry>
+                    <entry key="database">{8}</entry>
+                    <entry key="Evictor run periodicity">{9}</entry>
+                    <entry key="Max open prepared statements">{10}</entry>
+                    <entry key="encode functions">{11}</entry>
+                    <entry key="Primary key metadata table">{12}</entry>
+                    <entry key="Batch insert size">{13}</entry>
+                    <entry key="preparedStatements">{14}</entry>
+                    <entry key="Estimated extends">{15}</entry>
+                    <entry key="fetch size">{16}</entry>
+                    <entry key="validate connections">{17}</entry>
+                    <entry key="Support on the fly geometry simplification">{18}</entry>
+                    <entry key="Connection timeout">{19}</entry>
+                    <entry key="create database">{20}</entry>
+                    <entry key="min connections">{21}</entry>
+                    <entry key="max connections">{22}</entry>
+                    <entry key="Evictor tests per run">{23}</entry>
+                    <entry key="Test while idle">{24}</entry>
+                    <entry key="Max connection idle time">{25}</entry>
+                    <entry key="Loose bbox">{26}</entry>
+                    </connectionParameters>
+                    </dataStore>
+                    """.format(
+                store_name,
+                description,
+                expose_primary_keys,
+                host,
+                port,
+                pg_user,
+                pg_password,
+                schema,
+                db,
+                evictor_run_periodicity,
+                max_open_prepared_statements,
+                encode_functions,
+                primary_key_metadata_table,
+                batch_insert_size,
+                preparedstatements,
+                estimated_extends,
+                fetch_size,
+                validate_connections,
+                support_on_the_fly_geometry_simplification,
+                connection_timeout,
+                create_database,
+                min_connections,
+                max_connections,
+                evictor_tests_per_run,
+                test_while_idle,
+                max_connection_idle_time,
+                loose_bbox,
+            )
+
             if overwrite:
                 url = "{}/rest/workspaces/{}/datastores/{}".format(
                     self.service_url, workspace, store_name
@@ -1540,9 +1596,6 @@ class Geoserver:
                     data=database_connection,
                     headers=headers,
                 )
-
-                if r.status_code not in [200, 201]:
-                    raise Exception("Error: {} {}".format(r.status_code, r.content))
             else:
                 r = self._requests(
                     "post",
@@ -1551,11 +1604,14 @@ class Geoserver:
                     headers=headers,
                 )
 
-                if r.status_code not in [200, 201]:
-                    raise Exception("Error: {} {}".format(r.status_code, r.content))
+            if r.status_code in  [200,201]:
+                return "Featurestore created/updated successfully"
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def create_datastore(
         self,
@@ -1582,23 +1638,24 @@ class Geoserver:
         -----
         If you have PostGIS datastore, please use create_featurestore function
         """
-        if workspace is None:
-            workspace = "default"
-
-        if path is None:
-            raise Exception("You must provide a full path to the data")
-
-        data_url = "<url>file:{}</url>".format(path)
-
-        if "http://" in path:
-            data_url = "<GET_CAPABILITIES_URL>{}</GET_CAPABILITIES_URL>".format(path)
-
-        data = "<dataStore><name>{}</name><connectionParameters>{}</connectionParameters></dataStore>".format(
-            name, data_url
-        )
-        headers = {"content-type": "text/xml"}
-
         try:
+
+            if workspace is None:
+                workspace = "default"
+
+            if path is None:
+                raise Exception("You must provide a full path to the data")
+
+            data_url = "<url>file:{}</url>".format(path)
+
+            if "http://" in path:
+                data_url = "<GET_CAPABILITIES_URL>{}</GET_CAPABILITIES_URL>".format(path)
+
+            data = "<dataStore><name>{}</name><connectionParameters>{}</connectionParameters></dataStore>".format(
+                name, data_url
+            )
+            headers = {"content-type": "text/xml"}
+
             if overwrite:
                 url = "{}/rest/workspaces/{}/datastores/{}".format(
                     self.service_url, workspace, name
@@ -1613,18 +1670,14 @@ class Geoserver:
                     url, data, auth=(self.username, self.password), headers=headers
                 )
 
-            if r.status_code in [200, 201]:
+            if r.status_code in [200,201]:
                 return "Data store created/updated successfully"
-
             else:
-                raise Exception(
-                    "datastore can not be created. Status code: {}, {}".format(
-                        r.status_code, r.content
-                    )
-                )
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def create_shp_datastore(
         self,
@@ -1682,15 +1735,14 @@ class Geoserver:
                     auth=(self.username, self.password),
                     headers=headers,
                 )
-
-                if r.status_code in [200, 201]:
-                    return "The shapefile datastore created successfully!"
-
-                else:
-                    raise Exception("Error: {} {}".format(r.status_code, r.content))
+            if r.status_code in [200,201]:
+                return "The shapefile datastore created successfully!"
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def publish_featurestore(
         self, store_name: str, pg_table: str, workspace: Optional[str] = None, title: Optional[str] = None
@@ -1712,30 +1764,32 @@ class Geoserver:
         Only user for postgis vector data
         input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
         """
-        if workspace is None:
-            workspace = "default"
-        if title is None:
-            title = pg_table
-
-        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/".format(
-            self.service_url, workspace, store_name
-        )
-
-        layer_xml = "<featureType><name>{}</name><title>{}</title></featureType>".format(pg_table,title)
-        headers = {"content-type": "text/xml"}
-
         try:
+            if workspace is None:
+                workspace = "default"
+            if title is None:
+                title = pg_table
+
+            url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/".format(
+                self.service_url, workspace, store_name
+            )
+
+            layer_xml = "<featureType><name>{}</name><title>{}</title></featureType>".format(pg_table,title)
+            headers = {"content-type": "text/xml"}
+
             r = requests.post(
                 url,
                 data=layer_xml,
                 auth=(self.username, self.password),
                 headers=headers,
             )
-            if r.status_code not in [200, 201]:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+            if r.status_code == 201:
+                return r.status_code
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def edit_featuretype(
         self,
@@ -1761,34 +1815,35 @@ class Geoserver:
         Notes
         -----
         """
-
-        if workspace is None:
-            workspace = "default"
-
-        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.xml".format(
-            self.service_url, workspace, store_name, pg_table
-        )
-
-        layer_xml = """<featureType>
-                    <name>{}</name>
-                    <title>{}</title>
-                    </featureType>""".format(
-            name, title
-        )
-        headers = {"content-type": "text/xml"}
-
         try:
+            if workspace is None:
+                workspace = "default"
+
+            url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.xml".format(
+                self.service_url, workspace, store_name, pg_table
+            )
+
+            layer_xml = """<featureType>
+                        <name>{}</name>
+                        <title>{}</title>
+                        </featureType>""".format(
+                name, title
+            )
+            headers = {"content-type": "text/xml"}
+
             r = requests.put(
                 url,
                 data=layer_xml,
                 auth=(self.username, self.password),
                 headers=headers,
             )
-            if r.status_code not in [200, 201]:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+            if r.status_code == 200:
+                return r.status_code
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     def publish_featurestore_sqlview(
         self,
@@ -1812,53 +1867,57 @@ class Geoserver:
         workspace : str, optional
 
         """
-        if workspace is None:
-            workspace = "default"
-
-        layer_xml = """<featureType>
-        <name>{0}</name>
-        <enabled>true</enabled>
-        <namespace>
-            <name>{4}</name>
-        </namespace>
-        <title>{0}</title>
-        <srs>EPSG:{5}</srs>
-        <metadata>
-            <entry key="JDBC_VIRTUAL_TABLE">
-                <virtualTable>
-                    <name>{0}</name>
-                    <sql>{1}</sql>
-                    <escapeSql>true</escapeSql>
-                    <geometry>
-                        <name>{2}</name>
-                        <type>{3}</type>
-                        <srid>{5}</srid>
-                    </geometry>
-                </virtualTable>
-            </entry>
-        </metadata>
-        </featureType>""".format(
-            name, sql, geom_name, geom_type, workspace, srid
-        )
-
-        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
-            self.service_url, workspace, store_name
-        )
-
-        headers = {"content-type": "text/xml"}
-
         try:
+            if workspace is None:
+                workspace = "default"
+
+            layer_xml = """<featureType>
+            <name>{0}</name>
+            <enabled>true</enabled>
+            <namespace>
+                <name>{4}</name>
+            </namespace>
+            <title>{0}</title>
+            <srs>EPSG:{5}</srs>
+            <metadata>
+                <entry key="JDBC_VIRTUAL_TABLE">
+                    <virtualTable>
+                        <name>{0}</name>
+                        <sql>{1}</sql>
+                        <escapeSql>true</escapeSql>
+                        <geometry>
+                            <name>{2}</name>
+                            <type>{3}</type>
+                            <srid>{5}</srid>
+                        </geometry>
+                    </virtualTable>
+                </entry>
+            </metadata>
+            </featureType>""".format(
+                name, sql, geom_name, geom_type, workspace, srid
+            )
+
+            url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
+                self.service_url, workspace, store_name
+            )
+
+            headers = {"content-type": "text/xml"}
+
             r = requests.post(
                 url,
                 data=layer_xml,
                 auth=(self.username, self.password),
                 headers=headers,
             )
-            if r.status_code not in [200, 201]:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+
+            if r.status_code == 201:
+                return r.status_code
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def get_featuretypes(self, workspace: str = None, store_name: str = None):
         """
@@ -1869,15 +1928,21 @@ class Geoserver:
         store_name : str
 
         """
-        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes.json".format(
-            self.service_url, workspace, store_name
-        )
-        r = requests.get(url, auth=(self.username, self.password))
-        r_dict = r.json()
-        features = [i["name"] for i in r_dict["featureTypes"]["featureType"]]
-        print("Status code: {}, Get feature type".format(r.status_code))
+        try:
+            url = "{}/rest/workspaces/{}/datastores/{}/featuretypes.json".format(
+                self.service_url, workspace, store_name
+            )
+            r = requests.get(url, auth=(self.username, self.password))
+            if r.status_code == 200:
+                r_dict = r.json()
+                features = [i["name"] for i in r_dict["featureTypes"]["featureType"]]
+                return features
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
-        return features
+        except Exception as e:
+            raise Exception(e)
+
 
     def get_feature_attribute(
         self, feature_type_name: str, workspace: str, store_name: str
@@ -1891,17 +1956,23 @@ class Geoserver:
         store_name : str
 
         """
-        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.json".format(
-            self.service_url, workspace, store_name, feature_type_name
-        )
-        r = requests.get(url, auth=(self.username, self.password))
-        r_dict = r.json()
-        attribute = [
-            i["name"] for i in r_dict["featureType"]["attributes"]["attribute"]
-        ]
-        print("Status code: {}, Get feature attribute".format(r.status_code))
+        try:
+            url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.json".format(
+                self.service_url, workspace, store_name, feature_type_name
+            )
+            r = requests.get(url, auth=(self.username, self.password))
+            if r.status_code == 200:
+                r_dict = r.json()
+                attribute = [
+                    i["name"] for i in r_dict["featureType"]["attributes"]["attribute"]
+                ]
+                return attribute
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
-        return attribute
+        except Exception as e:
+            raise Exception(e)
+
 
     def get_featurestore(self, store_name: str, workspace: str):
         """
@@ -1912,16 +1983,20 @@ class Geoserver:
         workspace : str
 
         """
-        url = "{}/rest/workspaces/{}/datastores/{}".format(
-            self.service_url, workspace, store_name
-        )
-        r = requests.get(url, auth=(self.username, self.password))
         try:
-            r_dict = r.json()
-            return r_dict["dataStore"]
+            url = "{}/rest/workspaces/{}/datastores/{}".format(
+                self.service_url, workspace, store_name
+            )
+            r = requests.get(url, auth=(self.username, self.password))
+            if r.status_code == 200:
+                r_dict = r.json()
+                return r_dict["dataStore"]
+            else:
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def delete_featurestore(
         self, featurestore_name: str, workspace: Optional[str] = None
@@ -1947,12 +2022,12 @@ class Geoserver:
 
             if r.status_code == 200:
                 return "Status code: {}, delete featurestore".format(r.status_code)
-
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def delete_coveragestore(
         self, coveragestore_name: str, workspace: Optional[str] = None
@@ -1982,12 +2057,11 @@ class Geoserver:
 
             if r.status_code == 200:
                 return "Coverage store deleted successfully"
-
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
 
     # _______________________________________________________________________________________________
     #
@@ -2004,22 +2078,24 @@ class Geoserver:
 
         Query all users in the provided user/group service, else default user/group service is queried
         """
-        url = "{}/rest/security/usergroup/".format(self.service_url)
-        if service is None:
-            url += "users/"
-        else:
-            url += "service/{}/users/".format(service)
         try:
+            url = "{}/rest/security/usergroup/".format(self.service_url)
+            if service is None:
+                url += "users/"
+            else:
+                url += "service/{}/users/".format(service)
+
             headers = {"accept": "application/xml"}
             r = requests.get(url, auth=(self.username, self.password), headers=headers)
 
             if r.status_code == 200:
                 return parse(r.content)
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def create_user(self, username: str, password: str, enabled=True, service=None):
         """
@@ -2033,12 +2109,13 @@ class Geoserver:
         Add a new user to the provided user/group service
         If no user/group service is provided, then the users is added to default user service
         """
-        url = "{}/rest/security/usergroup/".format(self.service_url)
-        if service is None:
-            url += "users/"
-        else:
-            url += "service/{}/users/".format(service)
         try:
+            url = "{}/rest/security/usergroup/".format(self.service_url)
+            if service is None:
+                url += "users/"
+            else:
+                url += "service/{}/users/".format(service)
+
             data = "<user><userName>{}</userName><password>{}</password><enabled>{}</enabled></user>".format(
                 username, password, enabled
             )
@@ -2050,10 +2127,11 @@ class Geoserver:
             if r.status_code == 201:
                 return "User created successfully"
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def modify_user(
         self, username: str, new_name=None, new_password=None, enable=None, service=None
@@ -2071,21 +2149,22 @@ class Geoserver:
         Modifies a user in the provided user/group service
         If no user/group service is provided, then the user in the default user service is modified
         """
-        url = "{}/rest/security/usergroup/".format(self.service_url)
-        if service is None:
-            url += "user/{}".format(username)
-        else:
-            url += "service/{}/user/{}".format(service, username)
-
-        modifications = dict()
-        if new_name is not None:
-            modifications["userName"] = new_name
-        if new_password is not None:
-            modifications["password"] = new_password
-        if enable is not None:
-            modifications["enabled"] = enable
-
         try:
+            url = "{}/rest/security/usergroup/".format(self.service_url)
+            if service is None:
+                url += "user/{}".format(username)
+            else:
+                url += "service/{}/user/{}".format(service, username)
+
+            modifications = dict()
+            if new_name is not None:
+                modifications["userName"] = new_name
+            if new_password is not None:
+                modifications["password"] = new_password
+            if enable is not None:
+                modifications["enabled"] = enable
+
+
             data = unparse({"user": modifications})
             print(url, data)
             headers = {"content-type": "text/xml", "accept": "application/json"}
@@ -2096,10 +2175,11 @@ class Geoserver:
             if r.status_code == 200:
                 return "User modified successfully"
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def delete_user(self, username: str, service=None):
         """
@@ -2112,13 +2192,13 @@ class Geoserver:
         Deletes user from the provided user/group service
         If no user/group service is provided, then the users is deleted from default user service
         """
-        url = "{}/rest/security/usergroup/".format(self.service_url)
-        if service is None:
-            url += "user/{}".format(username)
-        else:
-            url += "service/{}/user/{}".format(service, username)
-
         try:
+            url = "{}/rest/security/usergroup/".format(self.service_url)
+            if service is None:
+                url += "user/{}".format(username)
+            else:
+                url += "service/{}/user/{}".format(service, username)
+
             headers = {"accept": "application/json"}
             r = requests.delete(
                 url, auth=(self.username, self.password), headers=headers
@@ -2127,10 +2207,11 @@ class Geoserver:
             if r.status_code == 200:
                 return "User deleted successfully"
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def get_all_usergroups(self, service=None):
         """
@@ -2142,22 +2223,23 @@ class Geoserver:
         Queries all the groups in the given user/group service
         If no user/group service is provided, default user/group service is used
         """
-        url = "{}/rest/security/usergroup/".format(self.service_url)
-        if service is None:
-            url += "groups/"
-        else:
-            url += "service/{}/groups/".format(service)
-
         try:
+            url = "{}/rest/security/usergroup/".format(self.service_url)
+            if service is None:
+                url += "groups/"
+            else:
+                url += "service/{}/groups/".format(service)
+
             r = requests.get(url, auth=(self.username, self.password))
 
             if r.status_code == 200:
                 return parse(r.content)
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def create_usergroup(self, group: str, service=None):
         """
@@ -2170,21 +2252,22 @@ class Geoserver:
         Add a new usergroup to the provided user/group service
         If no user/group service is provided, then the usergroup is added to default user service
         """
-        url = "{}/rest/security/usergroup/".format(self.service_url)
-        if service is None:
-            url += "group/{}".format(group)
-        else:
-            url += "service/{}/group/{}".format(service, group)
         try:
+            url = "{}/rest/security/usergroup/".format(self.service_url)
+            if service is None:
+                url += "group/{}".format(group)
+            else:
+                url += "service/{}/group/{}".format(service, group)
             r = requests.post(url, auth=(self.username, self.password))
 
             if r.status_code == 201:
                 return "Group created successfully"
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)
+
 
     def delete_usergroup(self, group: str, service=None):
         """
@@ -2197,19 +2280,19 @@ class Geoserver:
         Deletes given usergroup from provided user/group service
         If no user/group service is provided, then the usergroup deleted from default user service
         """
-        url = "{}/rest/security/usergroup/".format(self.service_url)
-        if service is None:
-            url += "group/{}".format(group)
-        else:
-            url += "service/{}/group/{}".format(service, group)
-
         try:
+            url = "{}/rest/security/usergroup/".format(self.service_url)
+            if service is None:
+                url += "group/{}".format(group)
+            else:
+                url += "service/{}/group/{}".format(service, group)
+
             r = requests.delete(url, auth=(self.username, self.password))
 
             if r.status_code == 200:
                 return "Group deleted successfully"
             else:
-                raise Exception("Error: {} {}".format(r.status_code, r.content))
+                raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
-            raise Exception("Error : {}".format(e))
+            raise Exception(e)

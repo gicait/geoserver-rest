@@ -12,7 +12,6 @@ from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_o
 from .supports import prepare_zip_file
 
 
-
 # Custom exceptions.
 class GeoserverException(Exception):
     def __init__(self, status, message):
@@ -22,7 +21,7 @@ class GeoserverException(Exception):
 
 
 # call back class for reading the data
-class DataProvider(object):
+class DataProvider:
     def __init__(self, data):
         self.data = data
         self.finished = False
@@ -253,7 +252,7 @@ class Geoserver:
             )
 
             if r.status_code == 200:
-                 return "Status code: {}, default workspace {} set!".format(
+                return "Status code: {}, default workspace {} set!".format(
                     r.status_code, workspace
                 )
             else:
@@ -406,7 +405,6 @@ class Geoserver:
                 return r.json()
             else:
                 raise GeoserverException(r.status_code, r.content)
-
 
         except Exception as e:
             raise Exception(e)
@@ -690,7 +688,9 @@ class Geoserver:
             assert isinstance(name, str), "Name must be of type String:''"
             assert isinstance(mode, str), "Mode must be of type String:''"
             assert isinstance(title, str), "Title must be of type String:''"
-            assert isinstance(abstract_text, str), "Abstract text must be of type String:''"
+            assert isinstance(
+                abstract_text, str
+            ), "Abstract text must be of type String:''"
             assert isinstance(formats, str), "Format must be of type String:''"
             assert isinstance(
                 metadata, list
@@ -730,7 +730,9 @@ class Geoserver:
                 )
             # check if it already exist in Geoserver
             if self.get_layergroup(name) is not None:
-                raise Exception(f"Layergroup: {name} already exist in Geoserver instance")
+                raise Exception(
+                    f"Layergroup: {name} already exist in Geoserver instance"
+                )
 
             if len(layers) == 0:
                 raise Exception("No layer provided!")
@@ -810,7 +812,7 @@ class Geoserver:
 
             url = f"{self.service_url}/rest/layergroups/"
 
-            response = self._requests(
+            r = self._requests(
                 method="post", url=url, data=data, headers={"content-type": "text/xml"}
             )
             if r.status_code == 201:
@@ -917,7 +919,7 @@ class Geoserver:
 
             url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
 
-            response = self._requests(
+            r = self._requests(
                 method="put",
                 url=url,
                 data=data,
@@ -946,7 +948,7 @@ class Geoserver:
 
             url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
 
-            response = self._requests(url=url, method="delete")
+            r = self._requests(url=url, method="delete")
             if r.status_code == 200:
                 return "Layer group deleted successfully"
             else:
@@ -954,7 +956,6 @@ class Geoserver:
 
         except Exception as e:
             raise Exception(e)
-
 
     # _______________________________________________________________________________________________
     #
@@ -974,7 +975,7 @@ class Geoserver:
                 )
 
             r = self._requests("get", url)
-            
+
             if r.status_code == 200:
                 return r.json()
             else:
@@ -1129,7 +1130,7 @@ class Geoserver:
 
             if workspace is None:
                 url = "{}/rest/styles".format(self.service_url)
-        
+
             r = self._requests(
                 "post",
                 url,
@@ -1226,7 +1227,6 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-
     def create_outline_featurestyle(
         self,
         style_name: str,
@@ -1292,7 +1292,6 @@ class Geoserver:
 
         except Exception as e:
             raise Exception(e)
-
 
     def create_classified_featurestyle(
         self,
@@ -1524,35 +1523,35 @@ class Geoserver:
 
             database_connection = """
                     <dataStore>
-                    <name>{0}</name>
-                    <description>{1}</description>
+                    <name>{}</name>
+                    <description>{}</description>
                     <connectionParameters>
-                    <entry key="Expose primary keys">{2}</entry>
-                    <entry key="host">{3}</entry>
-                    <entry key="port">{4}</entry>
-                    <entry key="user">{5}</entry>
-                    <entry key="passwd">{6}</entry>
+                    <entry key="Expose primary keys">{}</entry>
+                    <entry key="host">{}</entry>
+                    <entry key="port">{}</entry>
+                    <entry key="user">{}</entry>
+                    <entry key="passwd">{}</entry>
                     <entry key="dbtype">postgis</entry>
-                    <entry key="schema">{7}</entry>
-                    <entry key="database">{8}</entry>
-                    <entry key="Evictor run periodicity">{9}</entry>
-                    <entry key="Max open prepared statements">{10}</entry>
-                    <entry key="encode functions">{11}</entry>
-                    <entry key="Primary key metadata table">{12}</entry>
-                    <entry key="Batch insert size">{13}</entry>
-                    <entry key="preparedStatements">{14}</entry>
-                    <entry key="Estimated extends">{15}</entry>
-                    <entry key="fetch size">{16}</entry>
-                    <entry key="validate connections">{17}</entry>
-                    <entry key="Support on the fly geometry simplification">{18}</entry>
-                    <entry key="Connection timeout">{19}</entry>
-                    <entry key="create database">{20}</entry>
-                    <entry key="min connections">{21}</entry>
-                    <entry key="max connections">{22}</entry>
-                    <entry key="Evictor tests per run">{23}</entry>
-                    <entry key="Test while idle">{24}</entry>
-                    <entry key="Max connection idle time">{25}</entry>
-                    <entry key="Loose bbox">{26}</entry>
+                    <entry key="schema">{}</entry>
+                    <entry key="database">{}</entry>
+                    <entry key="Evictor run periodicity">{}</entry>
+                    <entry key="Max open prepared statements">{}</entry>
+                    <entry key="encode functions">{}</entry>
+                    <entry key="Primary key metadata table">{}</entry>
+                    <entry key="Batch insert size">{}</entry>
+                    <entry key="preparedStatements">{}</entry>
+                    <entry key="Estimated extends">{}</entry>
+                    <entry key="fetch size">{}</entry>
+                    <entry key="validate connections">{}</entry>
+                    <entry key="Support on the fly geometry simplification">{}</entry>
+                    <entry key="Connection timeout">{}</entry>
+                    <entry key="create database">{}</entry>
+                    <entry key="min connections">{}</entry>
+                    <entry key="max connections">{}</entry>
+                    <entry key="Evictor tests per run">{}</entry>
+                    <entry key="Test while idle">{}</entry>
+                    <entry key="Max connection idle time">{}</entry>
+                    <entry key="Loose bbox">{}</entry>
                     </connectionParameters>
                     </dataStore>
                     """.format(
@@ -1604,14 +1603,13 @@ class Geoserver:
                     headers=headers,
                 )
 
-            if r.status_code in  [200,201]:
+            if r.status_code in [200, 201]:
                 return "Featurestore created/updated successfully"
             else:
                 raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
-
 
     def create_datastore(
         self,
@@ -1649,7 +1647,9 @@ class Geoserver:
             data_url = "<url>file:{}</url>".format(path)
 
             if "http://" in path:
-                data_url = "<GET_CAPABILITIES_URL>{}</GET_CAPABILITIES_URL>".format(path)
+                data_url = "<GET_CAPABILITIES_URL>{}</GET_CAPABILITIES_URL>".format(
+                    path
+                )
 
             data = "<dataStore><name>{}</name><connectionParameters>{}</connectionParameters></dataStore>".format(
                 name, data_url
@@ -1670,14 +1670,13 @@ class Geoserver:
                     url, data, auth=(self.username, self.password), headers=headers
                 )
 
-            if r.status_code in [200,201]:
+            if r.status_code in [200, 201]:
                 return "Data store created/updated successfully"
             else:
                 raise GeoserverException(r.status_code, r.content)
 
         except Exception as e:
             raise Exception(e)
-
 
     def create_shp_datastore(
         self,
@@ -1735,7 +1734,7 @@ class Geoserver:
                     auth=(self.username, self.password),
                     headers=headers,
                 )
-            if r.status_code in [200,201]:
+            if r.status_code in [200, 201]:
                 return "The shapefile datastore created successfully!"
             else:
                 raise GeoserverException(r.status_code, r.content)
@@ -1743,9 +1742,12 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-
     def publish_featurestore(
-        self, store_name: str, pg_table: str, workspace: Optional[str] = None, title: Optional[str] = None
+        self,
+        store_name: str,
+        pg_table: str,
+        workspace: Optional[str] = None,
+        title: Optional[str] = None,
     ):
         """
 
@@ -1774,7 +1776,11 @@ class Geoserver:
                 self.service_url, workspace, store_name
             )
 
-            layer_xml = "<featureType><name>{}</name><title>{}</title></featureType>".format(pg_table,title)
+            layer_xml = (
+                "<featureType><name>{}</name><title>{}</title></featureType>".format(
+                    pg_table, title
+                )
+            )
             headers = {"content-type": "text/xml"}
 
             r = requests.post(
@@ -1918,7 +1924,6 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-
     def get_featuretypes(self, workspace: str = None, store_name: str = None):
         """
 
@@ -1942,7 +1947,6 @@ class Geoserver:
 
         except Exception as e:
             raise Exception(e)
-
 
     def get_feature_attribute(
         self, feature_type_name: str, workspace: str, store_name: str
@@ -1973,7 +1977,6 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-
     def get_featurestore(self, store_name: str, workspace: str):
         """
 
@@ -1996,7 +1999,6 @@ class Geoserver:
 
         except Exception as e:
             raise Exception(e)
-
 
     def delete_featurestore(
         self, featurestore_name: str, workspace: Optional[str] = None
@@ -2027,7 +2029,6 @@ class Geoserver:
 
         except Exception as e:
             raise Exception(e)
-
 
     def delete_coveragestore(
         self, coveragestore_name: str, workspace: Optional[str] = None
@@ -2096,7 +2097,6 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-
     def create_user(self, username: str, password: str, enabled=True, service=None):
         """
 
@@ -2132,7 +2132,6 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-
     def modify_user(
         self, username: str, new_name=None, new_password=None, enable=None, service=None
     ):
@@ -2164,7 +2163,6 @@ class Geoserver:
             if enable is not None:
                 modifications["enabled"] = enable
 
-
             data = unparse({"user": modifications})
             print(url, data)
             headers = {"content-type": "text/xml", "accept": "application/json"}
@@ -2179,7 +2177,6 @@ class Geoserver:
 
         except Exception as e:
             raise Exception(e)
-
 
     def delete_user(self, username: str, service=None):
         """
@@ -2212,7 +2209,6 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-
     def get_all_usergroups(self, service=None):
         """
 
@@ -2240,7 +2236,6 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-
     def create_usergroup(self, group: str, service=None):
         """
 
@@ -2267,7 +2262,6 @@ class Geoserver:
 
         except Exception as e:
             raise Exception(e)
-
 
     def delete_usergroup(self, group: str, service=None):
         """

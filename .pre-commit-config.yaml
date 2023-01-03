@@ -3,57 +3,58 @@ default_language_version:
 
 repos:
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.11.0
+    rev: v3.3.1
     hooks:
     -   id: pyupgrade
         language_version: python3
-# Irrelevant hook for the time being
-# -   repo: https://github.com/kynan/nbstripout
-#     rev: 0.3.9
-#     hooks:
-#     -   id: nbstripout
-#         language_version: python3
-#         files: ".ipynb"
-#         args: ["--keep-output"]
+
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v4.4.0
     hooks:
-    -   id: trailing-whitespace
-        language_version: python3
-        exclude: .txt|.sld
-    -   id: end-of-file-fixer
-        language_version: python3
-        exclude: .ipynb|.txt|.sld
     -   id: check-yaml
         language_version: python3
         exclude: conda-recipe/meta.yaml
     -   id: debug-statements
         language_version: python3
+    -   id: end-of-file-fixer
+        language_version: python3
+        exclude: .ipynb|.txt|.sld
+    -   id: trailing-whitespace
+        language_version: python3
+        exclude: .txt|.sld
+
 -   repo: https://github.com/ambv/black
-    rev: 20.8b1
+    rev: 22.12.0
     hooks:
     -   id: black
-        language_version: python3
-        args: ["--target-version", "py36"]
+
 -   repo: https://github.com/timothycrosley/isort
-    rev: 5.7.0
+    rev: 5.11.4
     hooks:
-    -   id: isort
-        language_version: python3
-        args: ['--profile', 'black']
+      - id: isort
+        args: ["--profile", "black", "--filter-files"]
+
+
 -   repo: https://github.com/pycqa/flake8
-    rev: 3.9.0
+    rev: 6.0.0
     hooks:
     -   id: flake8
-        language_version: python3
         args: ['--config=setup.cfg']
+
 -   repo: https://github.com/pycqa/pydocstyle
-    rev: 6.0.0
+    rev: 6.2.1
     hooks:
     -   id: pydocstyle
         language_version: python3
         args: ['--convention=numpy', '--match="(?!test_).*\.py"']
+
 -   repo: meta
     hooks:
     -   id: check-hooks-apply
     -   id: check-useless-excludes
+
+ci:
+    autoupdate_schedule: quarterly
+    skip: []
+    submodules: false
+

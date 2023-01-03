@@ -525,7 +525,7 @@ class Geoserver:
             r = self._requests(
                 method="put", url=url, data=time_dimension_data, headers=headers
             )
-            if r.status_code == in [200, 201]:
+            if r.status_code in [200, 201]:
                 return r.json()
             else:
                 raise GeoserverException(r.status_code, r.content)

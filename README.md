@@ -1,15 +1,22 @@
+# Python wrapper for GeoServer REST API
+
 [![Downloads](https://pepy.tech/badge/geoserver-rest)](https://pepy.tech/project/geoserver-rest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-### Full documentation
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![flake8](https://img.shields.io/badge/linter-flake8-green)](https://flake8.pycqa.org/)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
+## Full documentation
 
 The documentation for this project is moved here: [https://geoserver-rest.readthedocs.io/](https://geoserver-rest.readthedocs.io/).
 
-### Overview
+## Overview
 
 The `geoserver-rest` package is useful for the management of geospatial data in [GeoServer](http://geoserver.org/). The package is useful for the creating, updating and deleting geoserver workspaces, stores, layers, and style files.
 
-### Installation
+## Installation
 
 ```python
 conda install -c conda-forge geoserver-rest
@@ -17,7 +24,7 @@ conda install -c conda-forge geoserver-rest
 
 For the `pip` installation, check the [official documentation of geoserver-rest](https://geoserver-rest.readthedocs.io/en/latest/installation.html)
 
-### Some examples
+## Some examples
 
 Please check the [https://geoserver-rest.readthedocs.io/](https://geoserver-rest.readthedocs.io/) for full documentation.
 
@@ -58,7 +65,7 @@ geo.delete_layer(layer_name='agri_final_proj', workspace='demo')
 geo.delete_style(style_name='kamal2', workspace='demo')
 ```
 
-### Citation
+## Citation
 
 Full paper is available here: https://doi.org/10.5194/isprs-archives-XLVI-4-W2-2021-91-2021
 
@@ -75,7 +82,7 @@ Full paper is available here: https://doi.org/10.5194/isprs-archives-XLVI-4-W2-2
   }
 ```
 
-### Contribution
+## Contribution
 
 Geoserver-rest is the open source library written in python and contributors are needed to keep this library moving forward. Any kind of contributions are welcome. Here are the basic rule for the new contributors:
 
@@ -84,6 +91,6 @@ Geoserver-rest is the open source library written in python and contributors are
 3. Please add the update about your PR on the [change log documentation](https://github.com/gicait/geoserver-rest/blob/master/docs/source/change_log.rst#master-branch) as well.
 
 
-### Acknowledgements
+## Acknowledgements
 
 Created and managed by [Tek Bahadur Kshetri](http://tekkshetri.com.np/) for the activites of Geoinformatics Center of Asian Institute of Technology, Thailand.

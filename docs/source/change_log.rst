@@ -6,6 +6,8 @@ Change Log
 * Fix the import issue, close `#76 <https://github.com/gicait/geoserver-rest/issues/76>`_
 * Removed the ``rest`` from Geoserver class URL, Revert back to previous state. Close `#77 <https://github.com/gicait/geoserver-rest/issues/76>`_
 * Add Optional Parameter for ``title`` to ``publish_featurestore`` function
+* Update on git hooks `#94 <https://github.com/gicait/geoserver-rest/pull/94>`_, `#92 <https://github.com/gicait/geoserver-rest/pull/92>`_
+* Exception handeling in a better way `#93 <https://github.com/gicait/geoserver-rest/pull/93>`_
 
 ``[v2.3.0 - 2022-05-06]``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

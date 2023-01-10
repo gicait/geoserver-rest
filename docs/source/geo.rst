@@ -18,5 +18,3 @@ The ``Style`` functions
    :members:
    :undoc-members:
    :show-inheritance:
-
-

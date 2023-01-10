@@ -7,12 +7,12 @@ version: 2
 #     - python3-dev
 #     - gdal-bin
 #     - python3-gdal
-#     - gcc 
-#     - zlib1g-dev 
-#     - libgeos-dev 
+#     - gcc
+#     - zlib1g-dev
+#     - libgeos-dev
 #     - libproj-dev
-   
-    
+
+
 
 sphinx:
    configuration: docs/source/conf.py

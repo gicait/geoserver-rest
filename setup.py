@@ -7,10 +7,10 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 
 about = dict()
 
-with open(os.path.join(HERE, "geo", "__version__.py"), "r") as f:
+with open(os.path.join(HERE, "geo", "__version__.py")) as f:
     exec(f.read(), about)
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 setup(
@@ -45,19 +45,13 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'pygments',
-        'requests',
-        'seaborn',
-        'gdal',
-        'matplotlib',
-        'xmltodict'
+        "pygments",
+        "requests",
+        "seaborn",
+        "gdal",
+        "matplotlib",
+        "xmltodict",
     ],
-    extras_require={"dev": [
-        "pytest",
-        "black",
-        "flake8",
-        "sphinx>=1.7",
-        "pre-commit"
-    ]},
+    extras_require={"dev": ["pytest", "black", "flake8", "sphinx>=1.7", "pre-commit"]},
     python_requires=">=3.6",
 )

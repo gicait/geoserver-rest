@@ -452,7 +452,7 @@ class Geoserver:
             self.service_url, workspace, layer_name, file_type
         )
 
-        headers = {"content-type": content_type}
+        headers = {"content-type": content_type, "Accept" : "application/json"}
 
         r = None
         try:

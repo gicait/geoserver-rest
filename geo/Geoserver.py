@@ -645,6 +645,8 @@ class Geoserver:
             r = self._requests("get", url)
             if r.status_code == 200:
                 return r.json()
+            elif r.status_code == 404:
+                return None
             else:
                 raise GeoserverException(r.status_code, r.content)
 

@@ -645,8 +645,6 @@ class Geoserver:
             r = self._requests("get", url)
             if r.status_code == 200:
                 return r.json()
-            elif r.status_code == 404:
-                return None
             else:
                 raise GeoserverException(r.status_code, r.content)
 
@@ -729,11 +727,6 @@ class Geoserver:
 
                 raise Exception(
                     f"Format not supported. Acceptable formats are : {supported_formats}"
-                )
-            # check if it already exist in Geoserver
-            if self.get_layergroup(name) is not None:
-                raise Exception(
-                    f"Layergroup: {name} already exist in Geoserver instance"
                 )
 
             if len(layers) == 0:

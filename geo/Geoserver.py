@@ -728,8 +728,14 @@ class Geoserver:
                 raise Exception(
                     f"Format not supported. Acceptable formats are : {supported_formats}"
                 )
+            
             # check if it already exist in Geoserver
-            if self.get_layergroup(name) is not None:
+            try:
+                existing_layergroup = self.get_layergroup(name)
+            except:
+                existing_layergroup = None
+
+            if existing_layergroup is not None:
                 raise Exception(
                     f"Layergroup: {name} already exist in Geoserver instance"
                 )

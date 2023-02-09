@@ -14,7 +14,8 @@ class TestLayerGroup(unittest.TestCase):
 
     How to use:
 
-    You need to have a geoserver that you can use for testing. 
+    You need to have a geoserver that you can use for testing.
+    In order to run the test, you need to create an .env file based on the .env_template.
     Adjust the .env file with the url and login information for the server you're testing against.
 
     You can run this test by executing:

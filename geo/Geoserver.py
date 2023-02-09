@@ -945,14 +945,18 @@ class Geoserver:
     def delete_layergroup(
         self,
         layergroup_name: str,
+        workspace: Optional[str] = None
     ) -> str:
         try:
-            if self.get_layergroup(layer_name=layergroup_name) is None:
+            if self.get_layergroup(layer_name=layergroup_name, workspace=workspace) is None:
                 raise Exception(
                     f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
                 )
 
-            url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+            if workspace == None:
+                url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+            else:
+                url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{layergroup_name}"
 
             r = self._requests(url=url, method="delete")
             if r.status_code == 200:

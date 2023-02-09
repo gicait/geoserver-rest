@@ -731,7 +731,7 @@ class Geoserver:
             
             # check if it already exist in Geoserver
             try:
-                existing_layergroup = self.get_layergroup(name)
+                existing_layergroup = self.get_layergroup(name, workspace=workspace)
             except:
                 existing_layergroup = None
 
@@ -948,7 +948,9 @@ class Geoserver:
         workspace: Optional[str] = None
     ) -> str:
         try:
-            if self.get_layergroup(layer_name=layergroup_name, workspace=workspace) is None:
+            try: 
+                self.get_layergroup(layer_name=layergroup_name, workspace=workspace)
+            except:
                 raise Exception(
                     f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
                 )

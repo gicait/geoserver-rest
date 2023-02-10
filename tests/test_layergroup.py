@@ -112,17 +112,12 @@ class TestLayerGroup(unittest.TestCase):
     @unpack
     def test_delete_layergroup_that_doesnt_exist(self, layergroup_name, workspace):
 
-        with self.assertRaises(Exception) as assertion:
+        with self.assertRaises(Exception):
 
             self.geoserver.delete_layergroup(
                 layergroup_name=layergroup_name,
                 workspace=workspace
             )
-
-        self.assertEqual(
-            str(assertion.exception), 
-            f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance")
-
 
     @data(
         (

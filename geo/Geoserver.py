@@ -947,13 +947,20 @@ class Geoserver:
         layergroup_name: str,
         workspace: Optional[str] = None
     ) -> str:
+        """
+        Delete a layer group from the geoserver and raise an exception 
+        in case the layer group does not exist, or the geoserver is unavailable.
+
+        Parameters
+        ----------
+        layergroup_name: str, required The name of the layer group to be deleted
+        workspace: str, optional The workspace the layergroup is located in
+        """
+
+
         try:
-            try: 
-                self.get_layergroup(layer_name=layergroup_name, workspace=workspace)
-            except:
-                raise Exception(
-                    f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
-                )
+            #raises an exception in case the layer group doesn't exist
+            self.get_layergroup(layer_name=layergroup_name, workspace=workspace) 
 
             if workspace == None:
                 url = f"{self.service_url}/rest/layergroups/{layergroup_name}"

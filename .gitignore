@@ -1,7 +1,4 @@
-venv/
-data/
 style.sld
-.vscode/
 FunctionsToImplement.py
 record.txt
 package_test.py
@@ -126,6 +123,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.vscode/
+.direnv/
+venv/
 
 # Spyder project settings
 .spyderproject

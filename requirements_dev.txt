@@ -3,3 +3,5 @@ black
 flake8
 sphinx>=1.7
 pre-commit
+environs
+ddt

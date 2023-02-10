@@ -4,6 +4,7 @@ Change Log
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
 
+* Allow deletion of layergroups from workspaces (see issue `#100 <https://github.com/gicait/geoserver-rest/issues/100>`) and add unittests for the layergroup methods.
 * Fix json-bug in create_coveragestore method (see issue `#86 <https://github.com/gicait/geoserver-rest/issues/86>`)
 
 ``[v2.4.0 - 2023-01-10]``

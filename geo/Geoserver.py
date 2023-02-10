@@ -731,7 +731,7 @@ class Geoserver:
             
             # check if it already exist in Geoserver
             try:
-                existing_layergroup = self.get_layergroup(name)
+                existing_layergroup = self.get_layergroup(name, workspace=workspace)
             except:
                 existing_layergroup = None
 
@@ -945,14 +945,27 @@ class Geoserver:
     def delete_layergroup(
         self,
         layergroup_name: str,
+        workspace: Optional[str] = None
     ) -> str:
-        try:
-            if self.get_layergroup(layer_name=layergroup_name) is None:
-                raise Exception(
-                    f"Layer group: {layergroup_name} is not a valid layer group in the Geoserver instance"
-                )
+        """
+        Delete a layer group from the geoserver and raise an exception 
+        in case the layer group does not exist, or the geoserver is unavailable.
 
-            url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+        Parameters
+        ----------
+        layergroup_name: str, required The name of the layer group to be deleted
+        workspace: str, optional The workspace the layergroup is located in
+        """
+
+
+        try:
+            #raises an exception in case the layer group doesn't exist
+            self.get_layergroup(layer_name=layergroup_name, workspace=workspace) 
+
+            if workspace == None:
+                url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+            else:
+                url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{layergroup_name}"
 
             r = self._requests(url=url, method="delete")
             if r.status_code == 200:

@@ -71,6 +71,12 @@ class TestLayerGroup(unittest.TestCase):
                 workspace="unittest"
             )
 
+        cls.geoserver.create_coveragestore(
+                layer_name="test_layer_3",
+                path="tests/data/sample_geotiff.tif", 
+                workspace="unittest"
+            )
+
 
     @classmethod
     def tearDownClass(cls):
@@ -263,6 +269,24 @@ class TestLayerGroup(unittest.TestCase):
             f'{len(updated_layer_group_dict["layerGroup"]["publishables"]["published"])} instead of 2 layers in layergroup'
         )
 
+        self.geoserver.add_layer_to_layergroup(
+            layergroup_name = "test-layergroup-name",
+            layergroup_workspace = workspace,
+            layer_name = "test_layer_3",
+            layer_workspace = "unittest"
+        )
+
+        updated_layer_group_dict = self.geoserver.get_layergroup(
+            layer_name = "test-layergroup-name",
+            workspace=workspace,
+        )
+        
+        self.assertEqual(
+            len(updated_layer_group_dict["layerGroup"]["publishables"]["published"]),
+            3,
+            f'{len(updated_layer_group_dict["layerGroup"]["publishables"]["published"])} instead of 3 layers in layergroup'
+        )
+
     def test_add_layer_to_layergroup_that_doesnt_exist(self):
 
         with self.assertRaises(Exception):
@@ -294,10 +318,6 @@ class TestLayerGroup(unittest.TestCase):
                 layer_name = "bar",
                 layer_workspace = "unittest"
             )
-
-
-
-
 
 if __name__ == '__main__':
     unittest.main()

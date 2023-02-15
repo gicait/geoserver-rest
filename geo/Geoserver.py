@@ -997,7 +997,9 @@ class Geoserver:
         """
 
         try: 
-            layergroup_info = self.get_layergroup(layer_name = layergroup_name, workspace = layergroup_workspace)
+            layergroup_info = self.get_layergroup(
+                layer_name=layergroup_name, workspace=layergroup_workspace
+                )
             layer_info = self.get_layer(layer_name=layer_name, workspace=layer_workspace)
         except Exception as e:
             raise(e)
@@ -1012,8 +1014,7 @@ class Geoserver:
             styles = [styles]
 
         # the get_layergroup method may return an empty string for style; 
-        # so we get the default styles for each layer with no style information
-
+        # so we get the default styles for each layer with no style information in the layergroup
         if len(styles) == 1:
             index = [0]
         else:
@@ -1025,7 +1026,9 @@ class Geoserver:
                     layer_name=this_layer["name"].split(":")[1],
                     workspace=this_layer["name"].split(":")[0]
                 )
-                styles[ix] = this_layer_info["layer"]["defaultStyle"]["name"]
+                styles[ix] = {
+                    "name" : this_layer_info["layer"]["defaultStyle"]["name"],
+                    "href" : this_layer_info["layer"]["defaultStyle"]["href"]}
 
         # add publishable & style for the new layer
         new_pub = {
@@ -1034,7 +1037,7 @@ class Geoserver:
         }
         publishables.append(new_pub)
 
-        new_style = layer_info["layer"]["defaultStyle"]["name"]
+        new_style = layer_info["layer"]["defaultStyle"]
         styles.append(new_style)
 
         # build xml structure
@@ -1052,7 +1055,10 @@ class Geoserver:
 
         for style in styles:
             style_str = f"""
-                    <style>{style}</style>
+                <style>
+                    <name>{style['name']}</name>
+                    <link>{style['href']}</link>
+                </style>
             """
             style_skeleton += style_str
 

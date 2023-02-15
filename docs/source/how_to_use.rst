@@ -91,6 +91,35 @@ If your data is coming from ``WFS`` url, then use this,
     geo.publish_featurestore(workspace='demo', store_name='ds', pg_table='wfs_layer_name')
 
 
+Creating Layer Groups
+-------------------------------
+A layer group is a grouping of layers and styles that can be accessed as a single layer in a WMS GetMap request.
+Layer groups can be created either inside a workspace, or globally without a workspace.
+
+You can create a layer group from layers that have been uploaded previously with the ``create_layergroup`` method.
+
+.. code-block:: python3
+
+  # create a new layergroup from 2 existing layers
+    geo.create_layergroup(
+      name = "my_fancy_layergroup",
+      mode = "single",
+      title = "My Fancy Layergroup Title",
+      abstract_text = "This is a very fancy Layergroup",
+      layers = ["fancy_layer_1", "fancy_layer_2"],
+      workspace = "my_space", #None if you want to create a layergroup outside the workspace
+      keywords = ["list", "of", "keywords"]
+      )
+
+  # add another layer
+    geo.add_layer_to_layergroup(
+      layergroup_name = "my_fancy_layergroup",
+      layergroup_workspace = "my_space",
+      layer_name = "superfancy_layer",
+      layer_workspace = "my_space"
+    )
+
+
 Uploading and publishing styles
 -------------------------------
 

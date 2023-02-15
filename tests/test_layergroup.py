@@ -71,6 +71,12 @@ class TestLayerGroup(unittest.TestCase):
                 workspace="unittest"
             )
 
+        cls.geoserver.create_coveragestore(
+                layer_name="test_layer_3",
+                path="tests/data/sample_geotiff.tif", 
+                workspace="unittest"
+            )
+
 
     @classmethod
     def tearDownClass(cls):
@@ -89,7 +95,25 @@ class TestLayerGroup(unittest.TestCase):
         '''
         is run after each individual test method
         '''
-        pass
+        # delete any remaining layergroups in the unittest workspace
+        layergroups = self.geoserver.get_layergroups(workspace="unittest")
+
+        if layergroups["layerGroups"] == '':
+            pass
+
+        else:
+            for layer_group_info in layergroups["layerGroups"]["layerGroup"]:
+                self.geoserver.delete_layergroup(
+                    layergroup_name = layer_group_info["name"],
+                    workspace="unittest"
+                )
+
+        #delete any specific testing layergroup from the global workspace
+        try:
+            self.geoserver.delete_layergroup("test-layergroup-name")
+        except:
+            pass
+
 
     @data(
         ("NonExistingLayerGroup", None), #layergroup in global workspace
@@ -202,6 +226,98 @@ class TestLayerGroup(unittest.TestCase):
             layer_name = name,
             workspace=workspace,
         )
+
+    @data("unittest", None)
+    def test_add_layer_to_layergroup(self, workspace):
+
+        self.geoserver.create_layergroup(
+            name = "test-layergroup-name",
+            mode = "single",
+            title = "test_layergroup_to_add",
+            abstract_text = "this is an abstract text",
+            layers = ["test_layer_1"],
+            workspace = workspace,
+            keywords = []
+        )
+
+        layer_group_dict = self.geoserver.get_layergroup(
+            layer_name = "test-layergroup-name",
+            workspace=workspace,
+        )
+        
+        self.assertIsInstance(
+            layer_group_dict["layerGroup"]["publishables"]["published"],
+            dict,
+            f'presumably more than 1 layer in layergroup (layer_group_dict["layerGroup"]["publishables"]["published"] is list instead of dict)'
+        )
+
+        self.geoserver.add_layer_to_layergroup(
+            layergroup_name = "test-layergroup-name",
+            layergroup_workspace = workspace,
+            layer_name = "test_layer_2",
+            layer_workspace = "unittest"
+        )
+
+        updated_layer_group_dict = self.geoserver.get_layergroup(
+            layer_name = "test-layergroup-name",
+            workspace=workspace,
+        )
+        
+        self.assertEqual(
+            len(updated_layer_group_dict["layerGroup"]["publishables"]["published"]),
+            2,
+            f'{len(updated_layer_group_dict["layerGroup"]["publishables"]["published"])} instead of 2 layers in layergroup'
+        )
+
+        self.geoserver.add_layer_to_layergroup(
+            layergroup_name = "test-layergroup-name",
+            layergroup_workspace = workspace,
+            layer_name = "test_layer_3",
+            layer_workspace = "unittest"
+        )
+
+        updated_layer_group_dict = self.geoserver.get_layergroup(
+            layer_name = "test-layergroup-name",
+            workspace=workspace,
+        )
+        
+        self.assertEqual(
+            len(updated_layer_group_dict["layerGroup"]["publishables"]["published"]),
+            3,
+            f'{len(updated_layer_group_dict["layerGroup"]["publishables"]["published"])} instead of 3 layers in layergroup'
+        )
+
+    def test_add_layer_to_layergroup_that_doesnt_exist(self):
+
+        with self.assertRaises(Exception):
+
+            self.geoserver.add_layer_to_layergroup(
+                layergroup_name = "foo",
+                layergroup_workspace = "unittest",
+                layer_name = "test_layer_2",
+                layer_workspace = "unittest"
+            )
+
+    def test_add_layer_that_doesnt_exist_to_layergroup(self):
+
+        self.geoserver.create_layergroup(
+            name = "test-layergroup-name",
+            mode = "single",
+            title = "test_layergroup_to_add",
+            abstract_text = "this is an abstract text",
+            layers = ["test_layer_1"],
+            workspace = "unittest",
+            keywords = []
+        )
+
+        with self.assertRaises(Exception):
+
+            self.geoserver.add_layer_to_layergroup(
+                layergroup_name = "test-layergroup-name",
+                layergroup_workspace = "unittest",
+                layer_name = "bar",
+                layer_workspace = "unittest"
+            )
 
 if __name__ == '__main__':
     unittest.main()

@@ -98,8 +98,6 @@ Layer groups can be created either inside a workspace, or globally without a wor
 
 You can create a layer group from layers that have been uploaded previously with the ``create_layergroup`` method.
 
-``geoserver-rest``allows you to create and modify almost all metadata of the layer group via keyword arguments. 
-
 .. code-block:: python3
 
   # create a new layergroup from 2 existing layers

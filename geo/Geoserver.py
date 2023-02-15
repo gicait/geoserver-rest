@@ -976,6 +976,114 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
+    def add_layer_to_layergroup(
+        self,
+        layer_name: str,
+        layer_workspace:str,
+        layergroup_name:str,
+        layergroup_workspace: str = None
+    ) -> None:
+        """
+        Add the specified layer to an existing layer group and raise an exception if 
+        either the layer or layergroup doesn't exist, or the geoserver is unavailable.
+
+        Parameters
+        ----------
+        layer_name: str, required The name of the layer
+        layer_workspace: str, required The workspace the layer is located in
+        layergroup_workspace: str, optional The workspace the layergroup is located in
+        layergroup_name: str, required The name of the layer group
+        layergroup_workspace: str, optional The workspace the layergroup is located in
+        """
+
+        try: 
+            layergroup_info = self.get_layergroup(layer_name = layergroup_name, workspace = layergroup_workspace)
+            layer_info = self.get_layer(layer_name=layer_name, workspace=layer_workspace)
+        except Exception as e:
+            raise(e)
+
+        # build list of existing publishables & styles
+        publishables = layergroup_info["layerGroup"]["publishables"]["published"]
+        if isinstance(publishables, dict): # only 1 layer up to now
+            publishables = [publishables]
+
+        styles = layergroup_info["layerGroup"]["styles"]["style"]
+        if isinstance(styles, str): # only 1 layer up to now
+            styles = [styles]
+
+        # the get_layergroup method may return an empty string for style; 
+        # so we get the default styles for each layer with no style information
+
+        if len(styles) == 1:
+            index = [0]
+        else:
+            index = range(len(styles)-1)
+
+        for ix, this_style, this_layer in zip(index, styles, publishables):
+            if this_style == "":
+                this_layer_info = self.get_layer(
+                    layer_name=this_layer["name"].split(":")[1],
+                    workspace=this_layer["name"].split(":")[0]
+                )
+                styles[ix] = this_layer_info["layer"]["defaultStyle"]["name"]
+
+        # add publishable & style for the new layer
+        new_pub = {
+            "name" : f"{layer_workspace}:{layer_name}",
+            "href" : f"{self.service_url}/rest/workspaces/{layer_workspace}/layers/{layer_name}.json"
+        }
+        publishables.append(new_pub)
+
+        new_style = layer_info["layer"]["defaultStyle"]["name"]
+        styles.append(new_style)
+
+        # build xml structure
+        layer_skeleton = ""
+        style_skeleton = ""
+        
+        for publishable in publishables:
+            layer_str = f"""
+                <published type="layer">
+                    <name>{publishable['name']}</name>
+                    <link>{publishable['href']}</link>
+                </published>
+            """
+            layer_skeleton += layer_str
+
+        for style in styles:
+            style_str = f"""
+                    <style>{style}</style>
+            """
+            style_skeleton += style_str
+
+        data = f"""
+                <layerGroup>
+                    <publishables>
+                        {layer_skeleton}
+                    </publishables>
+                    <styles>
+                        {style_skeleton}
+                    </styles>
+                </layerGroup>
+                """
+
+        if layergroup_workspace == None:
+            url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+        else:
+            url = f"{self.service_url}/rest/workspaces/{layergroup_workspace}/layergroups/{layergroup_name}"
+
+        r = self._requests(
+            method="put",
+            url=url,
+            data=data,
+            headers={"content-type": "text/xml", "accept": "application/xml"},
+        )
+        if r.status_code == 200:
+            return
+        else:
+            raise GeoserverException(r.status_code, r.content)
+
+
     # _______________________________________________________________________________________________
     #
     #      STYLES

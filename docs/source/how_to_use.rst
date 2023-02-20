@@ -147,6 +147,7 @@ It is used to create the style file for raster data. You can get the ``color_ram
 .. note::
     If you have your own custom color and the custom label, you can pass the ``values:color`` pair as below to generate the map with dynamic legend.
 
+
 .. code-block:: python
 
     c_ramp = {
@@ -173,9 +174,11 @@ It is used to create the style file for raster data. You can get the ``color_ram
 
 For generating the style for ``classified raster``, you can pass the another parameter called ``cmap_type='values'`` as,
 
+
 .. code-block:: python
 
     geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo', color_ramp='RdYiGn', cmap_type='values')
+
 
 .. list-table:: Options for ``create_coveragestyle``
     :widths: 15 15 15 55

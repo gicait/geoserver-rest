@@ -319,5 +319,68 @@ class TestLayerGroup(unittest.TestCase):
                 layer_workspace = "unittest"
             )
 
+    @data("unittest", None)
+    def test_remove_layer_from_layergroup(self, workspace):
+
+        self.geoserver.create_layergroup(
+            name = "test-layergroup-name",
+            mode = "single",
+            title = "test_layergroup_to_add",
+            abstract_text = "this is an abstract text",
+            layers = ["test_layer_1", "test_layer_2", "test_layer_3"],
+            workspace = workspace,
+            keywords = []
+        )
+
+        self.geoserver.remove_layer_from_layergroup(
+            layergroup_name = "test-layergroup-name",
+            layergroup_workspace = workspace,
+            layer_name = "test_layer_1",
+            layer_workspace = "unittest"
+        )
+
+        updated_layer_group_dict = self.geoserver.get_layergroup(
+            layer_name = "test-layergroup-name",
+            workspace=workspace,
+        )
+
+        self.assertEqual(
+            len(updated_layer_group_dict["layerGroup"]["publishables"]["published"]),
+            2,
+            f'{len(updated_layer_group_dict["layerGroup"]["publishables"]["published"])} instead of 2 layers in layergroup'
+        )
+
+    def test_remove_layer_from_layergroup_that_doesnt_exist(self):
+
+        with self.assertRaises(Exception):
+
+            self.geoserver.remove_layer_from_layergroup(
+                layergroup_name = "foo",
+                layergroup_workspace = "unittest",
+                layer_name = "test_layer_2",
+                layer_workspace = "unittest"
+            )
+
+    def test_remove_layer_that_doesnt_exist_from_layergroup(self):
+
+        self.geoserver.create_layergroup(
+            name = "test-layergroup-name",
+            mode = "single",
+            title = "test_layergroup_to_add",
+            abstract_text = "this is an abstract text",
+            layers = ["test_layer_1"],
+            workspace = "unittest",
+            keywords = []
+        )
+
+        with self.assertRaises(Exception):
+
+            self.geoserver.remove_layer_from_layergroup(
+                layergroup_name = "test-layergroup-name",
+                layergroup_workspace = "unittest",
+                layer_name = "bar",
+                layer_workspace = "unittest"
+            )
+
 if __name__ == '__main__':
     unittest.main()

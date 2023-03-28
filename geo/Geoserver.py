@@ -1013,23 +1013,6 @@ class Geoserver:
         if isinstance(styles, str): # only 1 layer up to now
             styles = [styles]
 
-        # the get_layergroup method may return an empty string for style; 
-        # so we get the default styles for each layer with no style information in the layergroup
-        if len(styles) == 1:
-            index = [0]
-        else:
-            index = range(len(styles)-1)
-
-        for ix, this_style, this_layer in zip(index, styles, publishables):
-            if this_style == "":
-                this_layer_info = self.get_layer(
-                    layer_name=this_layer["name"].split(":")[1],
-                    workspace=this_layer["name"].split(":")[0]
-                )
-                styles[ix] = {
-                    "name" : this_layer_info["layer"]["defaultStyle"]["name"],
-                    "href" : this_layer_info["layer"]["defaultStyle"]["href"]}
-
         # add publishable & style for the new layer
         new_pub = {
             "name" : f"{layer_workspace}:{layer_name}",
@@ -1040,38 +1023,10 @@ class Geoserver:
         new_style = layer_info["layer"]["defaultStyle"]
         styles.append(new_style)
 
-        # build xml structure
-        layer_skeleton = ""
-        style_skeleton = ""
-        
-        for publishable in publishables:
-            layer_str = f"""
-                <published type="layer">
-                    <name>{publishable['name']}</name>
-                    <link>{publishable['href']}</link>
-                </published>
-            """
-            layer_skeleton += layer_str
-
-        for style in styles:
-            style_str = f"""
-                <style>
-                    <name>{style['name']}</name>
-                    <link>{style['href']}</link>
-                </style>
-            """
-            style_skeleton += style_str
-
-        data = f"""
-                <layerGroup>
-                    <publishables>
-                        {layer_skeleton}
-                    </publishables>
-                    <styles>
-                        {style_skeleton}
-                    </styles>
-                </layerGroup>
-                """
+        data = self._layergroup_definition_from_layers_and_styles(
+            publishables=publishables, 
+            styles=styles
+        )
 
         if layergroup_workspace == None:
             url = f"{self.service_url}/rest/layergroups/{layergroup_name}"

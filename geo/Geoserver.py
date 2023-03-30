@@ -1013,12 +1013,128 @@ class Geoserver:
         if isinstance(styles, str): # only 1 layer up to now
             styles = [styles]
 
+        # add publishable & style for the new layer
+        new_pub = {
+            "name" : f"{layer_workspace}:{layer_name}",
+            "href" : f"{self.service_url}/rest/workspaces/{layer_workspace}/layers/{layer_name}.json"
+        }
+        publishables.append(new_pub)
+
+        new_style = layer_info["layer"]["defaultStyle"]
+        styles.append(new_style)
+
+        data = self._layergroup_definition_from_layers_and_styles(
+            publishables=publishables, 
+            styles=styles
+        )
+
+        if layergroup_workspace == None:
+            url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+        else:
+            url = f"{self.service_url}/rest/workspaces/{layergroup_workspace}/layergroups/{layergroup_name}"
+
+        r = self._requests(
+            method="put",
+            url=url,
+            data=data,
+            headers={"content-type": "text/xml", "accept": "application/xml"},
+        )
+        if r.status_code == 200:
+            return
+        else:
+            raise GeoserverException(r.status_code, r.content)
+
+    def remove_layer_from_layergroup(
+        self,
+        layer_name: str,
+        layer_workspace:str,
+        layergroup_name:str,
+        layergroup_workspace: str = None
+    ) -> None:
+        """
+        Add remove the specified layer from an existing layer group and raise an exception if 
+        either the layer or layergroup doesn't exist, or the geoserver is unavailable.
+
+        Parameters
+        ----------
+        layer_name: str, required The name of the layer
+        layer_workspace: str, required The workspace the layer is located in
+        layergroup_workspace: str, optional The workspace the layergroup is located in
+        layergroup_name: str, required The name of the layer group
+        layergroup_workspace: str, optional The workspace the layergroup is located in
+        """
+
+        try: 
+            layergroup_info = self.get_layergroup(
+                layer_name=layergroup_name, workspace=layergroup_workspace
+                )
+            layer_info = self.get_layer(layer_name=layer_name, workspace=layer_workspace)
+        except Exception as e:
+            raise(e)
+
+        # build list of existing publishables & styles
+        publishables = layergroup_info["layerGroup"]["publishables"]["published"]
+        if isinstance(publishables, dict): # only 1 layer up to now
+            publishables = [publishables]
+
+        styles = layergroup_info["layerGroup"]["styles"]["style"]
+        if isinstance(styles, str): # only 1 layer up to now
+            styles = [styles]
+
+        layer_to_remove = f"{layer_workspace}:{layer_name}"
+
+        revised_set_of_publishables_and_styles = [
+            (pub,style) for (pub,style) in zip(
+            layergroup_info["layerGroup"]["publishables"]["published"], 
+            layergroup_info["layerGroup"]["styles"]["style"])
+            if pub["name"] != layer_to_remove
+        ]
+
+        revised_set_of_publishables = list(map(list, zip(*revised_set_of_publishables_and_styles)))[0]
+        revised_set_of_styles = list(map(list, zip(*revised_set_of_publishables_and_styles)))[1]
+
+        xml_payload = self._layergroup_definition_from_layers_and_styles(
+            publishables = revised_set_of_publishables,
+            styles = revised_set_of_styles
+        )
+
+        if layergroup_workspace == None:
+            url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
+        else:
+            url = f"{self.service_url}/rest/workspaces/{layergroup_workspace}/layergroups/{layergroup_name}"
+
+        r = self._requests(
+            method="put",
+            url=url,
+            data=xml_payload,
+            headers={"content-type": "text/xml", "accept": "application/xml"},
+        )
+        if r.status_code == 200:
+            return
+        else:
+            raise GeoserverException(r.status_code, r.content)
+
+    
+    def _layergroup_definition_from_layers_and_styles(self, publishables:list, styles: list) -> str:
+        """
+        Helper function for add_layer_to_layergroup and remove_layer_from_layergroup
+
+        Parameters
+        ----------
+        layer_name: str, required The name of the layer
+        layer_workspace: str, required The workspace the layer is located in
+
+        Returns
+        -------
+        Formatted xml request body for PUT layergroup
+        """
+
         # the get_layergroup method may return an empty string for style; 
         # so we get the default styles for each layer with no style information in the layergroup
         if len(styles) == 1:
             index = [0]
         else:
-            index = range(len(styles)-1)
+            index = range(len(styles))
 
         for ix, this_style, this_layer in zip(index, styles, publishables):
             if this_style == "":
@@ -1030,20 +1146,10 @@ class Geoserver:
                     "name" : this_layer_info["layer"]["defaultStyle"]["name"],
                     "href" : this_layer_info["layer"]["defaultStyle"]["href"]}
 
-        # add publishable & style for the new layer
-        new_pub = {
-            "name" : f"{layer_workspace}:{layer_name}",
-            "href" : f"{self.service_url}/rest/workspaces/{layer_workspace}/layers/{layer_name}.json"
-        }
-        publishables.append(new_pub)
-
-        new_style = layer_info["layer"]["defaultStyle"]
-        styles.append(new_style)
-
         # build xml structure
         layer_skeleton = ""
         style_skeleton = ""
-        
+
         for publishable in publishables:
             layer_str = f"""
                 <published type="layer">
@@ -1072,22 +1178,9 @@ class Geoserver:
                     </styles>
                 </layerGroup>
                 """
+        
+        return data
 
-        if layergroup_workspace == None:
-            url = f"{self.service_url}/rest/layergroups/{layergroup_name}"
-        else:
-            url = f"{self.service_url}/rest/workspaces/{layergroup_workspace}/layergroups/{layergroup_name}"
-
-        r = self._requests(
-            method="put",
-            url=url,
-            data=data,
-            headers={"content-type": "text/xml", "accept": "application/xml"},
-        )
-        if r.status_code == 200:
-            return
-        else:
-            raise GeoserverException(r.status_code, r.content)
 
 
     # _______________________________________________________________________________________________

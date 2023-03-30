@@ -119,6 +119,14 @@ You can create a layer group from layers that have been uploaded previously with
       layer_workspace = "my_space"
     )
 
+  # remove a layer
+    geo.remove_layer_from_layergroup(
+      layergroup_name = "my_fancy_layergroup",
+      layergroup_workspace = "my_space",
+      layer_name = "superfancy_layer",
+      layer_workspace = "my_space"
+    )
+
 
 Uploading and publishing styles
 -------------------------------

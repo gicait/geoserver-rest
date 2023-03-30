@@ -3,6 +3,10 @@ Change Log
 
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
+* New method `remove_layer_from_layergroup`
+
+``[v2.4.1 - 2023-01-14]``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 * New method `add_layer_to_layergroup` (see issue `#102 <https://github.com/gicait/geoserver-rest/issues/102>`)
 * Allow deletion of layergroups from workspaces (see issue `#100 <https://github.com/gicait/geoserver-rest/issues/100>`) and add unittests for the layergroup methods.
 * Fix json-bug in create_coveragestore method (see issue `#86 <https://github.com/gicait/geoserver-rest/issues/86>`)

@@ -2323,14 +2323,15 @@ class Geoserver:
         except Exception as e:
             raise Exception(e)
 
-    def create_user(self, username: str, password: str, enabled=True, service=None):
+    def create_user(self, username: str, password: str, enabled: bool = True, service=None):
         """
 
         Parameters
         ----------
         username : str
         password: str
-        user_service : str, optional
+        enabled: bool
+        service : str, optional
 
         Add a new user to the provided user/group service
         If no user/group service is provided, then the users is added to default user service
@@ -2343,7 +2344,7 @@ class Geoserver:
                 url += "service/{}/users/".format(service)
 
             data = "<user><userName>{}</userName><password>{}</password><enabled>{}</enabled></user>".format(
-                username, password, enabled
+                username, password, str(enabled).lower()
             )
             headers = {"content-type": "text/xml", "accept": "application/json"}
             r = requests.post(

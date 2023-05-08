@@ -1006,11 +1006,11 @@ class Geoserver:
 
         # build list of existing publishables & styles
         publishables = layergroup_info["layerGroup"]["publishables"]["published"]
-        if isinstance(publishables, dict): # only 1 layer up to now
+        if not isinstance(publishables, list): # only 1 layer up to now
             publishables = [publishables]
 
         styles = layergroup_info["layerGroup"]["styles"]["style"]
-        if isinstance(styles, str): # only 1 layer up to now
+        if not isinstance(styles, list): # only 1 layer up to now
             styles = [styles]
 
         # add publishable & style for the new layer
@@ -1074,11 +1074,11 @@ class Geoserver:
 
         # build list of existing publishables & styles
         publishables = layergroup_info["layerGroup"]["publishables"]["published"]
-        if isinstance(publishables, dict): # only 1 layer up to now
+        if not isinstance(publishables, list): # only 1 layer up to now
             publishables = [publishables]
 
         styles = layergroup_info["layerGroup"]["styles"]["style"]
-        if isinstance(styles, str): # only 1 layer up to now
+        if not isinstance(styles, list): # only 1 layer up to now
             styles = [styles]
 
         layer_to_remove = f"{layer_workspace}:{layer_name}"

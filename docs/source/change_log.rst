@@ -3,6 +3,7 @@ Change Log
 
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
+* Bugfixes for `add_layer_to_layergroup` and `remove_layer_from_layergroup`
 * New method `remove_layer_from_layergroup`
 
 ``[v2.4.1 - 2023-01-14]``

@@ -1974,6 +1974,7 @@ class Geoserver:
         pg_table: str,
         workspace: Optional[str] = None,
         title: Optional[str] = None,
+        advertised: Optional[bool] = True,
     ):
         """
 
@@ -1983,6 +1984,7 @@ class Geoserver:
         pg_table : str
         workspace : str, optional
         title : str, optional
+        advertised : bool, optional
 
         Returns
         -------
@@ -2003,8 +2005,12 @@ class Geoserver:
             )
 
             layer_xml = (
-                "<featureType><name>{}</name><title>{}</title></featureType>".format(
-                    pg_table, title
+                """<featureType>
+                        <name>{0}</name>
+                        <title>{1}</title>
+                        <advertised>{2}</advertised>
+                    </featureType>""".format(
+                    pg_table, title, advertised
                 )
             )
             headers = {"content-type": "text/xml"}

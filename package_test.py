@@ -102,3 +102,8 @@ Delete request
 others
 """
 # classified_xml('test', 'kamal', [4,5,3,12], color_ramp='hot')
+
+"""
+Security - ACL
+"""
+# geo.create_featured_layers_rule('tax', 'r', 'BIOTABLERO-FRONT')

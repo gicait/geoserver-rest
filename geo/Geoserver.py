@@ -393,6 +393,81 @@ class Geoserver:
         except Exception as e:
             raise e
 
+    def create_featured_layers_rule(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
+        """
+        Create a new security rule for either all workspaces or a subset of them based on the provided pattern.
+
+        Parameters
+        ----------
+        workspacePattern : str
+            workspace pattern. Apply the security rule to either all workspaces (using *) or 
+            a subset of them where pattern matches (contains) the workspace name.
+        permission : str
+            [r|w|a] is a placeholder for the permission type. 
+            r read-only access, w write access and a indicates full (read and write) access.
+        role : str
+            rol name
+        """
+
+        if role is None:
+            raise Exception("You must provide a role name")
+
+        workspacesRawData = self.get_workspaces()
+
+        if workspacesRawData == None:
+            raise Exception("There is not workpaces available")
+
+        workspaceList = workspacesRawData['workspaces']['workspace']
+
+        if workspacePattern != '*':
+            workspaceList = [
+                workspace for workspace in workspaceList if workspacePattern in workspace['name']]
+
+        if len(workspaceList) == 0:
+            raise Exception("The pattern does not match any workspace")
+
+        for workspace in workspaceList:
+            self.create_layer_rule(workspace['name'], '*', permission, role)
+
+    def create_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
+        """
+        Create a new security rule for the specified layer(s) within a workspace
+
+        Parameters
+        ----------
+        workspace : str
+            workspace name
+        layer : str,
+            layer name or * for all layers within the selected workspace
+        permission : str
+            [r|w| ] is a placeholder for the permission type. 
+            r read-only access, w write access and a indicates full (read and write) access.
+        role : str
+            rol name
+
+        Example: curl -v -u admin:geoserver -XPOST http://localhost:8080/geoserver/rest/security/acl/layers -H "accept: application/json" -H "content-type: application/xml" -d "<rules><rule resource=\"WORKSPACE_NAME.*.r\">ROL_NAME</rule></rules>"
+        """
+        try:
+            url = "{}/rest/security/acl/layers".format(self.service_url)
+            data = "<rules><rule resource='{}.{}.{}'>{}</rule></rules>".format(
+                workspace, layer, permission, role)
+            headers = {"content-type": "application/xml"}
+            r = requests.post(
+                url, data, auth=(self.username, self.password), headers=headers
+            )
+
+            if r.status_code == 200:
+                return "{} Rule created! Workspace: {} | Layer: {} | Permission: {} | Role: {} ".format(r.status_code, workspace, layer, permission, role)
+
+            if r.status_code == 409:
+                raise Exception("The rule already exist")
+
+            else:
+                raise Exception("The rule can not be created")
+
+        except Exception as e:
+            raise e
+
     def get_workspace(self, workspace: str):
         """
         Get workspace name if it exists.
@@ -443,7 +518,6 @@ class Geoserver:
         try:
             file_size = os.path.getsize(path)
 
-
             if layer_name:
                 file_name = layer_name
 
@@ -475,7 +549,8 @@ class Geoserver:
             c.perform()
 
             if c.getinfo(pycurl.HTTP_CODE) != 201:
-                raise Exception(f'Error code from Geoserver {c.getinfo(pycurl.RESPONSE_CODE)}')
+                raise Exception(
+                    f'Error code from Geoserver {c.getinfo(pycurl.RESPONSE_CODE)}')
         except Exception as e:
             raise e
         finally:

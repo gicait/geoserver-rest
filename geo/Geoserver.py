@@ -427,11 +427,13 @@ class Geoserver:
             raise Exception("The pattern does not match any workspace")
 
         for workspace in workspaceList:
-            self.create_layer_rule(workspace['name'], '*', permission, role)
+            res = self.create_update_layer_rule(
+                workspace['name'], '*', permission, role)
+            print(res)
 
-    def create_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
+    def create_update_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
         """
-        Create a new security rule for the specified layer(s) within a workspace
+        Create or update a security rule for the specified layer(s) within a workspace
 
         Parameters
         ----------
@@ -460,10 +462,48 @@ class Geoserver:
                 return "{} Rule created! Workspace: {} | Layer: {} | Permission: {} | Role: {} ".format(r.status_code, workspace, layer, permission, role)
 
             if r.status_code == 409:
-                raise Exception("The rule already exist")
+                return self.update_layer_rule(workspace, '*', permission, role)
 
             else:
-                raise Exception("The rule can not be created")
+                return Exception("The rule can not be created")
+
+        except Exception as e:
+            raise e
+
+    def update_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
+        """
+        Update a current security rule for the specified layer(s) within a workspace
+
+        Parameters
+        ----------
+        workspace : str
+            workspace name
+        layer : str,
+            layer name or * for all layers within the selected workspace
+        permission : str
+            [r|w| ] is a placeholder for the permission type. 
+            r read-only access, w write access and a indicates full (read and write) access.
+        role : str
+            rol name
+
+        Example: curl -v -u admin:geoserver -XPUT http://localhost:8080/geoserver/rest/security/acl/layers -H "accept: application/json" -H "content-type: application/xml" -d "<rules><rule resource=\"WORKSPACE_NAME.*.r\">ROL_NAME</rule></rules>"
+        """
+        try:
+            url = "{}/rest/security/acl/layers".format(self.service_url)
+            data = "<rules><rule resource='{}.{}.{}'>{}</rule></rules>".format(
+                workspace, layer, permission, role)
+            headers = {"content-type": "application/xml"}
+            r = requests.put(
+                url, data, auth=(self.username, self.password), headers=headers
+            )
+            if r.status_code == 200:
+                return "{} Rule updated! Workspace: {} | Layer: {} | Permission: {} | Role: {} ".format(r.status_code, workspace, layer, permission, role)
+
+            if r.status_code == 409:
+                return Exception("The rule can not be updated because it does not exist")
+
+            else:
+                return Exception("The rule can not be updated")
 
         except Exception as e:
             raise e

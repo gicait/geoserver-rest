@@ -393,7 +393,7 @@ class Geoserver:
         except Exception as e:
             raise e
 
-    def upsert_featured_layers_rule(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
+    def upsert_workspaces_rules(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
         """
         Create a new security rule for either all workspaces or a subset of them based on the provided pattern,
         or update an existing security rule if it already exists.

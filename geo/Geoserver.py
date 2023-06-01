@@ -393,20 +393,21 @@ class Geoserver:
         except Exception as e:
             raise e
 
-    def create_featured_layers_rule(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
+    def upsert_featured_layers_rule(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
         """
-        Create a new security rule for either all workspaces or a subset of them based on the provided pattern.
+        Create a new security rule for either all workspaces or a subset of them based on the provided pattern,
+        or update an existing security rule if it already exists.
 
         Parameters
         ----------
         workspacePattern : str
-            workspace pattern. Apply the security rule to either all workspaces (using *) or 
-            a subset of them where pattern matches (contains) the workspace name.
+            Workspace pattern. Apply the security rule to either all workspaces (using *) or 
+            a subset of them where the pattern matches (contains) the workspace name.
         permission : str
             [r|w|a] is a placeholder for the permission type. 
-            r read-only access, w write access and a indicates full (read and write) access.
+            r read-only access, w write access, and a indicates full (read and write) access.
         role : str
-            rol name
+            Role name
         """
 
         if role is None:
@@ -414,8 +415,8 @@ class Geoserver:
 
         workspacesRawData = self.get_workspaces()
 
-        if workspacesRawData == None:
-            raise Exception("There is not workpaces available")
+        if workspacesRawData is None:
+            raise Exception("There are no workspaces available")
 
         workspaceList = workspacesRawData['workspaces']['workspace']
 
@@ -426,12 +427,27 @@ class Geoserver:
         if len(workspaceList) == 0:
             raise Exception("The pattern does not match any workspace")
 
-        for workspace in workspaceList:
-            res = self.create_update_layer_rule(
-                workspace['name'], '*', permission, role)
-            print(res)
+        created = 0
+        updated = 0
 
-    def create_update_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
+        for workspace in workspaceList:
+            try:
+                self.create_layer_rule(workspace['name'], '*', permission, role)
+                created += 1
+            except Exception as create_exception:
+                try:
+                    message, error_data = create_exception.args
+                    status_code = error_data['status_code']
+                    if status_code == 409:
+                        self.update_layer_rule(workspace['name'], '*', permission, role)
+                        updated += 1
+                except Exception as update_exception:
+                    print(
+                        f"Failed to create or update rule for Workspace: {workspace['name']} | Error: {str(update_exception)}")
+
+        return "Rules created: {} | Rules updated: {}".format(created, updated)
+
+    def create_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
         """
         Create or update a security rule for the specified layer(s) within a workspace
 
@@ -462,10 +478,13 @@ class Geoserver:
                 return "{} Rule created! Workspace: {} | Layer: {} | Permission: {} | Role: {} ".format(r.status_code, workspace, layer, permission, role)
 
             if r.status_code == 409:
-                return self.update_layer_rule(workspace, '*', permission, role)
+                error_data = {
+                    'status_code': r.status_code,
+                }
+                raise Exception("The rule already exists!", error_data)
 
             else:
-                return Exception("The rule can not be created")
+                raise Exception("The rule can not be created")
 
         except Exception as e:
             raise e
@@ -500,10 +519,10 @@ class Geoserver:
                 return "{} Rule updated! Workspace: {} | Layer: {} | Permission: {} | Role: {} ".format(r.status_code, workspace, layer, permission, role)
 
             if r.status_code == 409:
-                return Exception("The rule can not be updated because it does not exist")
+                raise Exception("The rule can not be updated because it does not exist")
 
             else:
-                return Exception("The rule can not be updated")
+                raise Exception("The rule can not be updated")
 
         except Exception as e:
             raise e

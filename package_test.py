@@ -106,4 +106,4 @@ others
 """
 Security - ACL
 """
-# geo.create_featured_layers_rule('tax', 'r', 'BIOTABLERO-FRONT')
+# geo.upsert_workspaces_rules('tax', 'r', 'BIOTABLERO-FRONT')

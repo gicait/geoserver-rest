@@ -396,7 +396,7 @@ class Geoserver:
     def upsert_workspaces_rules(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
         """
         Create a new security rule for either all workspaces or a subset of them based on the provided pattern,
-        or update an existing security rule if it already exists.
+        or update an existing security rule if it already exists. One role can only be set in one rule.
 
         Parameters
         ----------
@@ -492,6 +492,9 @@ class Geoserver:
     def update_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
         """
         Update a current security rule for the specified layer(s) within a workspace
+        TODO: Currently, it is not possible to add more than one role to a rule within the same 
+        workspace. The expected behavior is to have the option to not only replace the rule but also
+        create or remove it.
 
         Parameters
         ----------

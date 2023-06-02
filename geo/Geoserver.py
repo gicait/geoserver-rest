@@ -397,7 +397,7 @@ class Geoserver:
         """
         Create a new security rule for either all workspaces or a subset of them based on the 
         provided pattern, or update an existing security rule if it already exists.
-        Every rule only accepts one role, and one role could be set in more than one rule.
+        Currently if a rule already exists,the update will replace the role in it.
 
         Parameters
         ----------
@@ -450,7 +450,7 @@ class Geoserver:
 
     def create_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
         """
-        Create or update a security rule for the specified layer(s) within a workspace
+        Create a security rule for the specified layer(s) within a workspace
 
         Parameters
         ----------

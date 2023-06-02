@@ -493,8 +493,8 @@ class Geoserver:
         """
         Update a current security rule for the specified layer(s) within a workspace
         TODO: Currently, it is not possible to add more than one role to a rule within the same 
-        workspace. The expected behavior is to have the option to not only replace the rule but also
-        create or remove it.
+        workspace. The expected behavior is to be able to replace, add or remove the role, keeping 
+        the rule as it is.
 
         Parameters
         ----------

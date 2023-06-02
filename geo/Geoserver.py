@@ -395,8 +395,9 @@ class Geoserver:
 
     def upsert_workspaces_rules(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
         """
-        Create a new security rule for either all workspaces or a subset of them based on the provided pattern,
-        or update an existing security rule if it already exists.
+        Create a new security rule for either all workspaces or a subset of them based on the 
+        provided pattern, or update an existing security rule if it already exists.
+        Every rule only accepts one role, and one role could be set in more than one rule.
 
         Parameters
         ----------

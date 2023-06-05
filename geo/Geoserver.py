@@ -393,6 +393,144 @@ class Geoserver:
         except Exception as e:
             raise e
 
+    def upsert_workspaces_rules(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
+        """
+        Create a new security rule for either all workspaces or a subset of them based on the 
+        provided pattern, or update an existing security rule if it already exists.
+        Currently if a rule already exists,the update will replace the role in it.
+
+        Parameters
+        ----------
+        workspacePattern : str
+            Workspace pattern. Apply the security rule to either all workspaces (using *) or 
+            a subset of them where the pattern matches (contains) the workspace name.
+        permission : str
+            [r|w|a] is a placeholder for the permission type. 
+            r read-only access, w write access, and a indicates full (read and write) access.
+        role : str
+            Role name
+        """
+
+        if role is None:
+            raise Exception("You must provide a role name")
+
+        workspacesRawData = self.get_workspaces()
+
+        if workspacesRawData is None:
+            raise Exception("There are no workspaces available")
+
+        workspaceList = workspacesRawData['workspaces']['workspace']
+
+        if workspacePattern != '*':
+            workspaceList = [
+                workspace for workspace in workspaceList if workspacePattern in workspace['name']]
+
+        if len(workspaceList) == 0:
+            raise Exception("The pattern does not match any workspace")
+
+        created = 0
+        updated = 0
+
+        for workspace in workspaceList:
+            try:
+                self.create_layer_rule(workspace['name'], '*', permission, role)
+                created += 1
+            except Exception as create_exception:
+                try:
+                    message, error_data = create_exception.args
+                    status_code = error_data['status_code']
+                    if status_code == 409:
+                        self.update_layer_rule(workspace['name'], '*', permission, role)
+                        updated += 1
+                except Exception as update_exception:
+                    print(
+                        f"Failed to create or update rule for Workspace: {workspace['name']} | Error: {str(update_exception)}")
+
+        return "Rules created: {} | Rules updated: {}".format(created, updated)
+
+    def create_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
+        """
+        Create a security rule for the specified layer(s) within a workspace
+
+        Parameters
+        ----------
+        workspace : str
+            workspace name
+        layer : str,
+            layer name or * for all layers within the selected workspace
+        permission : str
+            [r|w| ] is a placeholder for the permission type. 
+            r read-only access, w write access and a indicates full (read and write) access.
+        role : str
+            rol name
+
+        Example: curl -v -u admin:geoserver -XPOST http://localhost:8080/geoserver/rest/security/acl/layers -H "accept: application/json" -H "content-type: application/xml" -d "<rules><rule resource=\"WORKSPACE_NAME.*.r\">ROL_NAME</rule></rules>"
+        """
+        try:
+            url = "{}/rest/security/acl/layers".format(self.service_url)
+            data = "<rules><rule resource='{}.{}.{}'>{}</rule></rules>".format(
+                workspace, layer, permission, role)
+            headers = {"content-type": "application/xml"}
+            r = requests.post(
+                url, data, auth=(self.username, self.password), headers=headers
+            )
+
+            if r.status_code == 200:
+                return "{} Rule created! Workspace: {} | Layer: {} | Permission: {} | Role: {} ".format(r.status_code, workspace, layer, permission, role)
+
+            if r.status_code == 409:
+                error_data = {
+                    'status_code': r.status_code,
+                }
+                raise Exception("The rule already exists!", error_data)
+
+            else:
+                raise Exception("The rule can not be created")
+
+        except Exception as e:
+            raise e
+
+    def update_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
+        """
+        Update a current security rule for the specified layer(s) within a workspace
+        TODO: Currently, it is not possible to add more than one role to a rule within the same 
+        workspace. The expected behavior is to be able to replace, add or remove the role, keeping 
+        the rule as it is.
+
+        Parameters
+        ----------
+        workspace : str
+            workspace name
+        layer : str,
+            layer name or * for all layers within the selected workspace
+        permission : str
+            [r|w| ] is a placeholder for the permission type. 
+            r read-only access, w write access and a indicates full (read and write) access.
+        role : str
+            rol name
+
+        Example: curl -v -u admin:geoserver -XPUT http://localhost:8080/geoserver/rest/security/acl/layers -H "accept: application/json" -H "content-type: application/xml" -d "<rules><rule resource=\"WORKSPACE_NAME.*.r\">ROL_NAME</rule></rules>"
+        """
+        try:
+            url = "{}/rest/security/acl/layers".format(self.service_url)
+            data = "<rules><rule resource='{}.{}.{}'>{}</rule></rules>".format(
+                workspace, layer, permission, role)
+            headers = {"content-type": "application/xml"}
+            r = requests.put(
+                url, data, auth=(self.username, self.password), headers=headers
+            )
+            if r.status_code == 200:
+                return "{} Rule updated! Workspace: {} | Layer: {} | Permission: {} | Role: {} ".format(r.status_code, workspace, layer, permission, role)
+
+            if r.status_code == 409:
+                raise Exception("The rule can not be updated because it does not exist")
+
+            else:
+                raise Exception("The rule can not be updated")
+
+        except Exception as e:
+            raise e
+
     def get_workspace(self, workspace: str):
         """
         Get workspace name if it exists.
@@ -443,7 +581,6 @@ class Geoserver:
         try:
             file_size = os.path.getsize(path)
 
-
             if layer_name:
                 file_name = layer_name
 
@@ -475,7 +612,8 @@ class Geoserver:
             c.perform()
 
             if c.getinfo(pycurl.HTTP_CODE) != 201:
-                raise Exception(f'Error code from Geoserver {c.getinfo(pycurl.RESPONSE_CODE)}')
+                raise Exception(
+                    f'Error code from Geoserver {c.getinfo(pycurl.RESPONSE_CODE)}')
         except Exception as e:
             raise e
         finally:

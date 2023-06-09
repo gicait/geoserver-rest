@@ -393,11 +393,11 @@ class Geoserver:
         except Exception as e:
             raise e
 
-    def upsert_workspaces_rules(self, workspacePattern: str = '*', permission: str = 'r', role: str = None):
+    def upsert_workspaces_rules(self, workspacePattern: str = '*', permission: str = 'r', role: str = None, mode: str = 'R'):
         """
         Create a new security rule for either all workspaces or a subset of them based on the 
         provided pattern, or update an existing security rule if it already exists.
-        Currently if a rule already exists,the update will replace the role in it.
+        Every rule accepts multiple roles, and one role could be set in more than one rule.
 
         Parameters
         ----------
@@ -409,6 +409,8 @@ class Geoserver:
             r read-only access, w write access, and a indicates full (read and write) access.
         role : str
             Role name
+        mode : str
+            Update mode, defines how to update the rol. R Replace existing role, A Add role, D Delete rol
         """
 
         if role is None:
@@ -430,23 +432,55 @@ class Geoserver:
 
         created = 0
         updated = 0
+        deleted = 0
+
+        rulesList = self.get_layer_rules()
 
         for workspace in workspaceList:
             try:
-                self.create_layer_rule(workspace['name'], '*', permission, role)
-                created += 1
+                if mode != "D":
+                    self.create_layer_rule(workspace['name'], '*', permission, role)
+                    created += 1
+                else:
+                    error_data = {
+                        'status_code': 409,
+                    }
+                    raise Exception(
+                        "It is not possible to create a rule in Delete mode", error_data)
             except Exception as create_exception:
-                try:
-                    message, error_data = create_exception.args
-                    status_code = error_data['status_code']
-                    if status_code == 409:
-                        self.update_layer_rule(workspace['name'], '*', permission, role)
-                        updated += 1
-                except Exception as update_exception:
-                    print(
-                        f"Failed to create or update rule for Workspace: {workspace['name']} | Error: {str(update_exception)}")
+                message, error_data = create_exception.args
+                status_code = error_data['status_code']
+                rule = workspace['name'] + '.' + '*' + '.' + permission
+                prevRole = rulesList.get(rule, None)
+                newRole = role
 
-        return "Rules created: {} | Rules updated: {}".format(created, updated)
+                if prevRole is None:
+                    continue
+
+                if mode == "A":
+                    if prevRole != role:
+                        newRole = ",".join([prevRole, role])
+                elif mode == "D":
+                    if role == prevRole:
+                        self.delete_layer_rule(rule)
+                        deleted += 1
+                        continue
+                    elif role + "," in prevRole:
+                        newRole = prevRole.replace(role + ",", "")
+                    elif "," + role in prevRole:
+                        newRole = prevRole.replace("," + role, "")
+                    else:
+                        continue
+
+                if status_code == 409:
+                    try:
+                        self.update_layer_rule(
+                            workspace['name'], '*', permission, newRole)
+                        updated += 1
+                    except Exception as update_exception:
+                        print(
+                            f"Failed to update rule for Workspace: {workspace['name']} | Error: {str(update_exception)}")
+        return "Rules created: {} | Rules updated: {} | Rules deleted: {}".format(created, updated, deleted)
 
     def create_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
         """
@@ -493,9 +527,6 @@ class Geoserver:
     def update_layer_rule(self, workspace: str, layer: str, permission: str, role: str):
         """
         Update a current security rule for the specified layer(s) within a workspace
-        TODO: Currently, it is not possible to add more than one role to a rule within the same 
-        workspace. The expected behavior is to be able to replace, add or remove the role, keeping 
-        the rule as it is.
 
         Parameters
         ----------
@@ -504,7 +535,7 @@ class Geoserver:
         layer : str,
             layer name or * for all layers within the selected workspace
         permission : str
-            [r|w| ] is a placeholder for the permission type. 
+            [r|w|a] is a placeholder for the permission type. 
             r read-only access, w write access and a indicates full (read and write) access.
         role : str
             rol name
@@ -530,6 +561,44 @@ class Geoserver:
 
         except Exception as e:
             raise e
+
+    def delete_layer_rule(self, rule: str = None):
+        """
+        Delete a specific layer rule
+        Parameters
+        ----------
+        role : str
+            single rule to be deleted. Must be in the format: <workspace>.<layer>.<permission>
+        """
+
+        if rule is None:
+            raise Exception("You must provide a rule")
+
+        try:
+            url = "{}/rest/security/acl/layers/{}".format(self.service_url, rule)
+            r = requests.delete(url, auth=(self.username, self.password))
+            if r.status_code == 200:
+                return "{} Rule deleted! Rule: {}".format(r.status_code, rule)
+            else:
+                return None
+
+        except Exception as e:
+            return "Error: {}".format(e)
+
+    def get_layer_rules(self):
+        """
+        Get all layer rules
+        """
+        try:
+            url = "{}/rest/security/acl/layers.json".format(self.service_url)
+            r = requests.get(url, auth=(self.username, self.password))
+            if r.status_code == 200:
+                return r.json()
+            else:
+                return None
+
+        except Exception as e:
+            return "Error: {}".format(e)
 
     def get_workspace(self, workspace: str):
         """

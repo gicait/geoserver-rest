@@ -1479,6 +1479,49 @@ class Geoserver:
             return r.status_code
         else:
             raise GeoserverException(r.status_code, r.content)
+        
+    def publish_additional_styles(
+        self,
+        layer_name: str,
+        style_names: list,
+        workspace: str,
+    ):
+        """Publish additional styles of layer to geoserver.
+
+        Parameters
+        ----------
+        layer_name : str
+        style_names : list  eg:['style_1','style_2','style_3']
+        workspace : str
+
+        Notes
+        -----
+        The coverage store will be created automatically as the same name as the raster layer name.
+        input parameters: the parameters connecting geoserver (user,password, url and workspace name),
+        the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type.
+
+        """
+        styles_xml=''
+        for style_name in style_names:
+            styles_xml+=f'<style><name>{style_name}</name></style>'
+                
+        headers = {"content-type": "text/xml"}
+        url = "{}/rest/layers/{}:{}".format(self.service_url, workspace, layer_name)
+        style_xml = (
+            "<layer><styles>{}</styles></layer>".format(
+                styles_xml
+            )
+        )
+        r = self._requests(
+            "put",
+            url,
+            data=style_xml,
+            headers=headers,
+        )
+        if r.status_code == 200:
+            return r.status_code
+        else:
+            raise GeoserverException(r.status_code, r.content)
 
     def delete_style(self, style_name: str, workspace: Optional[str] = None):
         """

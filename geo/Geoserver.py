@@ -1785,7 +1785,7 @@ class Geoserver:
                 auth=(self.username, self.password),
                 headers=headers,
             )
-        if r.status_code in [200, 201]:
+        if r.status_code in [200, 201, 202]:
             return "The shapefile datastore created successfully!"
         else:
             raise GeoserverException(r.status_code, r.content)

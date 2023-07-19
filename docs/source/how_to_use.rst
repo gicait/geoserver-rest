@@ -333,7 +333,7 @@ Some get request examples
     workspace = geo.get_workspaces(workspace='workspace_name')
 
     # get default workspace
-    dw = geo.get_default_wokspace(workspace='workspace_name')
+    dw = geo.get_default_wokspace()
 
     # get all the workspaces
     workspaces = geo.get_workspaces()

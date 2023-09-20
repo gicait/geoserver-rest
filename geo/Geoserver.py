@@ -350,8 +350,7 @@ class Geoserver:
         file_type: str = "GeoTIFF",
         content_type: str = "image/tiff",
     ):
-        """
-        Creates the coveragestore; Data will uploaded to the server.
+        """Creates the coveragestore; Data will uploaded to the server.
 
         Parameters
         ----------
@@ -367,6 +366,7 @@ class Geoserver:
         -----
         the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
         """
+
         if path is None:
             raise Exception("You must provide the full path to the raster")
 
@@ -1104,8 +1104,7 @@ class Geoserver:
         workspace: Optional[str] = None,
         sld_version: str = "1.0.0",
     ):
-        """
-
+        """Uploads a style file to geoserver.
         Parameters
         ----------
         path : str
@@ -1169,7 +1168,7 @@ class Geoserver:
         cmap_type: str = "ramp",
         number_of_classes: int = 5,
     ):
-        """
+        """Dynamically create style for raster.
 
         Parameters
         ----------
@@ -1177,8 +1176,7 @@ class Geoserver:
         style_name : str, optional
         workspace : str
         color_ramp : str
-        cmap_type : str
-            # TODO: This should be a set of the available options : {"ramp", "linear", ... }
+        cmap_type : str TODO: This should be a set of the available options : {"ramp", "linear", ... }
         number_of_classes : int
         overwrite : bool
 
@@ -1188,6 +1186,7 @@ class Geoserver:
         This function will dynamically create the style file for raster.
         Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determines the number of class, min for minimum value of the raster, max for the max value of raster
         """
+
         raster = raster_value(raster_path)
         min_value = raster["min"]
         max_value = raster["max"]
@@ -1697,6 +1696,7 @@ class Geoserver:
         -----
         If you have PostGIS datastore, please use create_featurestore function
         """
+
         if workspace is None:
             workspace = "default"
 
@@ -1754,6 +1754,7 @@ class Geoserver:
         -----
         The layer name will be assigned according to the shp name
         """
+
         if path is None:
             raise Exception("You must provide a full path to shapefile")
 

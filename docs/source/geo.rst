@@ -12,7 +12,7 @@ The ``Geoserver`` class
 
 
 The ``Style`` functions
-----------------
+------------------------
 
 .. automodule:: geo.Style
    :members:

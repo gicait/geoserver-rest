@@ -9,3 +9,4 @@ sphinxcontrib-openapi==0.7.0
 geopandas
 seaborn
 requests
+xmltodict

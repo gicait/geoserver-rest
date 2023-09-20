@@ -5,7 +5,7 @@ Python API Reference
 The ``Geoserver`` class
 ------------------------
 
-.. autoclass:: geo.Geoserver.Geoserver
+.. automodule:: geo.Geoserver
    :members:
    :undoc-members:
    :show-inheritance:

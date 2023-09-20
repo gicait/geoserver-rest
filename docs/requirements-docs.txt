@@ -6,6 +6,6 @@ m2r==0.2.1
 mistune==2.0.3
 sphinxcontrib-httpdomain==1.7.0
 sphinxcontrib-openapi==0.7.0
-gdal
+geopandas
 seaborn
 request

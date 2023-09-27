@@ -1798,8 +1798,11 @@ class Geoserver:
         workspace: Optional[str] = None,
         title: Optional[str] = None,
         advertised: Optional[bool] = True,
+        abstract: Optional[str] = None,
+        keywords: Optional[List[str]] = None,
     ):
         """
+        Publish a featurestore to geoserver.
 
         Parameters
         ----------
@@ -1808,6 +1811,8 @@ class Geoserver:
         workspace : str, optional
         title : str, optional
         advertised : bool, optional
+        abstract : str, optional
+        keywords : list, optional
 
         Returns
         -------
@@ -1826,13 +1831,21 @@ class Geoserver:
             self.service_url, workspace, store_name
         )
 
-        layer_xml = """<featureType>
-                    <name>{}</name>
-                    <title>{}</title>
-                    <advertised>{}</advertised>
-                </featureType>""".format(
-            pg_table, title, advertised
-        )
+        abstract_xml = f"<abstract>{abstract}</abstract>" if abstract else ""
+        keywords_xml = ""
+        if keywords:
+            keywords_xml = "<keywords>"
+            for keyword in keywords:
+                keywords_xml += f"<string>{keyword}</string>"
+            keywords_xml += "</keywords>"
+
+        layer_xml = f"""<featureType>
+                    <name>{pg_table}</name>
+                    <title>{title}</title>
+                    <advertised>{advertised}</advertised>
+                    {abstract_xml}
+                    {keywords_xml}
+                </featureType>"""
         headers = {"content-type": "text/xml"}
 
         r = requests.post(
@@ -1853,6 +1866,8 @@ class Geoserver:
         pg_table: str,
         name: str,
         title: str,
+        abstract: Optional[str] = None,
+        keywords: Optional[List[str]] = None,
     ):
         """
 
@@ -1863,6 +1878,8 @@ class Geoserver:
         pg_table : str
         name : str
         title : str
+        abstract : str, optional
+        keywords : list, optional
 
         Returns
         -------
@@ -1877,12 +1894,20 @@ class Geoserver:
             self.service_url, workspace, store_name, pg_table
         )
 
-        layer_xml = """<featureType>
-                    <name>{}</name>
-                    <title>{}</title>
-                    </featureType>""".format(
-            name, title
-        )
+        # Create XML for abstract and keywords
+        abstract_xml = f"<abstract>{abstract}</abstract>" if abstract else ""
+        keywords_xml = ""
+        if keywords:
+            keywords_xml = "<keywords>"
+            for keyword in keywords:
+                keywords_xml += f"<string>{keyword}</string>"
+            keywords_xml += "</keywords>"
+
+        layer_xml = f"""<featureType>
+                    <name>{name}</name>
+                    <title>{title}</title>
+                    {abstract_xml}{keywords_xml}
+                    </featureType>"""
         headers = {"content-type": "text/xml"}
 
         r = requests.put(

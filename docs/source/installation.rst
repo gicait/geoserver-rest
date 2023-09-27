@@ -31,11 +31,11 @@ One way is install the wheel directly from the `Geospatial library wheels for Py
 .. code-block:: shell
 
     # For Python3.10 on Windows 64-bit systems
-    $ pip install https://github.com/cgohlke/geospatial-wheels/releases/download/<release_version>/GDAL-3.7.1-cp310-cp310-win_amd64.whl
+    $ pip.exe install https://github.com/cgohlke/geospatial-wheels/releases/download/<release_version>/GDAL-3.7.1-cp310-cp310-win_amd64.whl
 
-Another way is to use the OSGeo4W network installer binary package available at: https://trac.osgeo.org/osgeo4w/.
+Another way is to use the GDAL network installer binary package available at: `OSGeo4W <https://trac.osgeo.org/osgeo4w/>`_.
 
-Now you can then install the library using pip install command:
+Now you can then install ``geoserver-rest`` library with ``pip``:
 
 .. code-block:: shell
 
@@ -48,9 +48,9 @@ For macOS, we suggest using the `homebrew` package manager to install ``gdal``. 
 
 .. code-block:: shell
 
-    brew update
-    brew install gdal
-    pip3 install pygdal=="$(gdalinfo --version | awk '{print $2}' | sed s'/.$//')"
+    $ brew update
+    $ brew install gdal
+    $ pip3 install pygdal=="$(gdalinfo --version | awk '{print $2}' | sed s'/.$//')"
 
 Linux installation
 ------------------
@@ -64,7 +64,7 @@ For Ubuntu specifically, we suggest installing ``gdal`` from the ``ubuntugis`` P
     $ sudo apt upgrade -y
     $ sudo apt install gdal-bin libgdal-dev
 
-For other versions of linux, simply use your package manager to install ``gdal``.
+For other versions of Linux, simply use your package manager to install ``gdal``.
 
 .. code-block:: shell
 
@@ -74,12 +74,12 @@ For other versions of linux, simply use your package manager to install ``gdal``
     $ sudo yum install gdal gdal-devel
     # Arch, Manjaro, etc.
     $ sudo pacman -S gdal
-    # Void
+    # Void Linux
     $ sudo xbps-install -S libgdal libgdal-dev
 
-Now the ``pygdal`` and ``geoserver-rest`` library can be installed using pip install command:
+Now the ``pygdal`` and ``geoserver-rest`` libraries can be installed using ``pip``:
 
 .. code-block:: shell
 
-    $ pip install pygdal=="`gdal-config --version`.*"
+    $ pip install pygdal=="$(gdal-config --version).*"
     $ pip install geoserver-rest

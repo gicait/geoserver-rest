@@ -75,7 +75,7 @@ For other versions of Linux, simply use your package manager to install ``gdal``
     # Arch, Manjaro, etc.
     $ sudo pacman -S gdal
     # Void Linux
-    $ sudo xbps-install -S libgdal libgdal-dev
+    $ sudo xbps-install -S libgdal libgdal-devel
 
 Now the ``pygdal`` and ``geoserver-rest`` libraries can be installed using ``pip``:
 

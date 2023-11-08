@@ -1926,6 +1926,7 @@ class Geoserver:
         name: str,
         store_name: str,
         sql: str,
+        key_column: Optional[str] = None,
         geom_name: str = "geom",
         geom_type: str = "Geometry",
         srid: Optional[int] = 4326,
@@ -1938,16 +1939,16 @@ class Geoserver:
         name : str
         store_name : str
         sql : str
-        geom_name : str
-        geom_type : str
+        key_column : str, optional
+        geom_name : str, optional
+        geom_type : str, optional
         workspace : str, optional
 
         """
         if workspace is None:
             workspace = "default"
 
-        layer_xml = """<featureType>
-        <name>{0}</name>
+        layer_xml = """<name>{0}</name>
         <enabled>true</enabled>
         <namespace>
             <name>{4}</name>
@@ -1967,20 +1968,29 @@ class Geoserver:
                     </geometry>
                 </virtualTable>
             </entry>
-        </metadata>
-        </featureType>""".format(
+        </metadata>""".format(
             name, sql, geom_name, geom_type, workspace, srid
         )
 
+        # issue #87
+        if key_column is not None:
+            layer_xml += """<keyColumn>{}</keyColumn>""".format(key_column)
+
+        # final xml structure to post
+        layer_xml_post = """<featureType>{}</featureType>""".format(layer_xml)
+
+        # rest API url
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
             self.service_url, workspace, store_name
         )
 
+        # headers
         headers = {"content-type": "text/xml"}
 
+        # request
         r = requests.post(
             url,
-            data=layer_xml,
+            data=layer_xml_post,
             auth=(self.username, self.password),
             headers=headers,
         )

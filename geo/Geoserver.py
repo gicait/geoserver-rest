@@ -1948,7 +1948,15 @@ class Geoserver:
         if workspace is None:
             workspace = "default"
 
-        layer_xml = """<name>{0}</name>
+        # issue #87
+        if key_column is not None:
+            key_column_xml = """<keyColumn>{}</keyColumn>""".format(key_column)
+
+        else:
+            key_column_xml = """"""
+
+        layer_xml = """<featureType>
+        <name>{0}</name>
         <enabled>true</enabled>
         <namespace>
             <name>{4}</name>
@@ -1965,19 +1973,13 @@ class Geoserver:
                         <name>{2}</name>
                         <type>{3}</type>
                         <srid>{5}</srid>
-                    </geometry>
+                    </geometry>{6}
                 </virtualTable>
             </entry>
-        </metadata>""".format(
-            name, sql, geom_name, geom_type, workspace, srid
+        </metadata>
+        </featureType>""".format(
+            name, sql, geom_name, geom_type, workspace, srid, key_column_xml
         )
-
-        # issue #87
-        if key_column is not None:
-            layer_xml += """<keyColumn>{}</keyColumn>""".format(key_column)
-
-        # final xml structure to post
-        layer_xml_post = """<featureType>{}</featureType>""".format(layer_xml)
 
         # rest API url
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
@@ -1990,7 +1992,7 @@ class Geoserver:
         # request
         r = requests.post(
             url,
-            data=layer_xml_post,
+            data=layer_xml,
             auth=(self.username, self.password),
             headers=headers,
         )

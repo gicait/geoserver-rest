@@ -611,10 +611,10 @@ class Geoserver:
 
         supported_modes: Set = {
             "single",
-            "opaque container",
-            "named tree",
-            "container tree",
-            "earth observation tree",
+            "opaque",
+            "named",
+            "container",
+            "eo",
         }
         supported_formats: Set = {"html", "json", "xml"}
 

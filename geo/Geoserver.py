@@ -642,19 +642,23 @@ class Geoserver:
         else:
             for layer in layers:
                 # check if it is valid in geoserver
-
-                if (
+                try:
+                    # Layer check
                     self.get_layer(
                         layer_name=layer,
                         workspace=workspace if workspace is not None else None,
                     )
-                    is not None
-                ):
-                    ...
-                else:
-                    raise Exception(
-                        f"Layer: {layer} is not a valid layer in the Geoserver instance"
-                    )
+                except GeoserverException:
+                    try:
+                        # Layer group check
+                        self.get_layergroup(
+                            layer_name=layer,
+                            workspace=workspace if workspace is not None else None,
+                        )
+                    except GeoserverException:
+                        raise Exception(
+                            f"Layer: {layer} is not a valid layer in the Geoserver instance"
+                        )
 
         skeleton = ""
 
@@ -683,8 +687,18 @@ class Geoserver:
         layers_xml_list: List[str] = []
 
         for layer in layers:
+            published_type = "layer"
+            try:
+                # Layer check
+                self.get_layer(
+                    layer_name=layer,
+                    workspace=workspace if workspace is not None else None,
+                )
+            except GeoserverException: # It's a layer group
+                published_type = "layerGroup"
+
             layers_xml_list.append(
-                f"""<published type="layer">
+                f"""<published type="{published_type}">
                             <name>{layer}</name>
                             <link>{self.service_url}/layers/{layer}.xml</link>
                         </published>

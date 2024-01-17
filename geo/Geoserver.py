@@ -642,19 +642,23 @@ class Geoserver:
         else:
             for layer in layers:
                 # check if it is valid in geoserver
-
-                if (
+                try:
+                    # Layer check
                     self.get_layer(
                         layer_name=layer,
                         workspace=workspace if workspace is not None else None,
                     )
-                    is not None
-                ):
-                    ...
-                else:
-                    raise Exception(
-                        f"Layer: {layer} is not a valid layer in the Geoserver instance"
-                    )
+                except GeoserverException:
+                    try:
+                        # Layer group check
+                        self.get_layergroup(
+                            layer_name=layer,
+                            workspace=workspace if workspace is not None else None,
+                        )
+                    except GeoserverException:
+                        raise Exception(
+                            f"Layer: {layer} is not a valid layer in the Geoserver instance"
+                        )
 
         skeleton = ""
 
@@ -683,8 +687,18 @@ class Geoserver:
         layers_xml_list: List[str] = []
 
         for layer in layers:
+            published_type = "layer"
+            try:
+                # Layer check
+                self.get_layer(
+                    layer_name=layer,
+                    workspace=workspace if workspace is not None else None,
+                )
+            except GeoserverException: # It's a layer group
+                published_type = "layerGroup"
+
             layers_xml_list.append(
-                f"""<published type="layer">
+                f"""<published type="{published_type}">
                             <name>{layer}</name>
                             <link>{self.service_url}/layers/{layer}.xml</link>
                         </published>
@@ -1800,6 +1814,7 @@ class Geoserver:
         advertised: Optional[bool] = True,
         abstract: Optional[str] = None,
         keywords: Optional[List[str]] = None,
+        cqlfilter: Optional[str] = None
     ):
         """
         Publish a featurestore to geoserver.
@@ -1813,6 +1828,7 @@ class Geoserver:
         advertised : bool, optional
         abstract : str, optional
         keywords : list, optional
+        cqlfilter : str, optional
 
         Returns
         -------
@@ -1839,12 +1855,14 @@ class Geoserver:
                 keywords_xml += f"<string>{keyword}</string>"
             keywords_xml += "</keywords>"
 
+        cqlfilter_xml = f"<cqlFilter>{cqlfilter}</cqlFilter>" if cqlfilter else ""
         layer_xml = f"""<featureType>
                     <name>{pg_table}</name>
                     <title>{title}</title>
                     <advertised>{advertised}</advertised>
                     {abstract_xml}
                     {keywords_xml}
+                    {cqlfilter_xml}
                 </featureType>"""
         headers = {"content-type": "text/xml"}
 
@@ -1868,11 +1886,13 @@ class Geoserver:
         title: str,
         abstract: Optional[str] = None,
         keywords: Optional[List[str]] = None,
+        recalculate : Optional[str] = None
     ):
         """
 
         Parameters
         ----------
+        recalculate : str, optional. Recalculate param. Can be: empty string, nativebbox and nativebbox,latlonbbox
         store_name : str
         workspace : str, optional
         pg_table : str
@@ -1890,8 +1910,10 @@ class Geoserver:
         if workspace is None:
             workspace = "default"
 
-        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.xml".format(
-            self.service_url, workspace, store_name, pg_table
+        recalculate_param = f"?recalculate={recalculate}" if recalculate else ""
+
+        url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.xml{}".format(
+            self.service_url, workspace, store_name, pg_table, recalculate_param
         )
 
         # Create XML for abstract and keywords
@@ -1902,6 +1924,7 @@ class Geoserver:
             for keyword in keywords:
                 keywords_xml += f"<string>{keyword}</string>"
             keywords_xml += "</keywords>"
+
 
         layer_xml = f"""<featureType>
                     <name>{name}</name>

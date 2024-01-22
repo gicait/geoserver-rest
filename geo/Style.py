@@ -163,9 +163,6 @@ def outline_only_xml(color, geom_type="polygon"):
     elif geom_type == "polygon":
         symbolizer = """
                 <PolygonSymbolizer>
-                    <Fill>
-                        <CssParameter name="fill">#FFFFFF</CssParameter>
-                    </Fill>
                     <Stroke>
                     <CssParameter name="stroke">{}</CssParameter>
                     <CssParameter name="stroke-width">0.26</CssParameter>

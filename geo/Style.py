@@ -152,8 +152,8 @@ def outline_only_xml(color, width, geom_type="polygon"):
         symbolizer = """
                 <LineSymbolizer>
                     <Stroke>
-                    <CssParameter name="stroke">{0}</CssParameter>
-                    <CssParameter name="stroke-width"{1}</CssParameter>
+                    <CssParameter name="stroke">{}</CssParameter>
+                    <CssParameter name="stroke-width"{}</CssParameter>
                     </Stroke>
                 </LineSymbolizer>
             """.format(
@@ -164,8 +164,8 @@ def outline_only_xml(color, width, geom_type="polygon"):
         symbolizer = """
                 <PolygonSymbolizer>
                     <Stroke>
-                    <CssParameter name="stroke">{0}</CssParameter>
-                    <CssParameter name="stroke-width">{1}</CssParameter>
+                    <CssParameter name="stroke">{}</CssParameter>
+                    <CssParameter name="stroke-width">{}</CssParameter>
                     </Stroke>
                 </PolygonSymbolizer>
             """.format(

@@ -1325,6 +1325,7 @@ class Geoserver:
         self,
         style_name: str,
         color: str = "#3579b1",
+        width: str = "2",
         geom_type: str = "polygon",
         workspace: Optional[str] = None,
     ):
@@ -1346,7 +1347,7 @@ class Geoserver:
         The geometry type must be point, line or polygon
         Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
         """
-        outline_only_xml(color, geom_type)
+        outline_only_xml(color, width, geom_type)
 
         style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
             style_name, style_name + ".sld"

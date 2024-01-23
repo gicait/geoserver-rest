@@ -130,7 +130,7 @@ def coverage_style_xml(
         f.write(style)
 
 
-def outline_only_xml(color, geom_type="polygon"):
+def outline_only_xml(color, width, geom_type="polygon"):
     if geom_type == "point":
         symbolizer = """
             <PointSymbolizer>
@@ -152,24 +152,24 @@ def outline_only_xml(color, geom_type="polygon"):
         symbolizer = """
                 <LineSymbolizer>
                     <Stroke>
-                    <CssParameter name="stroke">{}</CssParameter>
-                    <CssParameter name="stroke-width">3</CssParameter>
+                    <CssParameter name="stroke">{0}</CssParameter>
+                    <CssParameter name="stroke-width"{1}</CssParameter>
                     </Stroke>
                 </LineSymbolizer>
             """.format(
-            color
+            color, width
         )
 
     elif geom_type == "polygon":
         symbolizer = """
                 <PolygonSymbolizer>
                     <Stroke>
-                    <CssParameter name="stroke">{}</CssParameter>
-                    <CssParameter name="stroke-width">0.26</CssParameter>
+                    <CssParameter name="stroke">{0}</CssParameter>
+                    <CssParameter name="stroke-width">{1}</CssParameter>
                     </Stroke>
                 </PolygonSymbolizer>
             """.format(
-            color
+            color, width
         )
 
     else:

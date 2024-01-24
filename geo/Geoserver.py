@@ -1814,7 +1814,8 @@ class Geoserver:
         advertised: Optional[bool] = True,
         abstract: Optional[str] = None,
         keywords: Optional[List[str]] = None,
-        cqlfilter: Optional[str] = None
+        cqlfilter: Optional[str] = None,
+        srs: Optional[str] = None
     ):
         """
         Publish a featurestore to geoserver.
@@ -1829,6 +1830,7 @@ class Geoserver:
         abstract : str, optional
         keywords : list, optional
         cqlfilter : str, optional
+        srs : str, optional
 
         Returns
         -------
@@ -1856,6 +1858,9 @@ class Geoserver:
             keywords_xml += "</keywords>"
 
         cqlfilter_xml = f"<cqlFilter>{cqlfilter}</cqlFilter>" if cqlfilter else ""
+
+        srs_xml = f"<srs>{srs}</srs>" if srs else ""
+
         layer_xml = f"""<featureType>
                     <name>{pg_table}</name>
                     <title>{title}</title>
@@ -1863,6 +1868,7 @@ class Geoserver:
                     {abstract_xml}
                     {keywords_xml}
                     {cqlfilter_xml}
+                    {srs_xml}
                 </featureType>"""
         headers = {"content-type": "text/xml"}
 

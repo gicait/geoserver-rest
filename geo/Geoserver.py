@@ -1181,6 +1181,7 @@ class Geoserver:
         color_ramp: str = "RdYlGn_r",
         cmap_type: str = "ramp",
         number_of_classes: int = 5,
+        opacity: float = 1,
     ):
         """Dynamically create style for raster.
 
@@ -1192,6 +1193,7 @@ class Geoserver:
         color_ramp : str
         cmap_type : str TODO: This should be a set of the available options : {"ramp", "linear", ... }
         number_of_classes : int
+        opacity : float
         overwrite : bool
 
         Notes
@@ -1213,6 +1215,7 @@ class Geoserver:
             min_value,
             max_value,
             number_of_classes,
+            opacity,
         )
         style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
             style_name, style_name + ".sld"

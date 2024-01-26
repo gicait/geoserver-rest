@@ -82,7 +82,7 @@ def coverage_style_colormapentry(
 
 
 def coverage_style_xml(
-    color_ramp, style_name, cmap_type, min_value, max_value, number_of_classes
+    color_ramp, style_name, cmap_type, min_value, max_value, number_of_classes, opacity
 ):
     min_max_difference = max_value - min_value
     style_append = ""
@@ -108,6 +108,7 @@ def coverage_style_xml(
         <sld:FeatureTypeStyle>
             <sld:Rule>
             <sld:RasterSymbolizer>
+                <sld:Opacity>{3}</sld:Opacity>
                 <sld:ChannelSelection>
                 <sld:GrayChannel>
                     <sld:SourceChannelName>1</sld:SourceChannelName>
@@ -123,7 +124,7 @@ def coverage_style_xml(
     </UserLayer>
     </StyledLayerDescriptor>
     """.format(
-        cmap_type, style_append, style_name
+        cmap_type, style_append, style_name, opacity
     )
 
     with open("style.sld", "w") as f:

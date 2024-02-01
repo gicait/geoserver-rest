@@ -1537,7 +1537,7 @@ class Geoserver:
         evictor_run_periodicity: Optional[int] = 300,
         max_open_prepared_statements: Optional[int] = 50,
         encode_functions: Optional[str] = "false",
-        primary_key_metadata_table: Optional[str] = None,
+        primary_key_metadata_table: Optional[str] = 'gt_pk_metadata',
         batch_insert_size: Optional[int] = 1,
         preparedstatements: Optional[str] = "false",
         loose_bbox: Optional[str] = "true",

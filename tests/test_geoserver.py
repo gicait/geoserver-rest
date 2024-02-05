@@ -1,9 +1,12 @@
+import pathlib
+
 import pytest
 
 from geo.Style import catagorize_xml, classified_xml
 
 from .common import geo
 
+HERE = pathlib.Path(__file__).parent.resolve()
 
 @pytest.mark.skip(reason="Only setup for local testing.")
 class TestRequest:
@@ -120,6 +123,24 @@ class TestStyles:
         geo.create_catagorized_featurestyle(
             "kamal2", [1, 2, 3, 4, 5, 6, 7], workspace="demo"
         )
+
+
+class TestUploadStyles:
+
+    def test_upload_style_from_file(self):
+
+        geo.delete_style("test_upload_style")
+        geo.upload_style(f"{HERE}/data/style.sld", "test_upload_style")
+        style = geo.get_style("test_upload_style")
+        assert style["style"]["name"] == "test_upload_style"
+
+    def test_upload_style_from_opened_file(self):
+
+        geo.delete_style("test_upload_style")
+        xml = open(f"{HERE}/data/style.sld").read()
+        geo.upload_style(xml, "test_upload_style")
+        style = geo.get_style("test_upload_style")
+        assert style["style"]["name"] == "test_upload_style"
 
 
 @pytest.mark.skip(reason="Only setup for local testing.")

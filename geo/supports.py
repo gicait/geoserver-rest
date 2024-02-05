@@ -47,8 +47,7 @@ def is_valid_xml(xml_string: str) -> bool:
 
         Parameters
     ----------
-    name : name of files
-    data : dict
+    xml_string : string containing xml
 
     Returns
     -------

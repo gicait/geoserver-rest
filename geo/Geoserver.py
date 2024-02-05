@@ -2,7 +2,6 @@
 import os
 from typing import List, Optional, Set, Union
 from pathlib import Path
-import xml.etree.ElementTree as ET
 
 # third-party libraries
 import requests

@@ -3,6 +3,7 @@ import pathlib
 import pytest
 
 from geo.Style import catagorize_xml, classified_xml
+from geo.Geoserver import GeoserverException
 
 from .common import geo
 
@@ -129,18 +130,52 @@ class TestUploadStyles:
 
     def test_upload_style_from_file(self):
 
-        geo.delete_style("test_upload_style")
+        try:
+            geo.delete_style("test_upload_style")
+        except geo.Geoserver.GeoserverException:
+            pass
+
         geo.upload_style(f"{HERE}/data/style.sld", "test_upload_style")
         style = geo.get_style("test_upload_style")
         assert style["style"]["name"] == "test_upload_style"
 
+    def test_upload_style_from_malformed_file_fails(self):
+
+        try:
+            geo.delete_style("test_upload_style")
+        except GeoserverException:
+            pass
+
+        with pytest.raises(ValueError):
+            geo.upload_style(f"{HERE}/data/style_doesnt_exist.sld", "test_upload_style")
+        with pytest.raises(GeoserverException):
+            style = geo.get_style("style_doesnt_exist")
+
     def test_upload_style_from_opened_file(self):
 
-        geo.delete_style("test_upload_style")
+        try:
+            geo.delete_style("test_upload_style")
+        except geo.Geoserver.GeoserverException:
+            pass
+
         xml = open(f"{HERE}/data/style.sld").read()
         geo.upload_style(xml, "test_upload_style")
         style = geo.get_style("test_upload_style")
         assert style["style"]["name"] == "test_upload_style"
+
+    def test_upload_style_from_malformed_xml_fails(self):
+
+        try:
+            geo.delete_style("test_upload_style")
+            geo.delete_style("test_upload_style")
+        except GeoserverException:
+            pass
+
+        xml = open(f"{HERE}/data/style.sld").read()[1:]
+        with pytest.raises(ValueError):
+            geo.upload_style(xml, "test_upload_style")
+        with pytest.raises(GeoserverException):
+            style = geo.get_style("style_doesnt_exist")
 
 
 @pytest.mark.skip(reason="Only setup for local testing.")

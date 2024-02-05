@@ -1177,7 +1177,7 @@ class Geoserver:
                         headers=header_sld,
                     )
             else:
-                raise TypeError("`path` must be either a path to a style file, or a valid XML string.")
+                raise ValueError("`path` must be either a path to a style file, or a valid XML string.")
 
             if r_sld.status_code == 200:
                 return r_sld.status_code

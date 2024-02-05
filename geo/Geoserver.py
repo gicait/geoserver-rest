@@ -1141,7 +1141,7 @@ class Geoserver:
                 name = f[0]
 
         if Path(path).exists():
-            # path is pointing a an existing file
+            # path is pointing to an existing file
             with open(path, "rb") as f:
                 xml = f.read()
         elif is_valid_xml(path):

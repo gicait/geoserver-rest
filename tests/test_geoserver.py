@@ -152,7 +152,7 @@ class TestUploadStyles:
             style = geo.get_style("style_doesnt_exist")
             print()
 
-    def test_upload_style_from_opened_file(self):
+    def test_upload_style_from_xml(self):
 
         try:
             geo.delete_style("test_upload_style")

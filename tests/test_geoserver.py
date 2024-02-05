@@ -167,15 +167,15 @@ class TestUploadStyles:
     def test_upload_style_from_malformed_xml_fails(self):
 
         try:
-            geo.delete_style("style_doesnt_exist")
+            geo.delete_style("style_malformed")
         except GeoserverException:
             pass
 
         xml = open(f"{HERE}/data/style.sld").read()[1:]
         with pytest.raises(ValueError):
-            geo.upload_style(xml, "style_doesnt_exist")
+            geo.upload_style(xml, "style_malformed")
         with pytest.raises(GeoserverException):
-            style = geo.get_style("style_doesnt_exist")
+            style = geo.get_style("style_malformed")
 
 
 @pytest.mark.skip(reason="Only setup for local testing.")

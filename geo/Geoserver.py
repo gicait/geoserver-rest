@@ -1140,6 +1140,17 @@ class Geoserver:
             if len(f) > 0:
                 name = f[0]
 
+        if Path(path).exists():
+            # path is pointing a an existing file
+            with open(path, "rb") as f:
+                xml = f.read()
+        elif is_valid_xml(path):
+            # path is actually just the xml itself
+            xml = path
+        else:
+            # path is non-existing file or not valid xml
+            raise ValueError("`path` must be either a path to a style file, or a valid XML string.")
+
         headers = {"content-type": "text/xml"}
 
         url = "{}/rest/workspaces/{}/styles".format(self.service_url, workspace)
@@ -1160,23 +1171,12 @@ class Geoserver:
 
         r = self._requests(method="post", url=url, data=style_xml, headers=headers)
         if r.status_code == 201:
-            if Path(path).exists():
-                with open(path, "rb") as f:
-                    r_sld = requests.put(
-                        url + "/" + name,
-                        data=f.read(),
-                        auth=(self.username, self.password),
-                        headers=header_sld,
-                    )
-            elif is_valid_xml(path):
-                    r_sld = requests.put(
-                        url + "/" + name,
-                        data=path,
-                        auth=(self.username, self.password),
-                        headers=header_sld,
-                    )
-            else:
-                raise ValueError("`path` must be either a path to a style file, or a valid XML string.")
+            r_sld = requests.put(
+                url + "/" + name,
+                data=xml,
+                auth=(self.username, self.password),
+                headers=header_sld,
+            )
 
             if r_sld.status_code == 200:
                 return r_sld.status_code

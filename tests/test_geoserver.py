@@ -132,7 +132,7 @@ class TestUploadStyles:
 
         try:
             geo.delete_style("test_upload_style")
-        except geo.Geoserver.GeoserverException:
+        except GeoserverException:
             pass
 
         geo.upload_style(f"{HERE}/data/style.sld", "test_upload_style")
@@ -142,20 +142,21 @@ class TestUploadStyles:
     def test_upload_style_from_malformed_file_fails(self):
 
         try:
-            geo.delete_style("test_upload_style")
+            geo.delete_style("style_doesnt_exist")
         except GeoserverException:
             pass
 
         with pytest.raises(ValueError):
-            geo.upload_style(f"{HERE}/data/style_doesnt_exist.sld", "test_upload_style")
+            geo.upload_style(f"{HERE}/data/style_doesnt_exist.sld", "style_doesnt_exist")
         with pytest.raises(GeoserverException):
             style = geo.get_style("style_doesnt_exist")
+            print()
 
     def test_upload_style_from_opened_file(self):
 
         try:
             geo.delete_style("test_upload_style")
-        except geo.Geoserver.GeoserverException:
+        except GeoserverException:
             pass
 
         xml = open(f"{HERE}/data/style.sld").read()
@@ -166,36 +167,15 @@ class TestUploadStyles:
     def test_upload_style_from_malformed_xml_fails(self):
 
         try:
-            geo.delete_style("test_upload_style")
-            geo.delete_style("test_upload_style")
+            geo.delete_style("style_doesnt_exist")
         except GeoserverException:
             pass
 
         xml = open(f"{HERE}/data/style.sld").read()[1:]
         with pytest.raises(ValueError):
-            geo.upload_style(xml, "test_upload_style")
+            geo.upload_style(xml, "style_doesnt_exist")
         with pytest.raises(GeoserverException):
             style = geo.get_style("style_doesnt_exist")
-
-
-@pytest.mark.skip(reason="Only setup for local testing.")
-class TestPostGres:
-    from geo.Postgres import Db
-
-    pg = Db(dbname="postgres", user="postgres", password="admin", host="localhost")
-
-    def test_postgres(self):
-        print(self.pg.get_columns_names("zones"))
-        # assert self.pg.get_columns_names("zones") == "something we expect"
-        print(self.pg.get_all_values("zones", "shape_area"))
-        # assert self.pg.get_columns_names("zones") == "something we expect"
-        self.pg.create_schema("kamal kshetri")
-        a = self.pg.get_columns_names("jamoat-db")
-        print(a)
-        # assert a == "something we expect"
-        a = self.pg.get_all_values("jamoat-db", "shape_area")[5]
-        print(a)
-        # assert a == "something we expect"
 
 
 @pytest.mark.skip(reason="Only setup for local testing.")

@@ -1,6 +1,7 @@
 # inbuilt libraries
 import os
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Union
+from pathlib import Path
 
 # third-party libraries
 import requests
@@ -9,7 +10,7 @@ from xmltodict import parse, unparse
 # custom functions
 from .Calculation_gdal import raster_value
 from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
-from .supports import prepare_zip_file
+from .supports import prepare_zip_file, is_valid_xml
 
 
 # Custom exceptions.
@@ -1130,13 +1131,25 @@ class Geoserver:
         -----
         The name of the style file will be, sld_name:workspace
         This function will create the style file in a specified workspace.
-        Inputs: path to the sld_file, workspace,
+        `path` can either be the path to the SLD file itself, or a string containing valid XML to be used for the style
+        Inputs: path to the sld_file or the contents of an SLD file itself, workspace,
         """
         if name is None:
             name = os.path.basename(path)
             f = name.split(".")
             if len(f) > 0:
                 name = f[0]
+
+        if Path(path).exists():
+            # path is pointing to an existing file
+            with open(path, "rb") as f:
+                xml = f.read()
+        elif is_valid_xml(path):
+            # path is actually just the xml itself
+            xml = path
+        else:
+            # path is non-existing file or not valid xml
+            raise ValueError("`path` must be either a path to a style file, or a valid XML string.")
 
         headers = {"content-type": "text/xml"}
 
@@ -1158,13 +1171,13 @@ class Geoserver:
 
         r = self._requests(method="post", url=url, data=style_xml, headers=headers)
         if r.status_code == 201:
-            with open(path, "rb") as f:
-                r_sld = requests.put(
-                    url + "/" + name,
-                    data=f.read(),
-                    auth=(self.username, self.password),
-                    headers=header_sld,
-                )
+            r_sld = requests.put(
+                url + "/" + name,
+                data=xml,
+                auth=(self.username, self.password),
+                headers=header_sld,
+            )
+
             if r_sld.status_code == 200:
                 return r_sld.status_code
             else:

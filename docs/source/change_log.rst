@@ -3,6 +3,7 @@ Change Log
 
 ``Master branch``
 ^^^^^^^^^^^^^^^^^
+* New method `create_gpkg_datastore`
 * Bugfixes for `add_layer_to_layergroup` and `remove_layer_from_layergroup`
 * New method `remove_layer_from_layergroup`
 

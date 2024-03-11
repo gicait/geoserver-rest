@@ -1822,6 +1822,65 @@ class Geoserver:
         else:
             raise GeoserverException(r.status_code, r.content)
 
+    def create_gpkg_datastore(
+        self,
+        path: str,
+        store_name: Optional[str] = None,
+        workspace: Optional[str] = None,
+        file_extension: str = "gpkg",
+    ):
+        """
+        Create datastore for a geopackage.
+
+        Parameters
+        ----------
+        path : str
+            Path to the geopackage file.
+        store_name : str, optional
+            Name of store to be created. If None, parses from the filename.
+        workspace: str, optional
+            Name of workspace to be used. Default: "default".
+        file_extension : str
+
+        Notes
+        -----
+        The layer name will be assigned according to the layer name in the geopackage.
+        If the layer already exist it will be updated.
+        """
+
+        if path is None:
+            raise Exception("You must provide a full path to shapefile")
+
+        if workspace is None:
+            workspace = "default"
+
+        if store_name is None:
+            store_name = os.path.basename(path)
+            f = store_name.split(".")
+            if len(f) > 0:
+                store_name = f[0]
+
+        headers = {
+            "Content-type": "application/x-sqlite3",
+            "Accept": "application/json",
+        }
+
+        url = "{0}/rest/workspaces/{1}/datastores/{2}/file.{3}?filename={2}".format(
+            self.service_url, workspace, store_name, file_extension
+        )
+
+        with open(path, "rb") as f:
+            r = requests.put(
+                url,
+                data=f.read(),
+                auth=(self.username, self.password),
+                headers=headers,
+            )
+        if r.status_code in [200, 201, 202]:
+            return "The geopackage datastore created successfully!"
+        else:
+            raise GeoserverException(r.status_code, r.content)
+
     def publish_featurestore(
         self,
         store_name: str,

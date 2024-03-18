@@ -4,12 +4,11 @@ Installation
 Conda installation
 ^^^^^^^^^^^^^^^^^^
 
-The ``geoserver-rest`` can be installed from either ``conda-forge`` channel or ``iamtekson`` channel as below:
+The ``geoserver-rest`` can be installed from either ``conda-forge`` channel as below:
 
 .. code-block:: shell
 
     conda install -c conda-forge geoserver-rest
-    conda install -c iamtekson geoserver-rest
 
 Pip installation
 ^^^^^^^^^^^^^^^^

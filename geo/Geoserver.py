@@ -1,6 +1,6 @@
 # inbuilt libraries
 import os
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set, Union, Any
 from pathlib import Path
 
 # third-party libraries
@@ -1971,6 +1971,8 @@ class Geoserver:
         geom_type: str = "Geometry",
         srid: Optional[int] = 4326,
         workspace: Optional[str] = None,
+        query_params: Optional[list[dict[str, Union[str, Any, str]]]] = [],
+        escape_sql: Optional[bool] = False
     ):
         """
 
@@ -1983,6 +1985,12 @@ class Geoserver:
         geom_name : str, optional
         geom_type : str, optional
         workspace : str, optional
+        query_params : list, optional
+        escape_sql : bool, optional
+
+        query_params must be a list a dictionaries with the following format:
+        {'name':parameter name, 'default_value': default parameter value, 'regex_val':regular expression for validation}
+        regex_val is optional
 
         """
         if workspace is None:
@@ -1994,6 +2002,25 @@ class Geoserver:
 
         else:
             key_column_xml = """"""
+
+        params_xml = """"""
+
+        for query_param in query_params:
+            if query_param['regex_val']:
+                regex_xml = """<regexpValidator>{}</regexpValidator>""".format(query_param['regex_val'])
+            else:
+                regex_xml = """"""
+
+            param_xml = """
+            <parameter>
+                <name>{0}</name>
+                <defaultValue>{1}</defaultValue>
+                {2}
+            </parameter>
+            """.format(
+                query_param['name'], query_param['default_value'], regex_xml
+            )
+            params_xml = params_xml + param_xml
 
         layer_xml = """<featureType>
         <name>{0}</name>
@@ -2008,17 +2035,19 @@ class Geoserver:
                 <virtualTable>
                     <name>{0}</name>
                     <sql>{1}</sql>
-                    <escapeSql>true</escapeSql>
+                    <escapeSql>{8}</escapeSql>
                     <geometry>
                         <name>{2}</name>
                         <type>{3}</type>
                         <srid>{5}</srid>
-                    </geometry>{6}
+                    </geometry>
+                    {6}
+                    {7}
                 </virtualTable>
             </entry>
         </metadata>
         </featureType>""".format(
-            name, sql, geom_name, geom_type, workspace, srid, key_column_xml
+            name, sql, geom_name, geom_type, workspace, srid, key_column_xml, params_xml, str(escape_sql)
         )
 
         # rest API url

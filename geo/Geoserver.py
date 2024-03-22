@@ -2006,7 +2006,7 @@ class Geoserver:
         params_xml = """"""
 
         for query_param in query_params:
-            if query_param['regex_val']:
+            if 'regex_val' in query_param:
                 regex_xml = """<regexpValidator>{}</regexpValidator>""".format(query_param['regex_val'])
             else:
                 regex_xml = """"""

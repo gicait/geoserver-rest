@@ -126,6 +126,17 @@ class TestStyles:
         )
 
 
+class TestCreateGeopackageDatastore:
+
+    def test_create_geopackage_datastore_from_file(self):
+
+        geo.create_gpkg_datastore(f"{HERE}/data/countries-test.gpkg")
+        store = geo.get_datastore("countries-test")
+        layer = geo.get_layer("countries-test")
+        assert store["dataStore"]["name"] == "countries-test"
+        assert layer["layer"]["name"] == "countries-test"
+
+
 class TestUploadStyles:
 
     def test_upload_style_from_file(self):

@@ -1554,7 +1554,7 @@ class Geoserver:
         evictor_run_periodicity: Optional[int] = 300,
         max_open_prepared_statements: Optional[int] = 50,
         encode_functions: Optional[str] = "false",
-        primary_key_metadata_table: Optional[str] = None,
+        primary_key_metadata_table: Optional[str] = 'gt_pk_metadata',
         batch_insert_size: Optional[int] = 1,
         preparedstatements: Optional[str] = "false",
         loose_bbox: Optional[str] = "true",
@@ -1890,7 +1890,8 @@ class Geoserver:
         advertised: Optional[bool] = True,
         abstract: Optional[str] = None,
         keywords: Optional[List[str]] = None,
-        cqlfilter: Optional[str] = None
+        cqlfilter: Optional[str] = None,
+        srs: Optional[str] = None
     ):
         """
         Publish a featurestore to geoserver.
@@ -1905,6 +1906,7 @@ class Geoserver:
         abstract : str, optional
         keywords : list, optional
         cqlfilter : str, optional
+        srs : str, optional
 
         Returns
         -------
@@ -1932,6 +1934,9 @@ class Geoserver:
             keywords_xml += "</keywords>"
 
         cqlfilter_xml = f"<cqlFilter>{cqlfilter}</cqlFilter>" if cqlfilter else ""
+
+        srs_xml = f"<srs>{srs}</srs>" if srs else ""
+
         layer_xml = f"""<featureType>
                     <name>{pg_table}</name>
                     <title>{title}</title>
@@ -1939,6 +1944,7 @@ class Geoserver:
                     {abstract_xml}
                     {keywords_xml}
                     {cqlfilter_xml}
+                    {srs_xml}
                 </featureType>"""
         headers = {"content-type": "text/xml"}
 

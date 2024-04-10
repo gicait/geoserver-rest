@@ -1,6 +1,6 @@
 # inbuilt libraries
 import os
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set, Union, Dict
 from pathlib import Path
 
 # third-party libraries
@@ -2025,6 +2025,7 @@ class Geoserver:
         name: str,
         store_name: str,
         sql: str,
+        parameters: List[Dict] = None,
         key_column: Optional[str] = None,
         geom_name: str = "geom",
         geom_type: str = "Geometry",
@@ -2054,6 +2055,20 @@ class Geoserver:
         else:
             key_column_xml = """"""
 
+        parameters_xml = ""
+        if parameters is not None:
+            for parameter in parameters:
+                param_name = parameter.get("name", "")
+                default_value = parameter.get("defaultValue", "")
+                regexp_validator = parameter.get("regexpValidator", r"^[\w\d\s]+$")
+                parameters_xml += (f"""
+                    <parameter>
+                        <name>{param_name}</name>
+                        <defaultValue>{default_value}</defaultValue>
+                        <regexpValidator>{regexp_validator}</regexpValidator>
+                    </parameter>\n
+                """.strip())
+
         layer_xml = """<featureType>
         <name>{0}</name>
         <enabled>true</enabled>
@@ -2073,11 +2088,12 @@ class Geoserver:
                         <type>{3}</type>
                         <srid>{5}</srid>
                     </geometry>{6}
+                    {7}
                 </virtualTable>
             </entry>
         </metadata>
         </featureType>""".format(
-            name, sql, geom_name, geom_type, workspace, srid, key_column_xml
+            name, sql, geom_name, geom_type, workspace, srid, key_column_xml, parameters_xml
         )
 
         # rest API url

@@ -1,6 +1,6 @@
 # inbuilt libraries
 import os
-from typing import List, Optional, Set, Union, Dict
+from typing import List, Optional, Set, Union, Dict, Iterable
 from pathlib import Path
 
 # third-party libraries
@@ -2025,7 +2025,7 @@ class Geoserver:
         name: str,
         store_name: str,
         sql: str,
-        parameters: List[Dict] = None,
+        parameters: Optional[Iterable[Dict]] = None,
         key_column: Optional[str] = None,
         geom_name: str = "geom",
         geom_type: str = "Geometry",
@@ -2033,18 +2033,42 @@ class Geoserver:
         workspace: Optional[str] = None,
     ):
         """
+        Publishes an SQL query as a layer, optionally with parameters
 
         Parameters
         ----------
         name : str
         store_name : str
         sql : str
+        parameters : iterable of dicts, optional
         key_column : str, optional
         geom_name : str, optional
         geom_type : str, optional
         workspace : str, optional
 
+        Notes
+        -----
+        With regards to SQL view parameters, it is advised to read the relevant section from the geoserver docs:
+        https://docs.geoserver.org/main/en/user/data/database/sqlview.html#parameterizing-sql-views
+
+        An integer-based parameter must have a default value
+
+        You should be VERY careful with the `regexp_validator`, as it can open you to SQL injection attacks. If you do
+        not supply one for a parameter, it will use the geoserver default `^[\w\d\s]+$`.
+
+        The `parameters` iterable must contain dictionaries with this structure:
+
+        ```
+        {
+          "name": "<name of parameter (required)>"
+          "rexegpValidator": "<string containing regex validator> (optional)"
+          "defaultValue" : "<default value of parameter if not specified (required only for integer parameters)>"
+        }
+        ```
         """
+
+        # TODO: test how it fails if you pass a default value to an integer type parameter
+
         if workspace is None:
             workspace = "default"
 

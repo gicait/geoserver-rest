@@ -10,7 +10,7 @@ from xmltodict import parse, unparse
 # custom functions
 from .Calculation_gdal import raster_value
 from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
-from .supports import prepare_zip_file, is_valid_xml
+from .supports import prepare_zip_file, is_valid_xml, is_surrounded_by_quotes
 
 
 # Custom exceptions.
@@ -2062,12 +2062,10 @@ class Geoserver:
         {
           "name": "<name of parameter (required)>"
           "rexegpValidator": "<string containing regex validator> (optional)"
-          "defaultValue" : "<default value of parameter if not specified (required only for integer parameters)>"
+          "defaultValue" : "<default value of parameter if not specified (required only for non-string parameters)>"
         }
         ```
         """
-
-        # TODO: test how it fails if you pass a default value to an integer type parameter
 
         if workspace is None:
             workspace = "default"
@@ -2082,6 +2080,13 @@ class Geoserver:
         parameters_xml = ""
         if parameters is not None:
             for parameter in parameters:
+
+                # non-string parameters MUST have a default value supplied
+                if not is_surrounded_by_quotes(sql, parameter["name"]) and not "defaultValue" in parameter:
+                    raise ValueError(f"Parameter `{parameter['name']}` appears to be a non-string in the supplied query"
+                                     ", but does not have a default value specified. You must supply a default value "
+                                     "for non-string parameters using the `defaultValue` key.")
+
                 param_name = parameter.get("name", "")
                 default_value = parameter.get("defaultValue", "")
                 regexp_validator = parameter.get("regexpValidator", r"^[\w\d\s]+$")

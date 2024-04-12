@@ -5,3 +5,5 @@ sphinx>=1.7
 pre-commit
 environs
 ddt
+sqlalchemy>=2.0.29
+psycopg2>=2.9.9

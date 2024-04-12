@@ -1,11 +1,13 @@
 import pathlib
 
+import requests
 import pytest
+import sqlalchemy as sa
 
 from geo.Style import catagorize_xml, classified_xml
 from geo.Geoserver import GeoserverException
 
-from .common import geo
+from .common import GEO_URL, geo, postgis_params, postgis_params_local
 
 HERE = pathlib.Path(__file__).parent.resolve()
 
@@ -76,40 +78,248 @@ class TestCoverages:
         )
 
 
-@pytest.mark.skip(reason="Only setup for local testing.")
+# @pytest.mark.skip(reason="Only setup for local testing.")
 class TestFeatures:
+
     def test_featurestore(self):
-        geo.create_featurestore(store_name="fdemo", workspace="demo")
-        geo.publish_featurestore("fdemo", "zones", "demo")
-        a = geo.get_featuretypes(workspace="demo", store_name="fdemo")
-        # assert a == "something we expect"
 
-        a = geo.get_feature_attribute(
-            feature_type_name="jamoat-db", workspace="demo", store_name="fdemo"
-        )
-        # assert a == "something we expect"
+        """
+        Tests that you can publish an existing table as a layer
+        """
 
-        a = geo.get_featurestore("fdemo", "demo")  # noqa: F841
-        # assert a == "something we expect"
+        table_name = "test_table"
+        workspace_name = "test_ws"
+        featurestore_name = "test_ds"
+
+        # set up DB and create a table with a feature inside
+        DB_HOST = postgis_params_local["host"]
+        DB_PORT = postgis_params_local["port"]
+        DB_PASS = postgis_params_local["pg_password"]
+        DB_USER = postgis_params_local["pg_user"]
+        DB_NAME = postgis_params_local["db"]
+        engine = sa.create_engine(f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}", echo=False)
+        with engine.connect() as conn:
+            conn.execute(sa.text(f"drop table if exists {table_name};"))
+            conn.execute(sa.text(f"create table {table_name} (id integer primary key, foo text, geom geometry);"))
+            conn.execute(sa.text(f"insert into {table_name} (id, foo, geom) values (0, 'bar', ST_MakePoint(0, 0, 4326));"))
+            conn.commit()
+
+        try:
+            geo.create_workspace(workspace_name)
+            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+            geo.publish_featurestore(store_name=featurestore_name, pg_table=table_name, workspace=workspace_name)
+
+            wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
+                        "service=WFS&" \
+                        "version=1.0.0&" \
+                        "request=GetFeature&" \
+                        f"typeName={workspace_name}%3A{table_name}&" \
+                        "outputFormat=application%2Fjson"
+
+            r = requests.get(wfs_query)
+            assert r.status_code == 200
+
+            data = r.json()
+            assert data["features"][0]["properties"]["foo"] == "bar"
+
+        finally:
+            with engine.connect() as conn:
+                conn.execute(sa.text(f"drop table {table_name};"))
+            geo.delete_workspace(workspace_name)
 
     def test_sql_featurestore(self):
-        store_name = "geoinformatics_center"
-        name = "sql_view_test"
-        sql = 'select id, geom, "BU" from geoinformatics_center.exp_ear'
-        key_column = "BU"
-        workspace = "geoinformatics_center"
-        geo.delete_layer(name, workspace=workspace)
-        a = geo.publish_featurestore_sqlview(
-            store_name,
-            name,
-            sql,
-            key_column=key_column,
-            geom_name="geom",
-            geom_type="Geometry",
-            workspace="geoinformatics_center",
-        )
-        # assert a == "something we expect"
-        print(a)
+
+        """
+        Tests that you publish an SQL query as a layer
+        """
+
+        workspace_name = "test_ws"
+        featurestore_name = "test_ds"
+        sqlview_name = "test_sqlview"
+        sqlview_key_column = "id"
+        sqlview_geom_column = "geom"
+        sqlview_query = f"select 0 as {sqlview_key_column}, 'bar' as foo, ST_MakePoint(0, 0, 4326) as {sqlview_geom_column}"
+        wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
+                    "service=WFS&" \
+                    "version=1.0.0&" \
+                    "request=GetFeature&" \
+                    f"typeName={workspace_name}%3A{sqlview_name}&" \
+                    "outputFormat=application%2Fjson"
+
+        try:
+            geo.create_workspace(workspace_name)
+            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+            geo.publish_featurestore_sqlview(
+                name=sqlview_name,
+                store_name=featurestore_name,
+                sql=sqlview_query,
+                workspace=workspace_name,
+                key_column=sqlview_key_column
+            )
+
+            r = requests.get(wfs_query)
+            assert r.status_code == 200
+
+            data = r.json()
+            assert data["features"][0]["properties"]["foo"] == "bar"
+
+        finally:
+            geo.delete_workspace(workspace_name)
+
+    def test_parameterized_sql_featurestore(self):
+
+        """
+        Tests that you can publish a parameterized SQL query as a layer
+        """
+
+        workspace_name = "test_ws"
+        featurestore_name = "test_ds"
+        sqlview_name = "test_parameterized_sqlview"
+        sqlview_key_column = "id"
+        sqlview_geom_column = "geom"
+        foo_default_val = "bar"
+        foo_parameterized_value = "baz"
+        parameters = [{"name": "foo", "defaultValue": foo_default_val}]
+        sqlview_query = f"select 0 as {sqlview_key_column}, '%foo%' as foo, ST_MakePoint(0, 0, 4326) as {sqlview_geom_column}"
+        wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
+                    "service=WFS&" \
+                    "version=1.0.0&" \
+                    "request=GetFeature&" \
+                    f"typeName={workspace_name}%3A{sqlview_name}&" \
+                    "outputFormat=application%2Fjson"
+
+        try:
+            geo.create_workspace(workspace_name)
+            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+            geo.publish_featurestore_sqlview(
+                name=sqlview_name,
+                store_name=featurestore_name,
+                sql=sqlview_query,
+                workspace=workspace_name,
+                key_column=sqlview_key_column,
+                parameters=parameters
+            )
+
+            # test without specifying param (should return default value)
+            r = requests.get(wfs_query)
+            assert r.status_code == 200
+            data = r.json()
+            assert data["features"][0]["properties"]["foo"] == foo_default_val
+
+            # test with specifying param
+            wfs_query += f"&viewparams=foo:{foo_parameterized_value}"
+            r = requests.get(wfs_query)
+            assert r.status_code == 200
+            data = r.json()
+            assert data["features"][0]["properties"]["foo"] == foo_parameterized_value
+
+        finally:
+            geo.delete_workspace(workspace_name)
+
+    def test_parameterized_sql_featurestore_regexp_validator(self):
+
+        """
+        Tests that the parameterized SQL view layer's logic for handling regular expressing validators works as expected
+        """
+
+        workspace_name = "test_ws"
+        featurestore_name = "test_ds"
+        sqlview_name = "test_parameterized_sqlview"
+        sqlview_key_column = "id"
+        sqlview_geom_column = "geom"
+        parameters = [{"name": "foo", "defaultValue": "baz"},
+                      {"name": "bar", "defaultValue": "baz-", "regexpValidator": "^[\\w\\d\\s\\-]+$"}]
+        sqlview_query = f"select 0 as {sqlview_key_column}, '%foo%' as foo, '%bar%' as bar, ST_MakePoint(0, 0, 4326) as {sqlview_geom_column}"
+
+        try:
+            geo.create_workspace(workspace_name)
+            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+            geo.publish_featurestore_sqlview(
+                name=sqlview_name,
+                store_name=featurestore_name,
+                sql=sqlview_query,
+                workspace=workspace_name,
+                key_column=sqlview_key_column,
+                parameters=parameters
+            )
+
+            # test that adding a hyphen to foo fails because the default regexp validator forbids it
+            wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
+                        "service=WFS&" \
+                        "version=1.0.0&" \
+                        "request=GetFeature&" \
+                        f"typeName={workspace_name}%3A{sqlview_name}&" \
+                        "outputFormat=application%2Fjson&" \
+                        f"viewparams=foo:baz-"
+
+            r = requests.get(wfs_query)
+            # regexp validator failure still returns 200, but resultant XML indicates a Java exception
+            assert r.status_code == 200
+            assert "java.io.IOExceptionInvalid value for parameter foo" in r.text
+
+            # test that adding a hyphen to bar succeeds because the custom regexp validator allows it
+            wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
+                        "service=WFS&" \
+                        "version=1.0.0&" \
+                        "request=GetFeature&" \
+                        f"typeName={workspace_name}%3A{sqlview_name}&" \
+                        "outputFormat=application%2Fjson&" \
+                        f"viewparams=bar:baz-"
+
+            wfs_query += f"&viewparams=bar:baz-"
+            r = requests.get(wfs_query)
+            assert r.status_code == 200
+            data = r.json()
+            assert data["features"][0]["properties"]["bar"] == "baz-"
+
+        finally:
+            geo.delete_workspace(workspace_name)
+
+    def test_parameterized_sql_featurestore_fails_when_integer_parameter_has_no_default_value(self):
+
+        """
+        Tests that a non-string parameter in a parameterized sql view raises a descriptive error. This problem is not
+        very well documented in Geoserver but is clearly reproducible.
+        """
+
+        workspace_name = "test_ws"
+        featurestore_name = "test_ds"
+        sqlview_name = "test_sqlview"
+        sqlview_key_column = "id"
+        sqlview_geom_column = "geom"
+
+        sqlview_query = f"""
+            with comparator as (
+                select 0 as id, ST_MakePoint(0, 0, 4326) as {sqlview_geom_column}
+            )
+            
+            select
+                c.id as {sqlview_key_column},
+                c.geom as {sqlview_geom_column}
+            from
+                comparator c
+            where
+                c.id = %foo%
+        """
+
+        parameters = [{"name": "foo"}]
+
+        try:
+            geo.create_workspace(workspace_name)
+            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+
+            with pytest.raises(ValueError):
+                geo.publish_featurestore_sqlview(
+                    name=sqlview_name,
+                    store_name=featurestore_name,
+                    sql=sqlview_query,
+                    workspace=workspace_name,
+                    parameters=parameters
+                )
+            pass
+
+        finally:
+            geo.delete_workspace(workspace_name)
 
 
 @pytest.mark.skip(reason="Only setup for local testing.")
@@ -191,9 +401,9 @@ class TestUploadStyles:
 
 @pytest.mark.skip(reason="Only setup for local testing.")
 class TestPostGres:
-    from geo.Postgres import Db
+    # from geo.Postgres import Db
 
-    pg = Db(dbname="postgres", user="postgres", password="admin", host="localhost")
+    # pg = Db(dbname="postgres", user="postgres", password="admin", host="localhost")
 
     def test_postgres(self):
         print(self.pg.get_columns_names("zones"))

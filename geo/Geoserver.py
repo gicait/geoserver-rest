@@ -1,6 +1,6 @@
 # inbuilt libraries
 import os
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set, Union, Dict, Iterable
 from pathlib import Path
 
 # third-party libraries
@@ -10,7 +10,7 @@ from xmltodict import parse, unparse
 # custom functions
 from .Calculation_gdal import raster_value
 from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
-from .supports import prepare_zip_file, is_valid_xml
+from .supports import prepare_zip_file, is_valid_xml, is_surrounded_by_quotes
 
 
 # Custom exceptions.
@@ -2025,6 +2025,7 @@ class Geoserver:
         name: str,
         store_name: str,
         sql: str,
+        parameters: Optional[Iterable[Dict]] = None,
         key_column: Optional[str] = None,
         geom_name: str = "geom",
         geom_type: str = "Geometry",
@@ -2032,18 +2033,40 @@ class Geoserver:
         workspace: Optional[str] = None,
     ):
         """
+        Publishes an SQL query as a layer, optionally with parameters
 
         Parameters
         ----------
         name : str
         store_name : str
         sql : str
+        parameters : iterable of dicts, optional
         key_column : str, optional
         geom_name : str, optional
         geom_type : str, optional
         workspace : str, optional
 
+        Notes
+        -----
+        With regards to SQL view parameters, it is advised to read the relevant section from the geoserver docs:
+        https://docs.geoserver.org/main/en/user/data/database/sqlview.html#parameterizing-sql-views
+
+        An integer-based parameter must have a default value
+
+        You should be VERY careful with the `regexp_validator`, as it can open you to SQL injection attacks. If you do
+        not supply one for a parameter, it will use the geoserver default `^[\w\d\s]+$`.
+
+        The `parameters` iterable must contain dictionaries with this structure:
+
+        ```
+        {
+          "name": "<name of parameter (required)>"
+          "rexegpValidator": "<string containing regex validator> (optional)"
+          "defaultValue" : "<default value of parameter if not specified (required only for non-string parameters)>"
+        }
+        ```
         """
+
         if workspace is None:
             workspace = "default"
 
@@ -2053,6 +2076,27 @@ class Geoserver:
 
         else:
             key_column_xml = """"""
+
+        parameters_xml = ""
+        if parameters is not None:
+            for parameter in parameters:
+
+                # non-string parameters MUST have a default value supplied
+                if not is_surrounded_by_quotes(sql, parameter["name"]) and not "defaultValue" in parameter:
+                    raise ValueError(f"Parameter `{parameter['name']}` appears to be a non-string in the supplied query"
+                                     ", but does not have a default value specified. You must supply a default value "
+                                     "for non-string parameters using the `defaultValue` key.")
+
+                param_name = parameter.get("name", "")
+                default_value = parameter.get("defaultValue", "")
+                regexp_validator = parameter.get("regexpValidator", r"^[\w\d\s]+$")
+                parameters_xml += (f"""
+                    <parameter>
+                        <name>{param_name}</name>
+                        <defaultValue>{default_value}</defaultValue>
+                        <regexpValidator>{regexp_validator}</regexpValidator>
+                    </parameter>\n
+                """.strip())
 
         layer_xml = """<featureType>
         <name>{0}</name>
@@ -2073,11 +2117,12 @@ class Geoserver:
                         <type>{3}</type>
                         <srid>{5}</srid>
                     </geometry>{6}
+                    {7}
                 </virtualTable>
             </entry>
         </metadata>
         </featureType>""".format(
-            name, sql, geom_name, geom_type, workspace, srid, key_column_xml
+            name, sql, geom_name, geom_type, workspace, srid, key_column_xml, parameters_xml
         )
 
         # rest API url

@@ -1140,13 +1140,13 @@ class Geoserver:
             if len(f) > 0:
                 name = f[0]
 
-        if Path(path).exists():
+        if is_valid_xml(path):
+            # path is actually just the xml itself
+            xml = path
+        elif Path(path).exists():
             # path is pointing to an existing file
             with open(path, "rb") as f:
                 xml = f.read()
-        elif is_valid_xml(path):
-            # path is actually just the xml itself
-            xml = path
         else:
             # path is non-existing file or not valid xml
             raise ValueError("`path` must be either a path to a style file, or a valid XML string.")

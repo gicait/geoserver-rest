@@ -1,0 +1,144 @@
+name: Run tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+
+  test-ubuntu:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        cache: 'pip'
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+        sudo apt-get update
+        sudo apt-get install gdal-bin libgdal-dev
+        pip install GDAL==`gdal-config --version` 
+        python -m pip install --upgrade pip
+        pip install -r requirements_dev.txt
+
+    - name: Set up docker-compose
+      run: |
+        docker compose -f tests/docker-compose.yaml up -d
+        sleep 60  # Geoserver takes quite a long time to boot up and there is no healthcheck
+
+    - name: Test with pytest
+      uses: dariocurr/pytest-summary@main
+      with:
+        paths: tests/test_geoserver.py
+      env:
+        DB_HOST: postgis
+
+    - name: Upload test summary
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-summary-linux
+        path: test-summary-linux.md
+      if: always()
+
+  #test-windows:
+  #
+  #  runs-on: windows-latest
+  #
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #
+  #    - name: Set up Python 3.10
+  #      uses: actions/setup-python@v3
+  #      with:
+  #        python-version: '3.10'
+  #
+  #    - name: Set up PostGIS
+  #      run: |
+  #
+  #        # Install PostGIS (PostgreSQL comes on the GitHub Actions runner by default but lacks PostGIS control files and dependencies)
+  #        netsh advfirewall firewall show rule name="Allow Localhost 5432"
+  #        Invoke-WebRequest -Uri "http://download.osgeo.org/postgis/windows/pg14/postgis-bundle-pg14x64-setup-3.4.1-1.exe" -OutFile "postgis-installer.exe"
+  #        Start-Process "postgis-installer.exe" -ArgumentList "/S /D=C:\Program Files\PostgreSQL\14" -Wait -NoNewWindow
+  #        & "C:\Program Files\PostgreSQL\14\bin\pg_ctl.exe" -D "C:\Program Files\PostgreSQL\14\data" start
+  #        & "C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres -c "CREATE DATABASE geodb;"
+  #        & "C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres -c "CREATE USER geodb_user WITH ENCRYPTED PASSWORD 'geodb_pass';"
+  #        & "C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE geodb TO geodb_user;"
+  #        & "C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres -d geodb -c "CREATE EXTENSION postgis;"
+  #
+  #    - name: Set up Tomcat/GeoServer
+  #      run: |
+  #
+  #        # Configure firewall to allow connectiosn to localhost port 8080 (might not be necessary)
+  #        netsh advfirewall firewall add rule name="Allow Localhost 5432" dir=in action=allow protocol=TCP localport=5432
+  #
+  #        # Download and install Apache Tomcat (need version 9 because the JRE on the GitHub Actions runner is incompatible with 10+)
+  #        curl -L https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.88/bin/apache-tomcat-9.0.88-windows-x64.zip -o tomcat.zip
+  #        Expand-Archive -Path tomcat.zip -DestinationPath "C:\"
+  #        $directory = Get-ChildItem -Path "C:\" -Directory | Where-Object { $_.Name -like "*apache-tomcat*" } | Select-Object -First 1
+  #        if ($directory) { Rename-Item -Path $directory.FullName -NewName "Tomcat" }
+  #
+  #        # Download and install Geoserver, then move it to the Tomcat directory
+  #        # Version-locked to 2.22.0 beacause of Java 8
+  #        curl -L https://sourceforge.net/projects/geoserver/files/GeoServer/2.22.0/geoserver-2.22.0-war.zip/download -o geoserver.zip
+  #        Expand-Archive -Path geoserver.zip -DestinationPath "C:\GeoServer"
+  #        cp C:\GeoServer\geoserver.war C:\Tomcat\webapps\geoserver.war
+  #
+  #        # Set env vars for Tomcat and run it (it takes a little while, so wait 30 seconds after)
+  #        $env:CATALINA_BASE = "C:\Tomcat"
+  #        $env:CATALINA_HOME = "C:\Tomcat"
+  #        $env:CATALINA_TMPDIR = "C:\Tomcat\temp"
+  #        C:\Tomcat\bin\startup.bat
+  #        Start-Sleep -Seconds 30
+  #
+  #      shell: pwsh
+  #
+  #    - name: Install Miniconda
+  #      run: |
+  #        curl -O https://repo.anaconda.com/miniconda/Miniconda3-py39_4.10.3-Windows-x86_64.exe
+  #        Start-Process -FilePath "Miniconda3-py39_4.10.3-Windows-x86_64.exe" -ArgumentList '/InstallationType=JustMe /RegisterPython=0 /S /D="%UserProfile%\Miniconda3"' -Wait -NoNewWindow
+  #        & "$env:UserProfile\Miniconda3\Scripts\conda" init powershell
+  #      shell: pwsh
+  #
+  #    - name: Configure Conda environment
+  #      run: |
+  #        $env:PATH = "$env:UserProfile\Miniconda3;$env:UserProfile\Miniconda3\Scripts;$env:UserProfile\Miniconda3\Library\bin;$env:PATH"
+  #        conda update conda -y
+  #        conda create -n geospatial python=3.10 -y
+  #        conda activate geospatial
+  #        conda install -c conda-forge gdal>=3.4.1 -y
+  #        python -m pip install --upgrade pip
+  #        pip install -r requirements_dev.txt
+  #      shell: pwsh
+  #
+  #    #- name: Test with pytest
+  #    #  uses: dariocurr/pytest-summary@main
+  #    #  with:
+  #    #    paths: tests/test_geoserver.py
+  #    #  env:
+  #    #    DB_HOST: postgis
+  #
+  #    - name: Test with pytest
+  #      run: |
+  #        conda activate geospatial
+  #        pytest tests/test_geoserver.py
+  #
+  #    - name: Upload test summary
+  #      uses: actions/upload-artifact@v3
+  #      with:
+  #        name: test-summary-windows
+  #        path: test-summary-windows.md
+  #      if: always()

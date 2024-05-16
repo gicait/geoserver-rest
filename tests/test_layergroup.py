@@ -1,6 +1,7 @@
 import os
 import unittest
 from environs import Env
+import pytest
 
 from unittest.mock import MagicMock, patch #allows replacing methods ans Objects by Mocks
 from ddt import data, ddt, unpack #allows running the same test with different parameters
@@ -8,6 +9,7 @@ from ddt import data, ddt, unpack #allows running the same test with different p
 from geo.Geoserver import Geoserver
 
 @ddt
+@pytest.mark.skip(reason="Wrong env vars")
 class TestLayerGroup(unittest.TestCase):
     """
     Tests all layergroup related methods of the geoserver class.

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+
+  postgis:
+    image: postgis/postgis:latest
+    environment:
+      POSTGRES_DB: geodb
+      POSTGRES_USER: geodb_user
+      POSTGRES_PASSWORD: geodb_pass
+    ports:
+      - "0.0.0.0:5432:5432"
+
+  geoserver:
+    image: kartoza/geoserver:latest
+    environment:
+      - GEOSERVER_ADMIN_PASSWORD=geoserver
+      - GEOSERVER_ADMIN_USER=admin
+    ports:
+      - "0.0.0.0:8080:8080"

@@ -330,7 +330,7 @@ Some get request examples
     system_status = geo.get_system_status()
 
     # get workspace
-    workspace = geo.get_workspaces(workspace='workspace_name')
+    workspace = geo.get_workspace(workspace='workspace_name')
 
     # get default workspace
     dw = geo.get_default_wokspace()
@@ -339,7 +339,7 @@ Some get request examples
     workspaces = geo.get_workspaces()
 
     # get datastore
-    datastore = geo.get_datastores(store_name='store')
+    datastore = geo.get_datastore(store_name='store')
 
     # get all the datastores
     datastores = geo.get_datastores()

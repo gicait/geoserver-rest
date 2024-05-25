@@ -17,6 +17,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version: [3.8, 3.8, 3.9, 3.10, 3.11, 3.12]
+
     steps:
     - uses: actions/checkout@v4
 
@@ -28,7 +32,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+        sudo apt-add-repository ppa:ubuntugis/ppa
         sudo apt-get update
         sudo apt-get install gdal-bin libgdal-dev
         pip install GDAL==`gdal-config --version` 

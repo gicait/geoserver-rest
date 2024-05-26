@@ -167,42 +167,42 @@ class Geoserver:
     # _______________________________________________________________________________________________
     #
 
-    def get_default_workspace(self):
+    def get_default_workspace(self, **kwargs):
         """
         Returns the default workspace.
         """
         url = "{}/rest/workspaces/default".format(self.service_url)
-        r = requests.get(url, auth=(self.username, self.password))
+        r = requests.get(url, auth=(self.username, self.password), **kwargs)
         if r.status_code == 200:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def get_workspace(self, workspace):
+    def get_workspace(self, workspace, **kwargs):
         """
         get name  workspace if exist
         Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
         """
         payload = {"recurse": "true"}
         url = "{}/rest/workspaces/{}.json".format(self.service_url, workspace)
-        r = requests.get(url, auth=(self.username, self.password), params=payload)
+        r = requests.get(url, auth=(self.username, self.password), params=payload, **kwargs)
         if r.status_code == 200:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def get_workspaces(self):
+    def get_workspaces(self, **kwargs):
         """
         Returns all the workspaces.
         """
         url = "{}/rest/workspaces".format(self.service_url)
-        r = requests.get(url, auth=(self.username, self.password))
+        r = requests.get(url, auth=(self.username, self.password), **kwargs)
         if r.status_code == 200:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def set_default_workspace(self, workspace: str):
+    def set_default_workspace(self, workspace: str, **kwargs):
         """
         Set the default workspace.
         """
@@ -214,6 +214,7 @@ class Geoserver:
             url,
             data=data,
             headers={"content-type": "text/xml"},
+            **kwargs
         )
 
         if r.status_code == 200:
@@ -223,7 +224,7 @@ class Geoserver:
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def create_workspace(self, workspace: str):
+    def create_workspace(self, workspace: str, **kwargs):
         """
         Create a new workspace in geoserver.
 
@@ -232,14 +233,14 @@ class Geoserver:
         url = "{}/rest/workspaces".format(self.service_url)
         data = "<workspace><name>{}</name></workspace>".format(workspace)
         headers = {"content-type": "text/xml"}
-        r = self._requests("post", url, data=data, headers=headers)
+        r = self._requests("post", url, data=data, headers=headers, **kwargs)
 
         if r.status_code == 201:
             return "{} Workspace {} created!".format(r.status_code, workspace)
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def delete_workspace(self, workspace: str):
+    def delete_workspace(self, workspace: str, **kwargs):
         """
 
         Parameters
@@ -249,7 +250,7 @@ class Geoserver:
         """
         payload = {"recurse": "true"}
         url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
-        r = requests.delete(url, auth=(self.username, self.password), params=payload)
+        r = requests.delete(url, auth=(self.username, self.password), params=payload, **kwargs)
 
         if r.status_code == 200:
             return "Status code: {}, delete workspace".format(r.status_code)

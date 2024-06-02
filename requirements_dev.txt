@@ -1,3 +1,5 @@
+-r requirements.txt
+
 pytest
 black
 flake8
@@ -7,3 +9,7 @@ environs
 ddt
 sqlalchemy>=2.0.29
 psycopg2>=2.9.9
+gdal>=3.4.1  # Note: in the automated test pipeline, this will be replaced by whatever is the output of `gdal-config --version`
+seaborn>=0.13.2
+ddt>=1.7.1
+xmltodict>=0.13.0

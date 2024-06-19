@@ -1,6 +1,6 @@
 # inbuilt libraries
 import os
-from typing import List, Optional, Set, Union, Dict, Iterable
+from typing import List, Optional, Set, Union, Dict, Iterable, Any
 from pathlib import Path
 
 # third-party libraries
@@ -11,6 +11,10 @@ from xmltodict import parse, unparse
 from .Calculation_gdal import raster_value
 from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
 from .supports import prepare_zip_file, is_valid_xml, is_surrounded_by_quotes
+
+
+def _parse_request_options(request_options: Dict[str, Any]):
+    return request_options if request_options is not None else {}
 
 
 # Custom exceptions.
@@ -167,54 +171,67 @@ class Geoserver:
     # _______________________________________________________________________________________________
     #
 
-    def get_default_workspace(self, **kwargs):
+    def get_default_workspace(self, request_options: Dict[str, Any] = None):
         """
         Returns the default workspace.
         """
+
+        request_options = _parse_request_options(request_options)
         url = "{}/rest/workspaces/default".format(self.service_url)
-        r = requests.get(url, auth=(self.username, self.password), **kwargs)
+        r = self._requests("get", url, **request_options)
+
         if r.status_code == 200:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def get_workspace(self, workspace, **kwargs):
+    def get_workspace(self, workspace, request_options: Dict[str, Any] = None):
         """
         get name  workspace if exist
         Example: curl -v -u admin:admin -XGET -H "Accept: text/xml"  http://localhost:8080/geoserver/rest/workspaces/acme.xml
         """
-        payload = {"recurse": "true"}
+        request_options = _parse_request_options(request_options)
+
+        # FIXME: params["recurse"]="true" was hardcoded historically, but it should be configurable now. Could be breaking change though
+        params = {**request_options.get("params", {}), "recurse": "true"}
+        request_options = {**request_options, "params": params}
+
         url = "{}/rest/workspaces/{}.json".format(self.service_url, workspace)
-        r = requests.get(url, auth=(self.username, self.password), params=payload, **kwargs)
+        r = self._requests("get", url, **request_options)
+
         if r.status_code == 200:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def get_workspaces(self, **kwargs):
+    def get_workspaces(self, request_options: Dict[str, Any] = None):
         """
         Returns all the workspaces.
         """
+        request_options = _parse_request_options(request_options)
         url = "{}/rest/workspaces".format(self.service_url)
-        r = requests.get(url, auth=(self.username, self.password), **kwargs)
+
+        r = self._requests("get", url, **request_options)
+
         if r.status_code == 200:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def set_default_workspace(self, workspace: str, **kwargs):
+    def set_default_workspace(self, workspace: str, request_options: Dict[str, Any] = None):
         """
         Set the default workspace.
         """
         url = "{}/rest/workspaces/default".format(self.service_url)
         data = "<workspace><name>{}</name></workspace>".format(workspace)
-        print(url, data)
+        request_options = _parse_request_options(request_options)
+
         r = self._requests(
             "put",
             url,
             data=data,
             headers={"content-type": "text/xml"},
-            **kwargs
+            **request_options
         )
 
         if r.status_code == 200:

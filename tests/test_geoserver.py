@@ -11,6 +11,38 @@ from .common import GEO_URL, geo, postgis_params, postgis_params_local
 
 HERE = pathlib.Path(__file__).parent.resolve()
 
+
+class TestWorkspace:
+
+    def test_get_default_workspace(self):
+
+        response = geo.get_default_workspace()
+        # Assuming that we are using the kartoza/geoserver docker image, which uses `ne` as the default workspace
+        assert response["workspace"]["name"] == "ne"
+
+    def test_get_workspace(self):
+
+        response = geo.get_workspace("ne")
+        assert response["workspace"]["name"] == "ne"
+
+    def test_get_workspaces(self):
+
+        response = geo.get_workspaces()
+        # Assuming that we are using the kartoza/geoserver docker image, which uses the following as workspaces
+        expected_workspace_names = sorted(['cite', 'it.geosolutions', 'ne', 'nurc', 'sde', 'sf', 'tiger', 'topp'])
+        assert sorted([ws["name"] for ws in response["workspaces"]["workspace"]]) == expected_workspace_names
+
+    def test_set_default_workspace(self):
+
+        try:
+            geo.set_default_workspace("cite")
+            response = geo.get_default_workspace()
+            assert response["workspace"]["name"] == "cite"
+        finally:
+            # Assuming that we are using the kartoza/geoserver docker image, which uses `ne` as the default workspace
+            geo.set_default_workspace("ne")
+
+
 @pytest.mark.skip(reason="Only setup for local testing.")
 class TestRequest:
     def test_information(self):

@@ -287,7 +287,7 @@ class Geoserver:
         """
         payload = {"recurse": "true"}
         url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
-        r = self._requests("delete", url, auth=(self.username, self.password), params=payload)
+        r = self._requests("delete", url, params=payload)
 
         if r.status_code == 200:
             return "Status code: {}, delete workspace".format(r.status_code)

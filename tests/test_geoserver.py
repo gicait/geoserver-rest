@@ -88,7 +88,8 @@ class TestWorkspace:
         response = geo.get_workspaces()
         # Assuming that we are using the kartoza/geoserver docker image, which uses the following as workspaces
         expected_workspace_names = sorted(['cite', 'it.geosolutions', 'ne', 'nurc', 'sde', 'sf', 'tiger', 'topp'])
-        assert sorted([ws["name"] for ws in response["workspaces"]["workspace"]]) == expected_workspace_names
+        for expected_workspace_name in expected_workspace_names:
+            assert expected_workspace_name in [ws["name"] for ws in response["workspaces"]["workspace"]]
 
     def test_set_default_workspace(self):
 

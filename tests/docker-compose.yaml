@@ -16,5 +16,6 @@ services:
     environment:
       - GEOSERVER_ADMIN_PASSWORD=geoserver
       - GEOSERVER_ADMIN_USER=admin
+      - SAMPLE_DATA=true
     ports:
       - "0.0.0.0:8080:8080"

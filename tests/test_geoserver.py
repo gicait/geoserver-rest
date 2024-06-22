@@ -12,6 +12,64 @@ from .common import GEO_URL, geo, postgis_params, postgis_params_local
 HERE = pathlib.Path(__file__).parent.resolve()
 
 
+class TestGeoserverMethods:
+
+    def test_get_manifest(self):
+
+        """
+        Tests that the manifest endpoint returns the proper dictionary
+        """
+
+        response = geo.get_manifest()
+        assert len(response["about"]) > 0
+
+    def test_get_version(self):
+
+        """
+        Tests that the version endpoint returns a dictionary containing at least one resource called `GeoServer`
+        """
+
+        response = geo.get_version()
+        assert "GeoServer" in [resource["@name"] for resource in response["about"]["resource"]]
+
+    def test_get_status(self):
+
+        """
+        Tests that the status endpoint returns a dictionary containing a key called `status`
+        """
+
+        response = geo.get_status()
+        # NOT A TYPO! Geoserver returns a key called exactly `statuss`
+        assert "statuss" in response.keys()
+
+    def test_get_system_status(self):
+
+        """
+        Tests that the status endpoint returns a dictionary containing a key called `metric`
+        """
+
+        response = geo.get_system_status()
+        assert "metrics" in response.keys()
+
+    def test_reload(self):
+
+        """
+        Tests that the reload endpoint returns the string `Status code: 200`
+        """
+
+        response = geo.reload()
+        assert response == "Status code: 200"
+
+    def test_reset(self):
+
+        """
+        Tests that the reset endpoint returns the string `Status code: 200`
+        """
+
+        response = geo.reset()
+        assert response == "Status code: 200"
+
+
 class TestWorkspace:
 
     def test_get_default_workspace(self):

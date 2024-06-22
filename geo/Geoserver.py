@@ -287,7 +287,7 @@ class Geoserver:
         """
         payload = {"recurse": "true"}
         url = "{}/rest/workspaces/{}".format(self.service_url, workspace)
-        r = self._requests("delete", auth=(self.username, self.password), params=payload)
+        r = self._requests("delete", url, auth=(self.username, self.password), params=payload)
 
         if r.status_code == 200:
             return "Status code: {}, delete workspace".format(r.status_code)
@@ -335,7 +335,7 @@ class Geoserver:
         url = "{}/rest/workspaces/{}/datastores.json".format(
             self.service_url, workspace
         )
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
         if r.status_code == 200:
             return r.json()
         else:
@@ -375,7 +375,7 @@ class Geoserver:
             workspace = "default"
 
         url = "{}/rest/workspaces/{}/coveragestores".format(self.service_url, workspace)
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
         if r.status_code == 200:
             return r.json()
         else:
@@ -525,7 +525,7 @@ class Geoserver:
 
         if workspace is not None:
             url = "{}/rest/workspaces/{}/layers".format(self.service_url, workspace)
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
         if r.status_code == 200:
             return r.json()
         else:
@@ -573,7 +573,7 @@ class Geoserver:
             url = "{}/rest/workspaces/{}/layergroups".format(
                 self.service_url, workspace
             )
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
         if r.status_code == 200:
             return r.json()
         else:
@@ -1144,7 +1144,7 @@ class Geoserver:
             url = "{}/rest/workspaces/{}/styles.json".format(
                 self.service_url, workspace
             )
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
         if r.status_code == 200:
             return r.json()
         else:
@@ -2196,7 +2196,7 @@ class Geoserver:
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes.json".format(
             self.service_url, workspace, store_name
         )
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
         if r.status_code == 200:
             r_dict = r.json()
             features = [i["name"] for i in r_dict["featureTypes"]["featureType"]]
@@ -2219,7 +2219,7 @@ class Geoserver:
         url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}.json".format(
             self.service_url, workspace, store_name, feature_type_name
         )
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
         if r.status_code == 200:
             r_dict = r.json()
             attribute = [
@@ -2241,7 +2241,7 @@ class Geoserver:
         url = "{}/rest/workspaces/{}/datastores/{}".format(
             self.service_url, workspace, store_name
         )
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
         if r.status_code == 200:
             r_dict = r.json()
             return r_dict["dataStore"]
@@ -2265,7 +2265,7 @@ class Geoserver:
         )
         if workspace is None:
             url = "{}/datastores/{}".format(self.service_url, featurestore_name)
-        r = self._requests("delete", auth=(self.username, self.password), params=payload)
+        r = self._requests("delete", url, auth=(self.username, self.password), params=payload)
 
         if r.status_code == 200:
             return "Status code: {}, delete featurestore".format(r.status_code)
@@ -2293,7 +2293,7 @@ class Geoserver:
                 self.service_url, coveragestore_name
             )
 
-        r = self._requests("delete", auth=(self.username, self.password), params=payload)
+        r = self._requests("delete", url, auth=(self.username, self.password), params=payload)
 
         if r.status_code == 200:
             return "Coverage store deleted successfully"
@@ -2322,7 +2322,7 @@ class Geoserver:
             url += "service/{}/users/".format(service)
 
         headers = {"accept": "application/xml"}
-        r = self._requests("get", auth=(self.username, self.password), headers=headers)
+        r = self._requests("get", url, auth=(self.username, self.password), headers=headers)
 
         if r.status_code == 200:
             return parse(r.content)
@@ -2423,7 +2423,7 @@ class Geoserver:
             url += "service/{}/user/{}".format(service, username)
 
         headers = {"accept": "application/json"}
-        r = self._requests("delete", auth=(self.username, self.password), headers=headers)
+        r = self._requests("delete", url, auth=(self.username, self.password), headers=headers)
 
         if r.status_code == 200:
             return "User deleted successfully"
@@ -2446,7 +2446,7 @@ class Geoserver:
         else:
             url += "service/{}/groups/".format(service)
 
-        r = self._requests("get", auth=(self.username, self.password))
+        r = self._requests("get", url, auth=(self.username, self.password))
 
         if r.status_code == 200:
             return parse(r.content)
@@ -2469,7 +2469,7 @@ class Geoserver:
             url += "group/{}".format(group)
         else:
             url += "service/{}/group/{}".format(service, group)
-        r = self._requests("post", auth=(self.username, self.password))
+        r = self._requests("post", url, auth=(self.username, self.password))
 
         if r.status_code == 201:
             return "Group created successfully"
@@ -2493,7 +2493,7 @@ class Geoserver:
         else:
             url += "service/{}/group/{}".format(service, group)
 
-        r = self._requests("delete", auth=(self.username, self.password))
+        r = self._requests("delete", url, auth=(self.username, self.password))
 
         if r.status_code == 200:
             return "Group deleted successfully"

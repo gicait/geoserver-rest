@@ -67,7 +67,7 @@ class Geoserver:
         service_url: str = "http://localhost:8080/geoserver",  # default deployment url during installation
         username: str = "admin",  # default username during geoserver installation
         password: str = "geoserver",  # default password during geoserver installation
-        request_options: Dict[Any, str] = None  # additional parameters to be sent with each request
+        request_options: Dict[str, Any] = None  # additional parameters to be sent with each request
     ):
         self.service_url = service_url
         self.username = username
@@ -79,7 +79,6 @@ class Geoserver:
     def _requests(self,
                   method: str,
                   url: str,
-                  request_options: Dict[str, Any] = None,
                   **kwargs) -> requests.Response:
 
         """
@@ -89,28 +88,19 @@ class Geoserver:
         Attributes
         ----------
         method : str
-            Which method to use (`get`, `post`, `put`, `delete`
+            Which method to use (`get`, `post`, `put`, `delete`)
         url : str
             URL to which to make the request
-        request_options: Dict[str, Any]
-            Dictionary containing key/value pairs for options to be sent with the request, which will override the ones
-            specified at initialization time of the Geoserver object
         """
 
-        # Some methods were historically hardcoded with specific options
-        if request_options is not None:
-            overridden_request_options = {**self.request_options, **request_options}
-        else:
-            overridden_request_options = {}
-
         if method.lower() == "post":
-            return requests.post(url, auth=(self.username, self.password), **overridden_request_options, **kwargs)
+            return requests.post(url, auth=(self.username, self.password), **kwargs, **self.request_options)
         elif method.lower() == "get":
-            return requests.get(url, auth=(self.username, self.password), **overridden_request_options, **kwargs)
+            return requests.get(url, auth=(self.username, self.password), **kwargs, **self.request_options)
         elif method.lower() == "put":
-            return requests.put(url, auth=(self.username, self.password), **overridden_request_options, **kwargs)
+            return requests.put(url, auth=(self.username, self.password), **kwargs, **self.request_options)
         elif method.lower() == "delete":
-            return requests.delete(url, auth=(self.username, self.password), **overridden_request_options, **kwargs)
+            return requests.delete(url, auth=(self.username, self.password), **kwargs, **self.request_options)
 
     # _______________________________________________________________________________________________
     #
@@ -218,10 +208,10 @@ class Geoserver:
         """
 
         # FIXME: params["recurse"]="true" was hardcoded historically, but it should be configurable now. Could be breaking change though
-        request_options = {"params": {"recurse": "true"}}
+        #request_options = {"params": {"recurse": "true"}}
 
         url = "{}/rest/workspaces/{}.json".format(self.service_url, workspace)
-        r = self._requests("get", url, request_options)
+        r = self._requests("get", url, params={"recurse": "true"})
 
         if r.status_code == 200:
             return r.json()

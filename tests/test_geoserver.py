@@ -1,3 +1,4 @@
+import os
 import pathlib
 
 import requests
@@ -5,11 +6,32 @@ import pytest
 import sqlalchemy as sa
 
 from geo.Style import catagorize_xml, classified_xml
-from geo.Geoserver import GeoserverException
+from geo.Geoserver import GeoserverException, Geoserver
 
 from .common import GEO_URL, geo, postgis_params, postgis_params_local
 
 HERE = pathlib.Path(__file__).parent.resolve()
+
+
+class TestCustomRequestParameters:
+
+    def test_custom_request_parameters(self):
+
+        """
+        Tests that a custom request parameter is properly applied when spcecified
+
+        It's a bit kludgy, we check that if we specify a timeout of 0, then requests raises a ValueError, which is the
+        intended behaviour for that library given that option. That proves that the request_options are getting passed
+        properly for any given request
+        """
+
+        geo = Geoserver(GEO_URL,
+                        username=os.getenv("GEO_USER", "admin"),
+                        password=os.getenv("GEO_PASS", "geoserver"),
+                        request_options={"timeout": 0})
+        url = "{}/rest/about/manifest.json".format(geo.service_url)
+        with pytest.raises(ValueError):
+            geo._requests("get", url)
 
 
 class TestGeoserverMethods:

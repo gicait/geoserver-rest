@@ -4,6 +4,7 @@ pytest
 black
 flake8
 sphinx>=1.7
+sphinx-rtd-theme>=2.0
 pre-commit
 environs
 ddt

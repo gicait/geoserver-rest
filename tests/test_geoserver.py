@@ -1,3 +1,4 @@
+import os
 import pathlib
 
 import requests
@@ -5,11 +6,123 @@ import pytest
 import sqlalchemy as sa
 
 from geo.Style import catagorize_xml, classified_xml
-from geo.Geoserver import GeoserverException
+from geo.Geoserver import GeoserverException, Geoserver
 
 from .common import GEO_URL, geo, postgis_params, postgis_params_local
 
 HERE = pathlib.Path(__file__).parent.resolve()
+
+
+class TestCustomRequestParameters:
+
+    def test_custom_request_parameters(self):
+
+        """
+        Tests that a custom request parameter is properly applied when spcecified
+
+        It's a bit kludgy, we check that if we specify a timeout of 0, then requests raises a ValueError, which is the
+        intended behaviour for that library given that option. That proves that the request_options are getting passed
+        properly for any given request
+        """
+
+        geo = Geoserver(GEO_URL,
+                        username=os.getenv("GEO_USER", "admin"),
+                        password=os.getenv("GEO_PASS", "geoserver"),
+                        request_options={"timeout": 0})
+        url = "{}/rest/about/manifest.json".format(geo.service_url)
+        with pytest.raises(ValueError):
+            geo._requests("get", url)
+
+
+class TestGeoserverMethods:
+
+    def test_get_manifest(self):
+
+        """
+        Tests that the manifest endpoint returns the proper dictionary
+        """
+
+        response = geo.get_manifest()
+        assert len(response["about"]) > 0
+
+    def test_get_version(self):
+
+        """
+        Tests that the version endpoint returns a dictionary containing at least one resource called `GeoServer`
+        """
+
+        response = geo.get_version()
+        assert "GeoServer" in [resource["@name"] for resource in response["about"]["resource"]]
+
+    def test_get_status(self):
+
+        """
+        Tests that the status endpoint returns a dictionary containing a key called `status`
+        """
+
+        response = geo.get_status()
+        # NOT A TYPO! Geoserver returns a key called exactly `statuss`
+        assert "statuss" in response.keys()
+
+    def test_get_system_status(self):
+
+        """
+        Tests that the status endpoint returns a dictionary containing a key called `metric`
+        """
+
+        response = geo.get_system_status()
+        assert "metrics" in response.keys()
+
+    def test_reload(self):
+
+        """
+        Tests that the reload endpoint returns the string `Status code: 200`
+        """
+
+        response = geo.reload()
+        assert response == "Status code: 200"
+
+    def test_reset(self):
+
+        """
+        Tests that the reset endpoint returns the string `Status code: 200`
+        """
+
+        response = geo.reset()
+        assert response == "Status code: 200"
+
+
+class TestWorkspace:
+
+    def test_get_default_workspace(self):
+
+        response = geo.get_default_workspace()
+        # Assuming that we are using the kartoza/geoserver docker image, which uses `ne` as the default workspace
+        assert response["workspace"]["name"] == "ne"
+
+    def test_get_workspace(self):
+
+        response = geo.get_workspace("ne")
+        assert response["workspace"]["name"] == "ne"
+
+    def test_get_workspaces(self):
+
+        response = geo.get_workspaces()
+        # Assuming that we are using the kartoza/geoserver docker image, which uses the following as workspaces
+        expected_workspace_names = sorted(['cite', 'it.geosolutions', 'ne', 'nurc', 'sde', 'sf', 'tiger', 'topp'])
+        for expected_workspace_name in expected_workspace_names:
+            assert expected_workspace_name in [ws["name"] for ws in response["workspaces"]["workspace"]]
+
+    def test_set_default_workspace(self):
+
+        try:
+            geo.set_default_workspace("cite")
+            response = geo.get_default_workspace()
+            assert response["workspace"]["name"] == "cite"
+        finally:
+            # Assuming that we are using the kartoza/geoserver docker image, which uses `ne` as the default workspace
+            geo.set_default_workspace("ne")
+
 
 @pytest.mark.skip(reason="Only setup for local testing.")
 class TestRequest:

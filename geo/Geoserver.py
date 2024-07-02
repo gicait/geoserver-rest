@@ -174,6 +174,12 @@ class Geoserver:
         elif method.lower() == "delete":
             return requests.delete(url, auth=(self.username, self.password), **kwargs, **self.request_options)
 
+    # _______________________________________________________________________________________________
+    #
+    #       GEOSERVER AND SERVER SPECIFIC METHODS
+    # _______________________________________________________________________________________________
+    #
+
     def get_manifest(self):
         """
         Returns the manifest of the GeoServer. The manifest is a JSON of all the loaded JARs on the GeoServer server.
@@ -271,6 +277,12 @@ class Geoserver:
             return "Status code: {}".format(r.status_code)
         else:
             raise GeoserverException(r.status_code, r.content)
+
+    # _______________________________________________________________________________________________
+    #
+    #      WORKSPACES
+    # _______________________________________________________________________________________________
+    #
 
     def get_default_workspace(self):
         """
@@ -407,6 +419,12 @@ class Geoserver:
         else:
             raise GeoserverException(r.status_code, r.content)
 
+    # _______________________________________________________________________________________________
+    #
+    #       DATASTORES
+    # _______________________________________________________________________________________________
+    #
+
     def get_datastore(self, store_name: str, workspace: Optional[str] = None):
         """
         Return the data store in a given workspace. If workspace is not provided, it will take the default workspace.
@@ -462,6 +480,12 @@ class Geoserver:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
+
+    # _______________________________________________________________________________________________
+    #
+    #       COVERAGE STORES
+    # _______________________________________________________________________________________________
+    #
 
     def get_coveragestore(
         self, coveragestore_name: str, workspace: Optional[str] = None
@@ -546,6 +570,10 @@ class Geoserver:
         -------
         dict
             The response from the server.
+
+        Notes
+        -----
+        the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type
         """
         if path is None:
             raise Exception("You must provide the full path to the raster")
@@ -607,6 +635,11 @@ class Geoserver:
         -------
         dict
             The response from the server.
+
+        Notes
+        -----
+        More about time support in geoserver WMS you can read here:
+        https://docs.geoserver.org/master/en/user/services/wms/time.html
         """
         url = "{0}/rest/workspaces/{1}/coveragestores/{2}/coverages/{2}".format(
             self.service_url, workspace, store_name
@@ -639,6 +672,12 @@ class Geoserver:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
+
+    # _______________________________________________________________________________________________
+    #
+    #       LAYERS
+    # _______________________________________________________________________________________________
+    #
 
     def get_layer(self, layer_name: str, workspace: Optional[str] = None):
         """
@@ -721,6 +760,12 @@ class Geoserver:
         else:
             raise GeoserverException(r.status_code, r.content)
 
+    # _______________________________________________________________________________________________
+    #
+    #       LAYER GROUPS
+    # _______________________________________________________________________________________________
+    #
+
     def get_layergroups(self, workspace: Optional[str] = None):
         """
         Returns all the layer groups from GeoServer. If workspace is None, it will list all the layer groups from GeoServer.
@@ -734,6 +779,10 @@ class Geoserver:
         -------
         dict
             The list of layer groups.
+
+        Notes
+        -----
+        If workspace is None, it will list all the layer groups from geoserver.
         """
         url = "{}/rest/layergroups".format(self.service_url)
 
@@ -814,6 +863,12 @@ class Geoserver:
         -------
         str
             The URL of the created layer group.
+
+        Notes
+        -----
+        title is a human readable text for the layergroup
+        abstract_text is a long text, like a brief info about the layergroup
+        workspace is Optional(Global Layergroups don't need workspace).A layergroup can exist without a workspace.
         """
         assert isinstance(name, str), "Name must be of type String:''"
         assert isinstance(mode, str), "Mode must be of type String:''"
@@ -1354,6 +1409,12 @@ class Geoserver:
 
         return data
 
+    # _______________________________________________________________________________________________
+    #
+    #      STYLES
+    # _______________________________________________________________________________________________
+    #
+
     def get_style(self, style_name, workspace: Optional[str] = None):
         """
         Returns the style by style name.
@@ -1449,6 +1510,13 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue uploading the style.
+
+        Notes
+        -----
+        The name of the style file will be, sld_name:workspace
+        This function will create the style file in a specified workspace.
+        `path` can either be the path to the SLD file itself, or a string containing valid XML to be used for the style
+        Inputs: path to the sld_file or the contents of an SLD file itself, workspace,
         """
         if name is None:
             name = os.path.basename(path)
@@ -1541,6 +1609,12 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue creating the style.
+
+        Notes
+        -----
+        The name of the style file will be, rasterName:workspace
+        This function will dynamically create the style file for raster.
+        Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determines the number of class, min for minimum value of the raster, max for the max value of raster
         """
         raster = raster_value(raster_path)
         min_value = raster["min"]
@@ -1633,6 +1707,13 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue creating the style.
+
+        Notes
+        -----
+
+        The data type must be point, line or polygon
+        Inputs: column_name (based on which column style should be generated), workspace,
+        color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
         catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
 
@@ -1702,6 +1783,11 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue creating the style.
+
+        Notes
+        -----
+        The geometry type must be point, line or polygon
+        Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
         """
         outline_only_xml(color, width, geom_type)
 
@@ -1777,6 +1863,12 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue creating the style.
+
+        Notes
+        -----
+        The data type must be point, line or polygon
+        Inputs: column_name (based on which column style should be generated), workspace,
+        color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
         classified_xml(
             style_name,
@@ -1848,6 +1940,12 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue publishing the style.
+
+        Notes
+        -----
+        The coverage store will be created automatically as the same name as the raster layer name.
+        input parameters: the parameters connecting geoserver (user,password, url and workspace name),
+        the path to the file and file_type indicating it is a geotiff, arcgrid or other raster type.
         """
         headers = {"content-type": "text/xml"}
         url = "{}/rest/layers/{}:{}".format(self.service_url, workspace, layer_name)
@@ -1902,6 +2000,12 @@ class Geoserver:
             return "Status code: {}, delete style".format(r.status_code)
         else:
             raise GeoserverException(r.status_code, r.content)
+
+    # _______________________________________________________________________________________________
+    #
+    #      FEATURES AND DATASTORES
+    # _______________________________________________________________________________________________
+    #
 
     def create_featurestore(
             self,
@@ -2008,6 +2112,10 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue creating/updating the feature store.
+
+        Notes
+        -----
+        After creating feature store, you need to publish it. See the layer publish guidline here: https://geoserver-rest.readthedocs.io/en/latest/how_to_use.html#creating-and-publishing-featurestores-and-featurestore-layers
         """
         url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)
 
@@ -2131,6 +2239,10 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue creating/updating the datastore.
+
+        Notes
+        -----
+        If you have PostGIS datastore, please use create_featurestore function
         """
         if workspace is None:
             workspace = "default"
@@ -2195,6 +2307,10 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue creating the shapefile datastore.
+
+        Notes
+        -----
+        The layer name will be assigned according to the shp name
         """
         if path is None:
             raise Exception("You must provide a full path to shapefile")
@@ -2262,6 +2378,11 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue creating the geopackage datastore.
+
+        Notes
+        -----
+        The layer name will be assigned according to the layer name in the geopackage.
+        If the layer already exist it will be updated.
         """
         if path is None:
             raise Exception("You must provide a full path to shapefile")
@@ -2338,6 +2459,11 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue publishing the featurestore.
+
+        Notes
+        -----
+        Only user for postgis vector data
+        input parameters: specify the name of the table in the postgis database to be published, specify the store,workspace name, and  the Geoserver user name, password and URL
         """
         if workspace is None:
             workspace = "default"
@@ -2502,6 +2628,26 @@ class Geoserver:
         ------
         GeoserverException
             If there is an issue publishing the SQL view.
+
+                Notes
+        -----
+        With regards to SQL view parameters, it is advised to read the relevant section from the geoserver docs:
+        https://docs.geoserver.org/main/en/user/data/database/sqlview.html#parameterizing-sql-views
+
+        An integer-based parameter must have a default value
+
+        You should be VERY careful with the `regexp_validator`, as it can open you to SQL injection attacks. If you do
+        not supply one for a parameter, it will use the geoserver default `^[\w\d\s]+$`.
+
+        The `parameters` iterable must contain dictionaries with this structure:
+
+        ```
+        {
+          "name": "<name of parameter (required)>"
+          "rexegpValidator": "<string containing regex validator> (optional)"
+          "defaultValue" : "<default value of parameter if not specified (required only for non-string parameters)>"
+        }
+        ```
         """
         if workspace is None:
             workspace = "default"
@@ -2758,6 +2904,12 @@ class Geoserver:
             return "Coverage store deleted successfully"
         else:
             raise GeoserverException(r.status_code, r.content)
+
+    # _______________________________________________________________________________________________
+    #
+    #      USERS AND USERGROUPS
+    # _______________________________________________________________________________________________
+    #
 
     def get_all_users(self, service=None) -> dict:
         """

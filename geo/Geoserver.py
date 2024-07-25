@@ -1555,12 +1555,7 @@ class Geoserver:
 
         r = self._requests(method="post", url=url, data=style_xml, headers=headers)
         if r.status_code == 201:
-            r_sld = requests.put(
-                url + "/" + name,
-                data=xml,
-                auth=(self.username, self.password),
-                headers=header_sld,
-            )
+            r_sld = self._requests(method="put", url=url + "/" + name, data=xml, headers=header_sld)
 
             if r_sld.status_code == 200:
                 return r_sld.status_code
@@ -1656,12 +1651,8 @@ class Geoserver:
         )
         if r.status_code == 201:
             with open("style.sld", "rb") as f:
-                r_sld = requests.put(
-                    url + "/" + style_name,
-                    data=f.read(),
-                    auth=(self.username, self.password),
-                    headers=header_sld,
-                )
+                r_sld = self._requests(method="put", url=url + "/" + style_name, data=f.read(), headers=header_sld)
+
             os.remove("style.sld")
             if r_sld.status_code == 200:
                 return r_sld.status_code
@@ -2268,9 +2259,7 @@ class Geoserver:
 
         else:
             url = "{}/rest/workspaces/{}/datastores".format(self.service_url, workspace)
-            r = requests.post(
-                url, data, auth=(self.username, self.password), headers=headers
-            )
+            r = self._requests(method="post", url=url, data=data, headers=headers)
 
         if r.status_code in [200, 201]:
             return "Data store created/updated successfully"
@@ -2337,12 +2326,7 @@ class Geoserver:
         )
 
         with open(path, "rb") as f:
-            r = requests.put(
-                url,
-                data=f.read(),
-                auth=(self.username, self.password),
-                headers=headers,
-            )
+            r = self._requests("put", url, data=f.read(), headers=headers)
         if r.status_code in [200, 201, 202]:
             return "The shapefile datastore created successfully!"
         else:
@@ -2406,12 +2390,8 @@ class Geoserver:
         )
 
         with open(path, "rb") as f:
-            r = requests.put(
-                url,
-                data=f.read(),
-                auth=(self.username, self.password),
-                headers=headers,
-            )
+            r = self._requests("put", url, data=f.read(), headers=headers)
+
         if r.status_code in [200, 201, 202]:
             return "The geopackage datastore created successfully!"
         else:
@@ -2493,12 +2473,8 @@ class Geoserver:
                 </featureType>"""
         headers = {"content-type": "text/xml"}
 
-        r = requests.post(
-            url,
-            data=layer_xml,
-            auth=(self.username, self.password),
-            headers=headers,
-        )
+        r = self._requests("post", url, data=layer_xml, headers=headers)
+
         if r.status_code == 201:
             return r.status_code
         else:
@@ -2572,12 +2548,8 @@ class Geoserver:
                     </featureType>"""
         headers = {"content-type": "text/xml"}
 
-        r = requests.put(
-            url,
-            data=layer_xml,
-            auth=(self.username, self.password),
-            headers=headers,
-        )
+        r = self._requests("put", url, data=layer_xml, headers=headers)
+
         if r.status_code == 200:
             return r.status_code
         else:
@@ -2716,12 +2688,7 @@ class Geoserver:
         headers = {"content-type": "text/xml"}
 
         # request
-        r = requests.post(
-            url,
-            data=layer_xml,
-            auth=(self.username, self.password),
-            headers=headers,
-        )
+        r = self.requests("post", url, data=layer_xml, headers=headers)
 
         if r.status_code == 201:
             return r.status_code
@@ -2981,9 +2948,7 @@ class Geoserver:
             username, password, str(enabled).lower()
         )
         headers = {"content-type": "text/xml", "accept": "application/json"}
-        r = requests.post(
-            url, data, auth=(self.username, self.password), headers=headers
-        )
+        r = self._requests("post", url, data=data, headers=headers)
 
         if r.status_code == 201:
             return "User created successfully"
@@ -3036,9 +3001,7 @@ class Geoserver:
         data = unparse({"user": modifications})
         print(url, data)
         headers = {"content-type": "text/xml", "accept": "application/json"}
-        r = requests.post(
-            url, data, auth=(self.username, self.password), headers=headers
-        )
+        r = self._requests.post("post", url, data=data, headers=headers)
 
         if r.status_code == 200:
             return "User modified successfully"

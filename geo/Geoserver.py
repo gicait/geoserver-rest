@@ -3001,7 +3001,7 @@ class Geoserver:
         data = unparse({"user": modifications})
         print(url, data)
         headers = {"content-type": "text/xml", "accept": "application/json"}
-        r = self._requests.post("post", url, data=data, headers=headers)
+        r = self._requests("post", url, data=data, headers=headers)
 
         if r.status_code == 200:
             return "User modified successfully"

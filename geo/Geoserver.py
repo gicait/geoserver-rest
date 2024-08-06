@@ -2688,7 +2688,7 @@ class Geoserver:
         headers = {"content-type": "text/xml"}
 
         # request
-        r = self.requests("post", url, data=layer_xml, headers=headers)
+        r = self._requests("post", url, data=layer_xml, headers=headers)
 
         if r.status_code == 201:
             return r.status_code

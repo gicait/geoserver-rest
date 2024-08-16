@@ -3141,3 +3141,46 @@ class Geoserver:
             return "Group deleted successfully"
         else:
             raise GeoserverException(r.status_code, r.content)
+
+    # _______________________________________________________________________________________________
+    #
+    #      SERVICES
+    # _______________________________________________________________________________________________
+    #
+
+    def update_service(self, service: str, **kwargs):
+        """
+        Update selected service's options.
+
+        Parameters
+        ----------
+        service : str
+            Type of service (e.g., wms, wfs)
+        kwargs : dict
+            Options to be modified (e.g., maxRenderingTime=600)
+
+        Returns
+        -------
+        str
+            A success message indicating that the options were updated.
+
+        Raises
+        ------
+        GeoserverException
+            If there is an issue updating the service's options.
+        """
+        url = "{}/rest/services/{}/settings".format(self.service_url, service)
+        headers = {"content-type": "text/xml"}
+
+        data = ""
+        for key, value in kwargs.items():
+            data += "<{}><{}>{}</{}></{}>".format(
+                service, key, value, key, service
+            )
+
+        r = self._requests("put", url, data=data, headers=headers)
+
+        if r.status_code == 200:
+            return "Service's option updated successfully"
+        else:
+            raise GeoserverException(r.status_code, r.content)

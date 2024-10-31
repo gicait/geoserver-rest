@@ -2616,7 +2616,7 @@ class Geoserver:
         ```
         {
           "name": "<name of parameter (required)>"
-          "rexegpValidator": "<string containing regex validator> (optional)"
+          "regexpValidator": "<string containing regex validator> (optional)"
           "defaultValue" : "<default value of parameter if not specified (required only for non-string parameters)>"
         }
         ```

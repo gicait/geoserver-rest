@@ -8,7 +8,6 @@ import requests
 from xmltodict import parse, unparse
 
 # custom functions
-from .Calculation_gdal import raster_value
 from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
 from .supports import prepare_zip_file, is_valid_xml, is_surrounded_by_quotes
 
@@ -1611,6 +1610,9 @@ class Geoserver:
         This function will dynamically create the style file for raster.
         Inputs: name of file, workspace, cmap_type (two options: values, range), ncolors: determines the number of class, min for minimum value of the raster, max for the max value of raster
         """
+
+        from .Calculation_gdal import raster_value
+
         raster = raster_value(raster_path)
         min_value = raster["min"]
         max_value = raster["max"]

@@ -2,4 +2,4 @@ pygments
 requests
 seaborn
 matplotlib
-xmltodic
+xmltodict

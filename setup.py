@@ -47,11 +47,8 @@ setup(
     install_requires=[
         "pygments",
         "requests",
-        "seaborn",
-        "gdal",
-        "matplotlib",
         "xmltodict",
     ],
-    extras_require={"dev": ["pytest", "black", "flake8", "sphinx>=1.7", "pre-commit"]},
+    extras_require={"dev": ["pytest", "black", "flake8", "sphinx>=1.7", "pre-commit"], 'visualize': ['matplotlib', 'seaborn', 'gdal']},
     python_requires=">=3.6",
 )

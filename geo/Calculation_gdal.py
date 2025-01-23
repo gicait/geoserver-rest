@@ -4,6 +4,8 @@ try:
     from osgeo import gdal  # noqa
 except ImportError:
     import gdal  # noqa
+except ImportError:
+    raise ImportError("Package `gdal` is required to run this function. Install it with `pip install gdal`.")
 
 
 def raster_value(path: str) -> dict:

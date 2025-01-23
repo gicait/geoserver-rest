@@ -144,6 +144,8 @@ Before uploading ``SLD`` file, please check the version of your sld file. By def
 Creating and applying dynamic styles based on the raster coverages
 ------------------------------------------------------------------
 
+**WARNING:** As of version 2.9.0, the required dependency ``gdal`` was converted into an optional dependency. Fresh installations of this library will require that you then install ``gdal`` yourself with ``pip install gdal``.
+
 It is used to create the style file for raster data. You can get the ``color_ramp`` name from `matplotlib colormaps <https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html>`_. By default ``color_ramp='RdYlGn'`` (red to green color ramp).
 
 .. code-block:: python

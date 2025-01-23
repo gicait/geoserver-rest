@@ -49,6 +49,6 @@ setup(
         "requests",
         "xmltodict",
     ],
-    extras_require={"dev": ["pytest", "black", "flake8", "sphinx>=1.7", "pre-commit"], 'style': ['matplotlib', 'seaborn', 'gdal']},
+    extras_require={"dev": ["pytest", "black", "flake8", "sphinx>=1.7", "pre-commit"], 'style': ['matplotlib', 'seaborn', 'gdal'], 'all': ['matplotlib', 'seaborn', 'gdal']},
     python_requires=">=3.6",
 )

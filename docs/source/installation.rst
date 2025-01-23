@@ -23,8 +23,13 @@ The ``geoserver-rest`` library can be installed using ``pip`` as below:
 
     $ pip install geoserver-rest
 
+But best way to get all the functationality is to install the optional dependencies as well:
 
-If you want to install the geoserver-rest library with the optional dependencies, you need to install the following dependencies first:
+.. code-block:: shell
+
+    $ pip install geoserver-rest[all]
+
+If you want to install the geoserver-rest library with the optional dependencies (this will be useful if you are planning to create dynamic style files based on your dataset. Explore ``create_coveragestyle``, ``upload_style`` etc functions), you need to install the following dependencies first:
 
 * `GDAL <https://gdal.org/>`_
 * `matplotlib <https://matplotlib.org/>`_

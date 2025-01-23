@@ -12,7 +12,7 @@ The ``geoserver-rest`` can be installed from either ``conda-forge`` channel as b
 
 .. code-block:: shell
 
-    $ conda install -c conda-forge geoserver-rest
+    $ conda install -c conda-forge geoserver-rest[all]
 
 Pip installation
 ^^^^^^^^^^^^^^^^
@@ -48,8 +48,6 @@ One way is install the wheel directly from the `Geospatial library wheels for Py
     $ pip.exe install seaborn matplotlib
 
 Another way is to use the GDAL network installer binary package available at: `OSGeo4W <https://trac.osgeo.org/osgeo4w/>`_.
-
-
 
 
 macOS installation

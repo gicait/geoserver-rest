@@ -1,6 +1,10 @@
 Installation
 =============
 
+.. warning::
+    As of version 2.9.0, the required dependency ``gdal``, ``matplotlib`` and ``seaborn`` was converted into an optional dependency. Fresh installations of this library will require that you then install ``gdal``, ``matplotlib`` and ``seaborn`` yourself with ``pip install gdal matplotlib seaborn``.
+
+
 Conda installation
 ^^^^^^^^^^^^^^^^^^
 
@@ -8,17 +12,32 @@ The ``geoserver-rest`` can be installed from either ``conda-forge`` channel as b
 
 .. code-block:: shell
 
-    conda install -c conda-forge geoserver-rest
+    $ conda install -c conda-forge geoserver-rest[all]
 
 Pip installation
 ^^^^^^^^^^^^^^^^
 
-For installation of this package, following packages should be installed first:
+The ``geoserver-rest`` library can be installed using ``pip`` as below:
+
+.. code-block:: shell
+
+    $ pip install geoserver-rest
+
+But best way to get all the functationality is to install the optional dependencies as well:
+
+.. code-block:: shell
+
+    $ pip install geoserver-rest[all]
+
+If you want to install the geoserver-rest library with the optional dependencies (this will be useful if you are planning to create dynamic style files based on your dataset. Explore ``create_coveragestyle``, ``upload_style`` etc functions), you need to install the following dependencies first:
 
 * `GDAL <https://gdal.org/>`_
+* `matplotlib <https://matplotlib.org/>`_
+* `seaborn <https://seaborn.pydata.org/>`_
 
-Windows installation
---------------------
+
+Dependencies installation in Windows
+------------------------------------
 
 .. warning::
     As of March 2022, ``pipwin`` has been deprecated and is no longer maintained. Do not use this method.
@@ -31,14 +50,10 @@ One way is install the wheel directly from the `Geospatial library wheels for Py
 
     # For Python3.10 on Windows 64-bit systems
     $ pip.exe install https://github.com/cgohlke/geospatial-wheels/releases/download/<release_version>/GDAL-3.7.1-cp310-cp310-win_amd64.whl
+    $ pip.exe install seaborn matplotlib
 
 Another way is to use the GDAL network installer binary package available at: `OSGeo4W <https://trac.osgeo.org/osgeo4w/>`_.
 
-Now you can then install ``geoserver-rest`` library with ``pip``:
-
-.. code-block:: shell
-
-    $ pip install geoserver-rest
 
 macOS installation
 ------------------

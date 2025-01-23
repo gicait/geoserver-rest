@@ -8,7 +8,6 @@ import requests
 from xmltodict import parse, unparse
 
 # custom functions
-from .Style import catagorize_xml, classified_xml, coverage_style_xml, outline_only_xml
 from .supports import prepare_zip_file, is_valid_xml, is_surrounded_by_quotes
 
 
@@ -1612,6 +1611,7 @@ class Geoserver:
         """
 
         from .Calculation_gdal import raster_value
+        from .Style import coverage_style_xml
 
         raster = raster_value(raster_path)
         min_value = raster["min"]
@@ -1708,6 +1708,9 @@ class Geoserver:
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
+        
+        from .Style import catagorize_xml
+
         catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
 
         style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
@@ -1782,6 +1785,9 @@ class Geoserver:
         The geometry type must be point, line or polygon
         Inputs: style_name (name of the style file in geoserver), workspace, color (style color)
         """
+
+        from .Style import outline_only_xml
+
         outline_only_xml(color, width, geom_type)
 
         style_xml = "<style><name>{}</name><filename>{}</filename></style>".format(
@@ -1863,6 +1869,8 @@ class Geoserver:
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
+
+        from .Style import classified_xml
         classified_xml(
             style_name,
             column_name,

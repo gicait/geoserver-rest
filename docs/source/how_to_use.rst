@@ -131,6 +131,9 @@ You can create a layer group from layers that have been uploaded previously with
 Uploading and publishing styles
 -------------------------------
 
+**WARNING:** As of version 2.9.0, the required dependency ``gdal``, ``matplotlib`` and ``seaborn`` was converted into an optional dependency. Fresh installations of this library will require that you then install ``gdal``, ``matplotlib`` and ``seaborn`` yourself with ``pip install gdal matplotlib seaborn``.
+
+
 It is used for uploading ``SLD`` files and publish style. If the style name already exists, you can pass the parameter ``overwrite=True`` to overwrite it. The name of the style will be name of the uploaded file name.
 
 Before uploading ``SLD`` file, please check the version of your sld file. By default the version of sld will be ``1.0.0``. As I noticed, by default the QGIS will provide the .sld file of version ``1.0.0`` for raster data version ``1.1.0`` for vector data.
@@ -227,6 +230,8 @@ For generating the style for ``classified raster``, you can pass the another par
 
 Creating feature styles
 -----------------------
+
+**WARNING:** As of version 2.9.0, the required dependency ``gdal``, ``matplotlib`` and ``seaborn`` was converted into an optional dependency. Fresh installations of this library will require that you then install ``gdal``, ``matplotlib`` and ``seaborn`` yourself with ``pip install gdal matplotlib seaborn``.
 
 It is used for creating the style for ``point``, ``line`` and ``polygon`` dynamically. It currently supports three different types of feature styles:
 

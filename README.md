@@ -19,7 +19,7 @@ The `geoserver-rest` package is useful for the management of geospatial data in 
 ## Installation
 
 ```python
-conda install -c conda-forge geoserver-rest
+conda install -c conda-forge geoserver-rest[all]
 ```
 
 For the `pip` installation, check the [official documentation of geoserver-rest](https://geoserver-rest.readthedocs.io/en/latest/installation.html)
@@ -50,19 +50,27 @@ geo.publish_featurestore(workspace='demo', store_name='geo_data', pg_table='geod
 geo.upload_style(path=r'path\to\sld\file.sld', workspace='demo')
 geo.publish_style(layer_name='geoserver_layer_name', style_name='sld_file_name', workspace='demo')
 
+# delete workspace
+geo.delete_workspace(workspace='demo')
+
+# delete layer
+geo.delete_layer(layer_name='layer1', workspace='demo')
+
+# delete style file
+geo.delete_style(style_name='style1', workspace='demo')
+```
+
+To create the dynamic style you need to install the extra dependencies as, `gdal`, `seaborn` and `matplotlib`. The below functions will be only available after installing the full package `geoserver-rest[all]` or `geoserver-rest[style]`,
+
+```python
 # For creating the style file for raster data dynamically and connect it with layer
 geo.create_coveragestyle(raster_path=r'path\to\raster\file.tiff', style_name='style_1', workspace='demo',
                          color_ramp='RdYiGn')
 geo.publish_style(layer_name='geoserver_layer_name', style_name='raster_file_name', workspace='demo')
 
-# delete workspace
-geo.delete_workspace(workspace='demo')
+# For creating outline featurestyle
+geo.create_outline_featurestyle(style_name='style1', color='#ff0000')
 
-# delete layer
-geo.delete_layer(layer_name='agri_final_proj', workspace='demo')
-
-# delete style file
-geo.delete_style(style_name='kamal2', workspace='demo')
 ```
 
 ## Contribution
@@ -72,7 +80,6 @@ Geoserver-rest is the open source library written in python and contributors are
 1. Please use the request library for the http request.
 2. One feature per pull request (If the PR is huge, you need to create a issue and discuss).
 3. Please add the update about your PR on the [change log documentation](https://github.com/gicait/geoserver-rest/blob/master/docs/source/change_log.rst#master-branch) as well.
-
 
 ## Citation
 
@@ -90,4 +97,3 @@ Full paper is available here: https://doi.org/10.5194/isprs-archives-XLVI-4-W2-2
       DOI = {10.5194/isprs-archives-XLVI-4-W2-2021-91-2021}
   }
 ```
-

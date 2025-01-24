@@ -2611,7 +2611,7 @@ class Geoserver:
         GeoserverException
             If there is an issue publishing the SQL view.
 
-                Notes
+        Notes
         -----
         With regards to SQL view parameters, it is advised to read the relevant section from the geoserver docs:
         https://docs.geoserver.org/main/en/user/data/database/sqlview.html#parameterizing-sql-views
@@ -2623,13 +2623,14 @@ class Geoserver:
 
         The `parameters` iterable must contain dictionaries with this structure:
 
-        ```
+        ```json
         {
           "name": "<name of parameter (required)>"
           "regexpValidator": "<string containing regex validator> (optional)"
           "defaultValue" : "<default value of parameter if not specified (required only for non-string parameters)>"
         }
         ```
+        
         """
         if workspace is None:
             workspace = "default"

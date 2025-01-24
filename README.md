@@ -19,7 +19,7 @@ The `geoserver-rest` package is useful for the management of geospatial data in 
 ## Installation
 
 ```python
-conda install -c conda-forge geoserver-rest[all]
+conda install -c conda-forge geoserver-rest
 ```
 
 For the `pip` installation, check the [official documentation of geoserver-rest](https://geoserver-rest.readthedocs.io/en/latest/installation.html)

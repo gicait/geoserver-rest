@@ -12,7 +12,7 @@ The ``geoserver-rest`` can be installed from either ``conda-forge`` channel as b
 
 .. code-block:: shell
 
-    $ conda install -c conda-forge geoserver-rest[all]
+    $ conda install -c conda-forge geoserver-rest
 
 Pip installation
 ^^^^^^^^^^^^^^^^

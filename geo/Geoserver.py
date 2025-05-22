@@ -171,6 +171,8 @@ class Geoserver:
             return requests.put(url, auth=(self.username, self.password), **kwargs, **self.request_options)
         elif method.lower() == "delete":
             return requests.delete(url, auth=(self.username, self.password), **kwargs, **self.request_options)
+        else:
+            raise Exception("unsupported http method name.")
 
     # _______________________________________________________________________________________________
     #
@@ -547,6 +549,7 @@ class Geoserver:
         layer_name: Optional[str] = None,
         file_type: str = "GeoTIFF",
         content_type: str = "image/tiff",
+        method: str = "file"
     ):
         """
         Creates the coverage store; Data will be uploaded to the server.
@@ -563,6 +566,8 @@ class Geoserver:
             The type of the file.
         content_type : str
             The content type of the file.
+        method : str
+            file | url | external | remote
 
         Returns
         -------
@@ -586,21 +591,31 @@ class Geoserver:
                 layer_name = f[0]
 
         file_type = file_type.lower()
+        if file_type == "netcdf":
+            # files such as netcdf contain multiple layers, which means a single coverage name cannot be specified.
+            url = "{0}/rest/workspaces/{1}/coveragestores/{2}/{3}.{4}".format(
+                self.service_url, workspace, layer_name, method, file_type
+            )
+        else:
+            url = "{0}/rest/workspaces/{1}/coveragestores/{2}/{3}.{4}?coverageName={2}".format(
+                self.service_url, workspace, layer_name, method, file_type
+            )
 
-        url = "{0}/rest/workspaces/{1}/coveragestores/{2}/file.{3}?coverageName={2}".format(
-            self.service_url, workspace, layer_name, file_type
-        )
+        if method == 'file':
+            headers = {"content-type": content_type, "Accept": "application/json"}
+            with open(path, "rb") as f:
+                data = f.read()
+                r = self._requests(method="put", url=url, data=data, headers=headers)
+        else:
+            headers = {"content-type": "text/plain", "Accept": "application/json"}
+            r = self._requests(method="put", url=url, data=path, headers=headers)
 
-        headers = {"content-type": content_type, "Accept": "application/json"}
+        if r.status_code == 201:
+            return r.json()
+        else:
+            raise GeoserverException(r.status_code, r.content)
 
-        r = None
-        with open(path, "rb") as f:
-            r = self._requests(method="put", url=url, data=f, headers=headers)
 
-            if r.status_code == 201:
-                return r.json()
-            else:
-                raise GeoserverException(r.status_code, r.content)
 
     def publish_time_dimension_to_coveragestore(
         self,

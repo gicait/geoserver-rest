@@ -6,6 +6,7 @@ Change Log
 * New method `create_gpkg_datastore`
 * Bugfixes for `add_layer_to_layergroup` and `remove_layer_from_layergroup`
 * New method `remove_layer_from_layergroup`
+* Add support for `external/url` method for `create_coveragestore`(see issue `#22 <https://github.com/gicait/geoserver-rest/issues/22>`)
 
 ``[v2.4.1 - 2023-01-14]``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

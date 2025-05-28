@@ -604,8 +604,7 @@ class Geoserver:
         if method == 'file':
             headers = {"content-type": content_type, "Accept": "application/json"}
             with open(path, "rb") as f:
-                data = f.read()
-                r = self._requests(method="put", url=url, data=data, headers=headers)
+                r = self._requests(method="put", url=url, data=f, headers=headers)
         else:
             headers = {"content-type": "text/plain", "Accept": "application/json"}
             r = self._requests(method="put", url=url, data=path, headers=headers)

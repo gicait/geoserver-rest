@@ -548,3 +548,72 @@ class TestDeletion:
 class TestOther:
     def test_classified_xml(self):
         classified_xml("test", "kamal", [4, 5, 3, 12], color_ramp="hot")
+
+
+class TestCoveragestore:
+    def setup_method(self):
+        self.workspace_name = "test_workspace"
+        self.layer_name = "netcdf"
+        self.path = f"{HERE}/data/tos_O1_2001-2002.nc"
+        self.url = "http://localhost:8000/tos_O1_2001-2002.nc"
+        self.type = "NetCDF"
+        try:
+            geo.create_workspace(workspace=self.workspace_name)
+        except:
+            geo.delete_workspace(workspace=self.workspace_name)
+            geo.create_workspace(workspace=self.workspace_name)
+
+    def teardown_method(self):
+        geo.delete_workspace(workspace=self.workspace_name)
+
+    def _verify_coveragestore(self, response):
+        """
+        Helper method to verify coveragestore creation
+        """
+        assert response["coverageStore"]["name"] == self.layer_name
+        coveragestore = geo.get_coveragestore(
+            coveragestore_name=self.layer_name,
+            workspace=self.workspace_name
+        )
+        assert coveragestore["coverageStore"]["name"] == self.layer_name
+        assert coveragestore["coverageStore"]["type"] == self.type
+        assert coveragestore["coverageStore"]["workspace"]["name"] == self.workspace_name
+
+    def _test_create_coveragestore(self, method, path=None):
+        """
+        Helper method to test coveragestore creation with different methods
+        """
+        try:
+            resp = geo.create_coveragestore(
+                path=path or self.path,
+                workspace=self.workspace_name,
+                layer_name=self.layer_name,
+                file_type=self.type,
+                content_type="application/x-netcdf",
+                method=method
+            )
+            self._verify_coveragestore(resp)
+        finally:
+            geo.delete_coveragestore(
+                coveragestore_name=self.layer_name,
+                workspace=self.workspace_name
+            )
+
+    def test_create_coveragestore_using_file_method(self):
+        """
+        Tests that a coveragestore can be created using "file" method
+        """
+        self._test_create_coveragestore("file")
+
+    def test_create_coveragestore_using_external_method(self):
+        """
+        Tests that a coveragestore can be created using "external" method
+        """
+        self._test_create_coveragestore("external")
+
+    @pytest.mark.skip(reason="Only setup for local testing.")
+    def test_create_coveragestore_using_url_method(self):
+        """
+        Tests that a coveragestore can be created using "url" method
+        """
+        self._test_create_coveragestore("url", self.url)

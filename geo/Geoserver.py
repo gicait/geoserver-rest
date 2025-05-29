@@ -542,6 +542,62 @@ class Geoserver:
         else:
             raise GeoserverException(r.status_code, r.content)
 
+    def create_coverage(
+        self,
+        workspace: str,
+        coveragestore: str,
+        coverage_name: str = None,
+        navite_name: str = None,
+        coverage_title: str = None
+    ):
+        """
+        Create a coverage in a coveragestore.The coveragestore must already exist.
+        
+        Parameters
+        ----------
+        workspace: The workspace name
+        coveragestore: The coveragestore name
+        coverage_name: The coverage name
+        native_Name: The coverage's source name
+        coverage_title: The coverage title
+        
+        Returns
+        -------
+        str
+            The coverage name.
+        """
+        
+        if not workspace:
+            raise ValueError("Workspace is required")
+        if not coveragestore:
+            raise ValueError("Coveragestore is required")
+        
+        navite_name = navite_name or coveragestore
+        coverage_name = coverage_name or navite_name
+        coverage_title = coverage_title.replace(" ", "_") if coverage_title else None
+        
+        body = {
+            "coverage": {
+                "name": coverage_name,
+                "nativeName": navite_name,
+                "title": coverage_title,
+                "store": {"name": coveragestore}
+            }
+        }
+        
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coverages"
+        content_type = "application/json"
+        r = self._requests(
+            method="post", 
+            url=url, 
+            json=body, 
+            headers={"content-type": content_type}
+        )
+        
+        if r.status_code == 201:
+            return r.text
+        raise GeoserverException(r.status_code, r.content)
+          
     def create_coveragestore(
         self,
         path,

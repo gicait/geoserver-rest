@@ -165,10 +165,39 @@ class TestRequest:
         print(a)
 
         geo.publish_featurestore("datastore2", "admin_units", workspace="demo")
-
-
-@pytest.mark.skip(reason="Only setup for local testing.")
+      
+        
 class TestCoverages:
+
+    def setup_method(self):
+        self.workspace_name = "test_workspace"
+        self.coveragestore = "tos"
+        self.coverage_name = "tos_test"
+        self.coverage_title = "tos test title"
+        self.path = f"{HERE}/data/tos_O1_2001-2002.nc"
+        self.type = "NetCDF"
+        try:
+            geo.create_workspace(self.workspace_name)
+        except:
+            geo.delete_workspace(self.workspace_name)
+            geo.create_workspace(self.workspace_name)
+        geo.create_coveragestore(
+            path=self.path,
+            workspace=self.workspace_name,
+            layer_name=self.coveragestore,
+            file_type=self.type,
+            content_type="application/x-netcdf",
+            method="file"
+        )
+        
+    def teardown_method(self):
+        geo.delete_coveragestore(
+            coveragestore_name=self.coveragestore,
+            workspace=self.workspace_name
+        )
+        geo.delete_workspace(self.workspace_name)
+        
+    @pytest.mark.skip(reason="Only setup for local testing.")
     def test_coverage(self):
         geo.create_coveragestore(
             r"C:\Users\tek\Desktop\try\geoserver-rest\data\C_EAR\a_Agriculture\agri_final_proj.tif",
@@ -189,7 +218,16 @@ class TestCoverages:
             cmap_type="values",
             overwrite=True,
         )
-
+    
+    def test_create_coverage(self):
+        resp = geo.create_coverage(
+            workspace=self.workspace_name,
+            coveragestore=self.coveragestore,
+            coverage_name=self.coverage_name,
+            coverage_title=self.coverage_title
+        )
+        assert resp == self.coverage_name
+        
 
 # @pytest.mark.skip(reason="Only setup for local testing.")
 class TestFeatures:

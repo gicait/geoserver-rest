@@ -2285,6 +2285,7 @@ class Geoserver:
             path: str,
             workspace: Optional[str] = None,
             overwrite: bool = False,
+            force_absolute_path: bool = True,
     ):
         """
         Create a datastore within the GeoServer.
@@ -2300,6 +2301,9 @@ class Geoserver:
             The workspace to create the datastore in. Default is "default".
         overwrite : bool
             Whether to overwrite the existing datastore.
+        force_absolute_path : bool, optional
+            Whether to force absolute paths (legacy behavior). Default is True.
+            Set to False to convert absolute paths to relative paths for portability.
 
         Returns
         -------
@@ -2321,10 +2325,19 @@ class Geoserver:
         if path is None:
             raise Exception("You must provide a full path to the data")
 
-        data_url = "<url>file:{}</url>".format(path)
-
+        # Handle HTTP URLs (WFS endpoints)
         if "http://" in path:
             data_url = "<GET_CAPABILITIES_URL>{}</GET_CAPABILITIES_URL>".format(path)
+        else:
+            # Handle file paths with inline path conversion
+            if not force_absolute_path and os.path.isabs(path):
+                # Convert absolute path to relative path inline
+                filename = os.path.basename(path)
+                relative_path = f"data/{workspace}/{filename}"
+                data_url = "<url>file:{}</url>".format(relative_path)
+            else:
+                # Use path as-is (could be relative or absolute)
+                data_url = "<url>file:{}</url>".format(path)
 
         data = "<dataStore><name>{}</name><connectionParameters>{}</connectionParameters></dataStore>".format(
             name, data_url

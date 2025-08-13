@@ -678,12 +678,14 @@ class TestCoveragestore:
                 coveragestore_name=self.layer_name, workspace=self.workspace_name
             )
 
+    @pytest.mark.skip(reason="Only setup for local testing.")
     def test_create_coveragestore_using_file_method(self):
         """
         Tests that a coveragestore can be created using "file" method
         """
         self._test_create_coveragestore("file")
 
+    @pytest.mark.skip(reason="Only setup for local testing.")
     def test_create_coveragestore_using_external_method(self):
         """
         Tests that a coveragestore can be created using "external" method

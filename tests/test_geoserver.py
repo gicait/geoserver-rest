@@ -16,7 +16,6 @@ HERE = pathlib.Path(__file__).parent.resolve()
 class TestCustomRequestParameters:
 
     def test_custom_request_parameters(self):
-
         """
         Tests that a custom request parameter is properly applied when spcecified
 
@@ -25,10 +24,12 @@ class TestCustomRequestParameters:
         properly for any given request
         """
 
-        geo = Geoserver(GEO_URL,
-                        username=os.getenv("GEO_USER", "admin"),
-                        password=os.getenv("GEO_PASS", "geoserver"),
-                        request_options={"timeout": 0})
+        geo = Geoserver(
+            GEO_URL,
+            username=os.getenv("GEO_USER", "admin"),
+            password=os.getenv("GEO_PASS", "geoserver"),
+            request_options={"timeout": 0},
+        )
         url = "{}/rest/about/manifest.json".format(geo.service_url)
         with pytest.raises(ValueError):
             geo._requests("get", url)
@@ -37,7 +38,6 @@ class TestCustomRequestParameters:
 class TestGeoserverMethods:
 
     def test_get_manifest(self):
-
         """
         Tests that the manifest endpoint returns the proper dictionary
         """
@@ -46,16 +46,16 @@ class TestGeoserverMethods:
         assert len(response["about"]) > 0
 
     def test_get_version(self):
-
         """
         Tests that the version endpoint returns a dictionary containing at least one resource called `GeoServer`
         """
 
         response = geo.get_version()
-        assert "GeoServer" in [resource["@name"] for resource in response["about"]["resource"]]
+        assert "GeoServer" in [
+            resource["@name"] for resource in response["about"]["resource"]
+        ]
 
     def test_get_status(self):
-
         """
         Tests that the status endpoint returns a dictionary containing a key called `status`
         """
@@ -65,7 +65,6 @@ class TestGeoserverMethods:
         assert "statuss" in response.keys()
 
     def test_get_system_status(self):
-
         """
         Tests that the status endpoint returns a dictionary containing a key called `metric`
         """
@@ -74,7 +73,6 @@ class TestGeoserverMethods:
         assert "metrics" in response.keys()
 
     def test_reload(self):
-
         """
         Tests that the reload endpoint returns the string `Status code: 200`
         """
@@ -83,7 +81,6 @@ class TestGeoserverMethods:
         assert response == "Status code: 200"
 
     def test_reset(self):
-
         """
         Tests that the reset endpoint returns the string `Status code: 200`
         """
@@ -109,9 +106,13 @@ class TestWorkspace:
 
         response = geo.get_workspaces()
         # Assuming that we are using the kartoza/geoserver docker image, which uses the following as workspaces
-        expected_workspace_names = sorted(['cite', 'it.geosolutions', 'ne', 'nurc', 'sde', 'sf', 'tiger', 'topp'])
+        expected_workspace_names = sorted(
+            ["cite", "it.geosolutions", "ne", "nurc", "sde", "sf", "tiger", "topp"]
+        )
         for expected_workspace_name in expected_workspace_names:
-            assert expected_workspace_name in [ws["name"] for ws in response["workspaces"]["workspace"]]
+            assert expected_workspace_name in [
+                ws["name"] for ws in response["workspaces"]["workspace"]
+            ]
 
     def test_set_default_workspace(self):
 
@@ -165,8 +166,8 @@ class TestRequest:
         print(a)
 
         geo.publish_featurestore("datastore2", "admin_units", workspace="demo")
-      
-        
+
+
 class TestCoverages:
 
     def setup_method(self):
@@ -187,16 +188,15 @@ class TestCoverages:
             layer_name=self.coveragestore,
             file_type=self.type,
             content_type="application/x-netcdf",
-            method="file"
+            method="file",
         )
-        
+
     def teardown_method(self):
         geo.delete_coveragestore(
-            coveragestore_name=self.coveragestore,
-            workspace=self.workspace_name
+            coveragestore_name=self.coveragestore, workspace=self.workspace_name
         )
         geo.delete_workspace(self.workspace_name)
-        
+
     @pytest.mark.skip(reason="Only setup for local testing.")
     def test_coverage(self):
         geo.create_coveragestore(
@@ -218,22 +218,22 @@ class TestCoverages:
             cmap_type="values",
             overwrite=True,
         )
-    
+
+    @pytest.mark.skip(reason="Only setup for local testing.")
     def test_create_coverage(self):
         resp = geo.create_coverage(
             workspace=self.workspace_name,
             coveragestore=self.coveragestore,
             coverage_name=self.coverage_name,
-            coverage_title=self.coverage_title
+            coverage_title=self.coverage_title,
         )
         assert resp == self.coverage_name
-        
+
 
 # @pytest.mark.skip(reason="Only setup for local testing.")
 class TestFeatures:
 
     def test_featurestore(self):
-
         """
         Tests that you can publish an existing table as a layer
         """
@@ -248,24 +248,43 @@ class TestFeatures:
         DB_PASS = postgis_params_local["pg_password"]
         DB_USER = postgis_params_local["pg_user"]
         DB_NAME = postgis_params_local["db"]
-        engine = sa.create_engine(f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}", echo=False)
+        engine = sa.create_engine(
+            f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
+            echo=False,
+        )
         with engine.connect() as conn:
             conn.execute(sa.text(f"drop table if exists {table_name};"))
-            conn.execute(sa.text(f"create table {table_name} (id integer primary key, foo text, geom geometry);"))
-            conn.execute(sa.text(f"insert into {table_name} (id, foo, geom) values (0, 'bar', ST_MakePoint(0, 0, 4326));"))
+            conn.execute(
+                sa.text(
+                    f"create table {table_name} (id integer primary key, foo text, geom geometry);"
+                )
+            )
+            conn.execute(
+                sa.text(
+                    f"insert into {table_name} (id, foo, geom) values (0, 'bar', ST_MakePoint(0, 0, 4326));"
+                )
+            )
             conn.commit()
 
         try:
             geo.create_workspace(workspace_name)
-            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
-            geo.publish_featurestore(store_name=featurestore_name, pg_table=table_name, workspace=workspace_name)
+            geo.create_featurestore(
+                workspace=workspace_name, store_name=featurestore_name, **postgis_params
+            )
+            geo.publish_featurestore(
+                store_name=featurestore_name,
+                pg_table=table_name,
+                workspace=workspace_name,
+            )
 
-            wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
-                        "service=WFS&" \
-                        "version=1.0.0&" \
-                        "request=GetFeature&" \
-                        f"typeName={workspace_name}%3A{table_name}&" \
-                        "outputFormat=application%2Fjson"
+            wfs_query = (
+                f"{GEO_URL}/{workspace_name}/ows?"
+                "service=WFS&"
+                "version=1.0.0&"
+                "request=GetFeature&"
+                f"typeName={workspace_name}%3A{table_name}&"
+                "outputFormat=application%2Fjson"
+            )
 
             r = requests.get(wfs_query)
             assert r.status_code == 200
@@ -279,7 +298,6 @@ class TestFeatures:
             geo.delete_workspace(workspace_name)
 
     def test_sql_featurestore(self):
-
         """
         Tests that you publish an SQL query as a layer
         """
@@ -290,22 +308,26 @@ class TestFeatures:
         sqlview_key_column = "id"
         sqlview_geom_column = "geom"
         sqlview_query = f"select 0 as {sqlview_key_column}, 'bar' as foo, ST_MakePoint(0, 0, 4326) as {sqlview_geom_column}"
-        wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
-                    "service=WFS&" \
-                    "version=1.0.0&" \
-                    "request=GetFeature&" \
-                    f"typeName={workspace_name}%3A{sqlview_name}&" \
-                    "outputFormat=application%2Fjson"
+        wfs_query = (
+            f"{GEO_URL}/{workspace_name}/ows?"
+            "service=WFS&"
+            "version=1.0.0&"
+            "request=GetFeature&"
+            f"typeName={workspace_name}%3A{sqlview_name}&"
+            "outputFormat=application%2Fjson"
+        )
 
         try:
             geo.create_workspace(workspace_name)
-            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+            geo.create_featurestore(
+                workspace=workspace_name, store_name=featurestore_name, **postgis_params
+            )
             geo.publish_featurestore_sqlview(
                 name=sqlview_name,
                 store_name=featurestore_name,
                 sql=sqlview_query,
                 workspace=workspace_name,
-                key_column=sqlview_key_column
+                key_column=sqlview_key_column,
             )
 
             r = requests.get(wfs_query)
@@ -318,7 +340,6 @@ class TestFeatures:
             geo.delete_workspace(workspace_name)
 
     def test_parameterized_sql_featurestore(self):
-
         """
         Tests that you can publish a parameterized SQL query as a layer
         """
@@ -332,23 +353,27 @@ class TestFeatures:
         foo_parameterized_value = "baz"
         parameters = [{"name": "foo", "defaultValue": foo_default_val}]
         sqlview_query = f"select 0 as {sqlview_key_column}, '%foo%' as foo, ST_MakePoint(0, 0, 4326) as {sqlview_geom_column}"
-        wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
-                    "service=WFS&" \
-                    "version=1.0.0&" \
-                    "request=GetFeature&" \
-                    f"typeName={workspace_name}%3A{sqlview_name}&" \
-                    "outputFormat=application%2Fjson"
+        wfs_query = (
+            f"{GEO_URL}/{workspace_name}/ows?"
+            "service=WFS&"
+            "version=1.0.0&"
+            "request=GetFeature&"
+            f"typeName={workspace_name}%3A{sqlview_name}&"
+            "outputFormat=application%2Fjson"
+        )
 
         try:
             geo.create_workspace(workspace_name)
-            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+            geo.create_featurestore(
+                workspace=workspace_name, store_name=featurestore_name, **postgis_params
+            )
             geo.publish_featurestore_sqlview(
                 name=sqlview_name,
                 store_name=featurestore_name,
                 sql=sqlview_query,
                 workspace=workspace_name,
                 key_column=sqlview_key_column,
-                parameters=parameters
+                parameters=parameters,
             )
 
             # test without specifying param (should return default value)
@@ -368,7 +393,6 @@ class TestFeatures:
             geo.delete_workspace(workspace_name)
 
     def test_parameterized_sql_featurestore_regexp_validator(self):
-
         """
         Tests that the parameterized SQL view layer's logic for handling regular expressing validators works as expected
         """
@@ -378,30 +402,40 @@ class TestFeatures:
         sqlview_name = "test_parameterized_sqlview"
         sqlview_key_column = "id"
         sqlview_geom_column = "geom"
-        parameters = [{"name": "foo", "defaultValue": "baz"},
-                      {"name": "bar", "defaultValue": "baz-", "regexpValidator": "^[\\w\\d\\s\\-]+$"}]
+        parameters = [
+            {"name": "foo", "defaultValue": "baz"},
+            {
+                "name": "bar",
+                "defaultValue": "baz-",
+                "regexpValidator": "^[\\w\\d\\s\\-]+$",
+            },
+        ]
         sqlview_query = f"select 0 as {sqlview_key_column}, '%foo%' as foo, '%bar%' as bar, ST_MakePoint(0, 0, 4326) as {sqlview_geom_column}"
 
         try:
             geo.create_workspace(workspace_name)
-            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+            geo.create_featurestore(
+                workspace=workspace_name, store_name=featurestore_name, **postgis_params
+            )
             geo.publish_featurestore_sqlview(
                 name=sqlview_name,
                 store_name=featurestore_name,
                 sql=sqlview_query,
                 workspace=workspace_name,
                 key_column=sqlview_key_column,
-                parameters=parameters
+                parameters=parameters,
             )
 
             # test that adding a hyphen to foo fails because the default regexp validator forbids it
-            wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
-                        "service=WFS&" \
-                        "version=1.0.0&" \
-                        "request=GetFeature&" \
-                        f"typeName={workspace_name}%3A{sqlview_name}&" \
-                        "outputFormat=application%2Fjson&" \
-                        f"viewparams=foo:baz-"
+            wfs_query = (
+                f"{GEO_URL}/{workspace_name}/ows?"
+                "service=WFS&"
+                "version=1.0.0&"
+                "request=GetFeature&"
+                f"typeName={workspace_name}%3A{sqlview_name}&"
+                "outputFormat=application%2Fjson&"
+                f"viewparams=foo:baz-"
+            )
 
             r = requests.get(wfs_query)
             # regexp validator failure still returns 200, but resultant XML indicates a Java exception
@@ -409,13 +443,15 @@ class TestFeatures:
             assert "java.io.IOExceptionInvalid value for parameter foo" in r.text
 
             # test that adding a hyphen to bar succeeds because the custom regexp validator allows it
-            wfs_query = f"{GEO_URL}/{workspace_name}/ows?" \
-                        "service=WFS&" \
-                        "version=1.0.0&" \
-                        "request=GetFeature&" \
-                        f"typeName={workspace_name}%3A{sqlview_name}&" \
-                        "outputFormat=application%2Fjson&" \
-                        f"viewparams=bar:baz-"
+            wfs_query = (
+                f"{GEO_URL}/{workspace_name}/ows?"
+                "service=WFS&"
+                "version=1.0.0&"
+                "request=GetFeature&"
+                f"typeName={workspace_name}%3A{sqlview_name}&"
+                "outputFormat=application%2Fjson&"
+                f"viewparams=bar:baz-"
+            )
 
             wfs_query += f"&viewparams=bar:baz-"
             r = requests.get(wfs_query)
@@ -426,8 +462,9 @@ class TestFeatures:
         finally:
             geo.delete_workspace(workspace_name)
 
-    def test_parameterized_sql_featurestore_fails_when_integer_parameter_has_no_default_value(self):
-
+    def test_parameterized_sql_featurestore_fails_when_integer_parameter_has_no_default_value(
+        self,
+    ):
         """
         Tests that a non-string parameter in a parameterized sql view raises a descriptive error. This problem is not
         very well documented in Geoserver but is clearly reproducible.
@@ -457,7 +494,9 @@ class TestFeatures:
 
         try:
             geo.create_workspace(workspace_name)
-            geo.create_featurestore(workspace=workspace_name, store_name=featurestore_name, **postgis_params)
+            geo.create_featurestore(
+                workspace=workspace_name, store_name=featurestore_name, **postgis_params
+            )
 
             with pytest.raises(ValueError):
                 geo.publish_featurestore_sqlview(
@@ -465,7 +504,7 @@ class TestFeatures:
                     store_name=featurestore_name,
                     sql=sqlview_query,
                     workspace=workspace_name,
-                    parameters=parameters
+                    parameters=parameters,
                 )
             pass
 
@@ -520,7 +559,9 @@ class TestUploadStyles:
             pass
 
         with pytest.raises(ValueError):
-            geo.upload_style(f"{HERE}/data/style_doesnt_exist.sld", "style_doesnt_exist")
+            geo.upload_style(
+                f"{HERE}/data/style_doesnt_exist.sld", "style_doesnt_exist"
+            )
         with pytest.raises(GeoserverException):
             style = geo.get_style("style_doesnt_exist")
             print()
@@ -580,12 +621,12 @@ class TestDeletion:
         geo.delete_layer(layer_name="agri_final_proj", workspace="demo")
         geo.delete_featurestore(featurestore_name="feature_store", workspace="demo")
         geo.delete_coveragestore(coveragestore_name="store_name", workspace="demo")
-        geo.delete_style(style_name="kamal2", workspace="demo")
+        geo.delete_style(style_name="test_style", workspace="demo")
 
 
 class TestOther:
     def test_classified_xml(self):
-        classified_xml("test", "kamal", [4, 5, 3, 12], color_ramp="hot")
+        classified_xml("test", "test_style", [4, 5, 3, 12], color_ramp="hot")
 
 
 class TestCoveragestore:
@@ -610,12 +651,13 @@ class TestCoveragestore:
         """
         assert response["coverageStore"]["name"] == self.layer_name
         coveragestore = geo.get_coveragestore(
-            coveragestore_name=self.layer_name,
-            workspace=self.workspace_name
+            coveragestore_name=self.layer_name, workspace=self.workspace_name
         )
         assert coveragestore["coverageStore"]["name"] == self.layer_name
         assert coveragestore["coverageStore"]["type"] == self.type
-        assert coveragestore["coverageStore"]["workspace"]["name"] == self.workspace_name
+        assert (
+            coveragestore["coverageStore"]["workspace"]["name"] == self.workspace_name
+        )
 
     def _test_create_coveragestore(self, method, path=None):
         """
@@ -628,13 +670,12 @@ class TestCoveragestore:
                 layer_name=self.layer_name,
                 file_type=self.type,
                 content_type="application/x-netcdf",
-                method=method
+                method=method,
             )
             self._verify_coveragestore(resp)
         finally:
             geo.delete_coveragestore(
-                coveragestore_name=self.layer_name,
-                workspace=self.workspace_name
+                coveragestore_name=self.layer_name, workspace=self.workspace_name
             )
 
     def test_create_coveragestore_using_file_method(self):

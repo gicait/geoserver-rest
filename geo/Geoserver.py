@@ -40,6 +40,7 @@ class GeoserverException(Exception):
     message : str
         The error message.
     """
+
     def __init__(self, status, message):
         self.status = status
         self.message = message
@@ -56,6 +57,7 @@ class DataProvider:
     data : str
         The data to be read.
     """
+
     def __init__(self, data):
         self.data = data
         self.finished = False
@@ -93,6 +95,7 @@ class FileReader:
     fp : file object
         The file object to read from.
     """
+
     def __init__(self, fp):
         self.fp = fp
 
@@ -134,17 +137,16 @@ class Geoserver:
         service_url: str = "http://localhost:8080/geoserver",  # default deployment url during installation
         username: str = "admin",  # default username during geoserver installation
         password: str = "geoserver",  # default password during geoserver installation
-        request_options: Dict[str, Any] = None  # additional parameters to be sent with each request
+        request_options: Dict[
+            str, Any
+        ] = None,  # additional parameters to be sent with each request
     ):
         self.service_url = service_url
         self.username = username
         self.password = password
         self.request_options = request_options if request_options is not None else {}
 
-    def _requests(self,
-                  method: str,
-                  url: str,
-                  **kwargs) -> requests.Response:
+    def _requests(self, method: str, url: str, **kwargs) -> requests.Response:
         """
         Convenience wrapper to the requests library which automatically handles the authentication, as well as additional options to be passed to each request.
 
@@ -164,13 +166,33 @@ class Geoserver:
         """
 
         if method.lower() == "post":
-            return requests.post(url, auth=(self.username, self.password), **kwargs, **self.request_options)
+            return requests.post(
+                url,
+                auth=(self.username, self.password),
+                **kwargs,
+                **self.request_options,
+            )
         elif method.lower() == "get":
-            return requests.get(url, auth=(self.username, self.password), **kwargs, **self.request_options)
+            return requests.get(
+                url,
+                auth=(self.username, self.password),
+                **kwargs,
+                **self.request_options,
+            )
         elif method.lower() == "put":
-            return requests.put(url, auth=(self.username, self.password), **kwargs, **self.request_options)
+            return requests.put(
+                url,
+                auth=(self.username, self.password),
+                **kwargs,
+                **self.request_options,
+            )
         elif method.lower() == "delete":
-            return requests.delete(url, auth=(self.username, self.password), **kwargs, **self.request_options)
+            return requests.delete(
+                url,
+                auth=(self.username, self.password),
+                **kwargs,
+                **self.request_options,
+            )
         else:
             raise Exception("unsupported http method name.")
 
@@ -357,12 +379,7 @@ class Geoserver:
         url = "{}/rest/workspaces/default".format(self.service_url)
         data = "<workspace><name>{}</name></workspace>".format(workspace)
 
-        r = self._requests(
-            "put",
-            url,
-            data=data,
-            headers={"content-type": "text/xml"}
-        )
+        r = self._requests("put", url, data=data, headers={"content-type": "text/xml"})
 
         if r.status_code == 200:
             return "Status code: {}, default workspace {} set!".format(
@@ -548,11 +565,11 @@ class Geoserver:
         coveragestore: str,
         coverage_name: str = None,
         navite_name: str = None,
-        coverage_title: str = None
+        coverage_title: str = None,
     ):
         """
         Create a coverage in a coveragestore.The coveragestore must already exist.
-        
+
         Parameters
         ----------
         workspace: The workspace name
@@ -560,44 +577,41 @@ class Geoserver:
         coverage_name: The coverage name
         native_Name: The coverage's source name
         coverage_title: The coverage title
-        
+
         Returns
         -------
         str
             The coverage name.
         """
-        
+
         if not workspace:
             raise ValueError("Workspace is required")
         if not coveragestore:
             raise ValueError("Coveragestore is required")
-        
+
         navite_name = navite_name or coveragestore
         coverage_name = coverage_name or navite_name
         coverage_title = coverage_title.replace(" ", "_") if coverage_title else None
-        
+
         body = {
             "coverage": {
                 "name": coverage_name,
                 "nativeName": navite_name,
                 "title": coverage_title,
-                "store": {"name": coveragestore}
+                "store": {"name": coveragestore},
             }
         }
-        
+
         url = f"{self.service_url}/rest/workspaces/{workspace}/coverages"
         content_type = "application/json"
         r = self._requests(
-            method="post", 
-            url=url, 
-            json=body, 
-            headers={"content-type": content_type}
+            method="post", url=url, json=body, headers={"content-type": content_type}
         )
-        
+
         if r.status_code == 201:
             return r.text
         raise GeoserverException(r.status_code, r.content)
-          
+
     def create_coveragestore(
         self,
         path,
@@ -605,7 +619,7 @@ class Geoserver:
         layer_name: Optional[str] = None,
         file_type: str = "GeoTIFF",
         content_type: str = "image/tiff",
-        method: str = "file"
+        method: str = "file",
     ):
         """
         Creates the coverage store; Data will be uploaded to the server.
@@ -657,7 +671,7 @@ class Geoserver:
                 self.service_url, workspace, layer_name, method, file_type
             )
 
-        if method == 'file':
+        if method == "file":
             headers = {"content-type": content_type, "Accept": "application/json"}
             with open(path, "rb") as f:
                 r = self._requests(method="put", url=url, data=f, headers=headers)
@@ -669,8 +683,6 @@ class Geoserver:
             return r.json()
         else:
             raise GeoserverException(r.status_code, r.content)
-
-
 
     def publish_time_dimension_to_coveragestore(
         self,
@@ -1044,7 +1056,7 @@ class Geoserver:
                     layer_name=layer,
                     workspace=workspace if workspace is not None else None,
                 )
-            except GeoserverException: # It's a layer group
+            except GeoserverException:  # It's a layer group
                 published_type = "layerGroup"
 
             layers_xml_list.append(
@@ -1055,14 +1067,18 @@ class Geoserver:
                     """
             )
 
-        layers_xml: str = f"<publishables>{''.join(['{}'] * len(layers)).format(*layers_xml_list)}</publishables>"
+        layers_xml: str = (
+            f"<publishables>{''.join(['{}'] * len(layers)).format(*layers_xml_list)}</publishables>"
+        )
         skeleton += layers_xml
 
         if len(keywords) >= 1:
             keyword_xml_list: List[str] = [
                 f"<keyword>{keyword}</keyword>" for keyword in keywords
             ]
-            keywords_xml: str = f"<keywords>{''.join(['{}'] * len(keywords)).format(*keyword_xml_list)}</keywords>"
+            keywords_xml: str = (
+                f"<keywords>{''.join(['{}'] * len(keywords)).format(*keyword_xml_list)}</keywords>"
+            )
             skeleton += keywords_xml
 
         data = f"""
@@ -1088,13 +1104,13 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def update_layergroup(
-            self,
-            layergroup_name,
-            title: Optional[str] = None,
-            abstract_text: Optional[str] = None,
-            formats: str = "html",
-            metadata: List[dict] = [],
-            keywords: List[str] = [],
+        self,
+        layergroup_name,
+        title: Optional[str] = None,
+        abstract_text: Optional[str] = None,
+        formats: str = "html",
+        metadata: List[dict] = [],
+        keywords: List[str] = [],
     ) -> str:
         """
         Updates a Layergroup.
@@ -1182,7 +1198,9 @@ class Geoserver:
             keyword_xml_list: List[str] = [
                 f"<keyword>{keyword}</keyword>" for keyword in keywords
             ]
-            keywords_xml: str = f"<keywords>{''.join(['{}'] * len(keyword_xml_list)).format(*keyword_xml_list)}</keywords>"
+            keywords_xml: str = (
+                f"<keywords>{''.join(['{}'] * len(keyword_xml_list)).format(*keyword_xml_list)}</keywords>"
+            )
             skeleton += keywords_xml
 
         data = f"""
@@ -1208,7 +1226,7 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def delete_layergroup(
-            self, layergroup_name: str, workspace: Optional[str] = None
+        self, layergroup_name: str, workspace: Optional[str] = None
     ) -> str:
         """
         Delete a layer group from the geoserver and raise an exception
@@ -1246,11 +1264,11 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def add_layer_to_layergroup(
-            self,
-            layer_name: str,
-            layer_workspace: str,
-            layergroup_name: str,
-            layergroup_workspace: str = None,
+        self,
+        layer_name: str,
+        layer_workspace: str,
+        layergroup_name: str,
+        layergroup_workspace: str = None,
     ) -> None:
         """
         Add the specified layer to an existing layer group and raise an exception if
@@ -1323,11 +1341,11 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def remove_layer_from_layergroup(
-            self,
-            layer_name: str,
-            layer_workspace: str,
-            layergroup_name: str,
-            layergroup_workspace: str = None,
+        self,
+        layer_name: str,
+        layer_workspace: str,
+        layergroup_name: str,
+        layergroup_workspace: str = None,
     ) -> None:
         """
         Add remove the specified layer from an existing layer group and raise an exception if
@@ -1407,7 +1425,7 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def _layergroup_definition_from_layers_and_styles(
-            self, publishables: list, styles: list
+        self, publishables: list, styles: list
     ) -> str:
         """
         Helper function for add_layer_to_layergroup and remove_layer_from_layergroup.
@@ -1549,11 +1567,11 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def upload_style(
-            self,
-            path: str,
-            name: Optional[str] = None,
-            workspace: Optional[str] = None,
-            sld_version: str = "1.0.0",
+        self,
+        path: str,
+        name: Optional[str] = None,
+        workspace: Optional[str] = None,
+        sld_version: str = "1.0.0",
     ):
         """
         Uploads a style file to geoserver.
@@ -1601,7 +1619,9 @@ class Geoserver:
                 xml = f.read()
         else:
             # path is non-existing file or not valid xml
-            raise ValueError("`path` must be either a path to a style file, or a valid XML string.")
+            raise ValueError(
+                "`path` must be either a path to a style file, or a valid XML string."
+            )
 
         headers = {"content-type": "text/xml"}
 
@@ -1623,7 +1643,9 @@ class Geoserver:
 
         r = self._requests(method="post", url=url, data=style_xml, headers=headers)
         if r.status_code == 201:
-            r_sld = self._requests(method="put", url=url + "/" + name, data=xml, headers=header_sld)
+            r_sld = self._requests(
+                method="put", url=url + "/" + name, data=xml, headers=header_sld
+            )
 
             if r_sld.status_code == 200:
                 return r_sld.status_code
@@ -1634,14 +1656,14 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def create_coveragestyle(
-            self,
-            raster_path: str,
-            style_name: Optional[str] = None,
-            workspace: str = None,
-            color_ramp: str = "RdYlGn_r",
-            cmap_type: str = "ramp",
-            number_of_classes: int = 5,
-            opacity: float = 1,
+        self,
+        raster_path: str,
+        style_name: Optional[str] = None,
+        workspace: str = None,
+        color_ramp: str = "RdYlGn_r",
+        cmap_type: str = "ramp",
+        number_of_classes: int = 5,
+        opacity: float = 1,
     ):
         """
         Dynamically create style for raster.
@@ -1723,7 +1745,12 @@ class Geoserver:
         )
         if r.status_code == 201:
             with open("style.sld", "rb") as f:
-                r_sld = self._requests(method="put", url=url + "/" + style_name, data=f.read(), headers=header_sld)
+                r_sld = self._requests(
+                    method="put",
+                    url=url + "/" + style_name,
+                    data=f.read(),
+                    headers=header_sld,
+                )
 
             os.remove("style.sld")
             if r_sld.status_code == 200:
@@ -1735,13 +1762,13 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def create_catagorized_featurestyle(
-            self,
-            style_name: str,
-            column_name: str,
-            column_distinct_values,
-            workspace: str = None,
-            color_ramp: str = "tab20",
-            geom_type: str = "polygon",
+        self,
+        style_name: str,
+        column_name: str,
+        column_distinct_values,
+        workspace: str = None,
+        color_ramp: str = "tab20",
+        geom_type: str = "polygon",
     ):
         """
         Dynamically create categorized style for postgis geometry,
@@ -1778,7 +1805,7 @@ class Geoserver:
         Inputs: column_name (based on which column style should be generated), workspace,
         color_or_ramp (color should be provided in hex code or the color ramp name, geom_type(point, line, polygon), outline_color(hex_color))
         """
-        
+
         from .Style import catagorize_xml
 
         catagorize_xml(column_name, column_distinct_values, color_ramp, geom_type)
@@ -1819,12 +1846,12 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def create_outline_featurestyle(
-            self,
-            style_name: str,
-            color: str = "#3579b1",
-            width: str = "2",
-            geom_type: str = "polygon",
-            workspace: Optional[str] = None,
+        self,
+        style_name: str,
+        color: str = "#3579b1",
+        width: str = "2",
+        geom_type: str = "polygon",
+        workspace: Optional[str] = None,
     ):
         """
         Dynamically creates the outline style for postgis geometry
@@ -1896,14 +1923,14 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def create_classified_featurestyle(
-            self,
-            style_name: str,
-            column_name: str,
-            column_distinct_values,
-            workspace: Optional[str] = None,
-            color_ramp: str = "tab20",
-            geom_type: str = "polygon",
-            # outline_color: str = "#3579b1",
+        self,
+        style_name: str,
+        column_name: str,
+        column_distinct_values,
+        workspace: Optional[str] = None,
+        color_ramp: str = "tab20",
+        geom_type: str = "polygon",
+        # outline_color: str = "#3579b1",
     ):
         """
         Dynamically creates the classified style for postgis geometries.
@@ -1941,6 +1968,7 @@ class Geoserver:
         """
 
         from .Style import classified_xml
+
         classified_xml(
             style_name,
             column_name,
@@ -1985,10 +2013,10 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def publish_style(
-            self,
-            layer_name: str,
-            style_name: str,
-            workspace: str,
+        self,
+        layer_name: str,
+        style_name: str,
+        workspace: str,
     ):
         """
         Publish a raster file to geoserver.
@@ -2079,36 +2107,36 @@ class Geoserver:
     #
 
     def create_featurestore(
-            self,
-            store_name: str,
-            workspace: Optional[str] = None,
-            db: str = "postgres",
-            host: str = "localhost",
-            port: int = 5432,
-            schema: str = "public",
-            pg_user: str = "postgres",
-            pg_password: str = "admin",
-            overwrite: bool = False,
-            expose_primary_keys: str = "false",
-            description: Optional[str] = None,
-            evictor_run_periodicity: Optional[int] = 300,
-            max_open_prepared_statements: Optional[int] = 50,
-            encode_functions: Optional[str] = "false",
-            primary_key_metadata_table: Optional[str] = None,
-            batch_insert_size: Optional[int] = 1,
-            preparedstatements: Optional[str] = "false",
-            loose_bbox: Optional[str] = "true",
-            estimated_extends: Optional[str] = "true",
-            fetch_size: Optional[int] = 1000,
-            validate_connections: Optional[str] = "true",
-            support_on_the_fly_geometry_simplification: Optional[str] = "true",
-            connection_timeout: Optional[int] = 20,
-            create_database: Optional[str] = "false",
-            min_connections: Optional[int] = 1,
-            max_connections: Optional[int] = 10,
-            evictor_tests_per_run: Optional[int] = 3,
-            test_while_idle: Optional[str] = "true",
-            max_connection_idle_time: Optional[int] = 300,
+        self,
+        store_name: str,
+        workspace: Optional[str] = None,
+        db: str = "postgres",
+        host: str = "localhost",
+        port: int = 5432,
+        schema: str = "public",
+        pg_user: str = "postgres",
+        pg_password: str = "admin",
+        overwrite: bool = False,
+        expose_primary_keys: str = "false",
+        description: Optional[str] = None,
+        evictor_run_periodicity: Optional[int] = 300,
+        max_open_prepared_statements: Optional[int] = 50,
+        encode_functions: Optional[str] = "false",
+        primary_key_metadata_table: Optional[str] = None,
+        batch_insert_size: Optional[int] = 1,
+        preparedstatements: Optional[str] = "false",
+        loose_bbox: Optional[str] = "true",
+        estimated_extends: Optional[str] = "true",
+        fetch_size: Optional[int] = 1000,
+        validate_connections: Optional[str] = "true",
+        support_on_the_fly_geometry_simplification: Optional[str] = "true",
+        connection_timeout: Optional[int] = 20,
+        create_database: Optional[str] = "false",
+        min_connections: Optional[int] = 1,
+        max_connections: Optional[int] = 10,
+        evictor_tests_per_run: Optional[int] = 3,
+        test_while_idle: Optional[str] = "true",
+        max_connection_idle_time: Optional[int] = 300,
     ):
         """
         Create PostGIS store for connecting postgres with geoserver.
@@ -2280,12 +2308,12 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def create_datastore(
-            self,
-            name: str,
-            path: str,
-            workspace: Optional[str] = None,
-            overwrite: bool = False,
-            force_absolute_path: bool = True,
+        self,
+        name: str,
+        path: str,
+        workspace: Optional[str] = None,
+        overwrite: bool = False,
+        force_absolute_path: bool = True,
     ):
         """
         Create a datastore within the GeoServer.
@@ -2326,7 +2354,7 @@ class Geoserver:
             raise Exception("You must provide a full path to the data")
 
         # Handle HTTP URLs (WFS endpoints)
-        if "http://" in path:
+        if path.startswith("http://") or path.startswith("https://"):
             data_url = "<GET_CAPABILITIES_URL>{}</GET_CAPABILITIES_URL>".format(path)
         else:
             # Handle file paths with inline path conversion
@@ -2360,11 +2388,11 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def create_shp_datastore(
-            self,
-            path: str,
-            store_name: Optional[str] = None,
-            workspace: Optional[str] = None,
-            file_extension: str = "shp",
+        self,
+        path: str,
+        store_name: Optional[str] = None,
+        workspace: Optional[str] = None,
+        file_extension: str = "shp",
     ):
         """
         Create datastore for a shapefile.
@@ -2426,11 +2454,11 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def create_gpkg_datastore(
-            self,
-            path: str,
-            store_name: Optional[str] = None,
-            workspace: Optional[str] = None,
-            file_extension: str = "gpkg",
+        self,
+        path: str,
+        store_name: Optional[str] = None,
+        workspace: Optional[str] = None,
+        file_extension: str = "gpkg",
     ):
         """
         Create datastore for a geopackage.
@@ -2491,15 +2519,15 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def publish_featurestore(
-            self,
-            store_name: str,
-            pg_table: str,
-            workspace: Optional[str] = None,
-            title: Optional[str] = None,
-            advertised: Optional[bool] = True,
-            abstract: Optional[str] = None,
-            keywords: Optional[List[str]] = None,
-            cqlfilter: Optional[str] = None
+        self,
+        store_name: str,
+        pg_table: str,
+        workspace: Optional[str] = None,
+        title: Optional[str] = None,
+        advertised: Optional[bool] = True,
+        abstract: Optional[str] = None,
+        keywords: Optional[List[str]] = None,
+        cqlfilter: Optional[str] = None,
     ) -> int:
         """
         Publish a featurestore to geoserver.
@@ -2574,15 +2602,15 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def edit_featuretype(
-            self,
-            store_name: str,
-            workspace: Optional[str],
-            pg_table: str,
-            name: str,
-            title: str,
-            abstract: Optional[str] = None,
-            keywords: Optional[List[str]] = None,
-            recalculate: Optional[str] = None
+        self,
+        store_name: str,
+        workspace: Optional[str],
+        pg_table: str,
+        name: str,
+        title: str,
+        abstract: Optional[str] = None,
+        keywords: Optional[List[str]] = None,
+        recalculate: Optional[str] = None,
     ) -> int:
         """
         Edit a featuretype in the geoserver.
@@ -2649,16 +2677,16 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def publish_featurestore_sqlview(
-            self,
-            name: str,
-            store_name: str,
-            sql: str,
-            parameters: Optional[Iterable[Dict]] = None,
-            key_column: Optional[str] = None,
-            geom_name: str = "geom",
-            geom_type: str = "Geometry",
-            srid: Optional[int] = 4326,
-            workspace: Optional[str] = None,
+        self,
+        name: str,
+        store_name: str,
+        sql: str,
+        parameters: Optional[Iterable[Dict]] = None,
+        key_column: Optional[str] = None,
+        geom_name: str = "geom",
+        geom_type: str = "Geometry",
+        srid: Optional[int] = 4326,
+        workspace: Optional[str] = None,
     ) -> int:
         """
         Publishes an SQL query as a layer, optionally with parameters.
@@ -2713,7 +2741,7 @@ class Geoserver:
           "defaultValue" : "<default value of parameter if not specified (required only for non-string parameters)>"
         }
         ```
-        
+
         """
         if workspace is None:
             workspace = "default"
@@ -2730,21 +2758,26 @@ class Geoserver:
             for parameter in parameters:
 
                 # non-string parameters MUST have a default value supplied
-                if not is_surrounded_by_quotes(sql, parameter["name"]) and not "defaultValue" in parameter:
-                    raise ValueError(f"Parameter `{parameter['name']}` appears to be a non-string in the supplied query"
-                                     ", but does not have a default value specified. You must supply a default value "
-                                     "for non-string parameters using the `defaultValue` key.")
+                if (
+                    not is_surrounded_by_quotes(sql, parameter["name"])
+                    and not "defaultValue" in parameter
+                ):
+                    raise ValueError(
+                        f"Parameter `{parameter['name']}` appears to be a non-string in the supplied query"
+                        ", but does not have a default value specified. You must supply a default value "
+                        "for non-string parameters using the `defaultValue` key."
+                    )
 
                 param_name = parameter.get("name", "")
                 default_value = parameter.get("defaultValue", "")
                 regexp_validator = parameter.get("regexpValidator", r"^[\w\d\s]+$")
-                parameters_xml += (f"""
+                parameters_xml += f"""
                     <parameter>
                         <name>{param_name}</name>
                         <defaultValue>{default_value}</defaultValue>
                         <regexpValidator>{regexp_validator}</regexpValidator>
                     </parameter>\n
-                """.strip())
+                """.strip()
 
         layer_xml = """<featureType>
         <name>{0}</name>
@@ -2770,7 +2803,14 @@ class Geoserver:
             </entry>
         </metadata>
         </featureType>""".format(
-            name, sql, geom_name, geom_type, workspace, srid, key_column_xml, parameters_xml
+            name,
+            sql,
+            geom_name,
+            geom_type,
+            workspace,
+            srid,
+            key_column_xml,
+            parameters_xml,
         )
 
         # rest API url
@@ -2789,7 +2829,9 @@ class Geoserver:
         else:
             raise GeoserverException(r.status_code, r.content)
 
-    def get_featuretypes(self, workspace: str = None, store_name: str = None) -> List[str]:
+    def get_featuretypes(
+        self, workspace: str = None, store_name: str = None
+    ) -> List[str]:
         """
         Get feature types from the geoserver.
 
@@ -2822,7 +2864,7 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def get_feature_attribute(
-            self, feature_type_name: str, workspace: str, store_name: str
+        self, feature_type_name: str, workspace: str, store_name: str
     ) -> List[str]:
         """
         Get feature attributes from the geoserver.
@@ -2891,7 +2933,7 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def delete_featurestore(
-            self, featurestore_name: str, workspace: Optional[str] = None
+        self, featurestore_name: str, workspace: Optional[str] = None
     ) -> str:
         """
         Delete a featurestore from the geoserver.
@@ -2927,7 +2969,7 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def delete_coveragestore(
-            self, coveragestore_name: str, workspace: Optional[str] = None
+        self, coveragestore_name: str, workspace: Optional[str] = None
     ) -> str:
         """
         Delete a coveragestore from the geoserver.
@@ -3006,7 +3048,7 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def create_user(
-            self, username: str, password: str, enabled: bool = True, service=None
+        self, username: str, password: str, enabled: bool = True, service=None
     ) -> str:
         """
         Add a new user to the provided user/group service.
@@ -3050,7 +3092,7 @@ class Geoserver:
             raise GeoserverException(r.status_code, r.content)
 
     def modify_user(
-            self, username: str, new_name=None, new_password=None, enable=None, service=None
+        self, username: str, new_name=None, new_password=None, enable=None, service=None
     ) -> str:
         """
         Modifies a user in the provided user/group service.
@@ -3268,9 +3310,7 @@ class Geoserver:
 
         data = ""
         for key, value in kwargs.items():
-            data += "<{}><{}>{}</{}></{}>".format(
-                service, key, value, key, service
-            )
+            data += "<{}><{}>{}</{}></{}>".format(service, key, value, key, service)
 
         r = self._requests("put", url, data=data, headers=headers)
 

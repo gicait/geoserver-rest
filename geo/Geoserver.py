@@ -1610,13 +1610,13 @@ class Geoserver:
             if len(f) > 0:
                 name = f[0]
 
-        if is_valid_xml(path):
-            # path is actually just the xml itself
-            xml = path
-        elif Path(path).exists():
+        if Path(path).exists():
             # path is pointing to an existing file
             with open(path, "rb") as f:
                 xml = f.read()
+        elif is_valid_xml(path):
+            # path is actually just the xml itself
+            xml = path
         else:
             # path is non-existing file or not valid xml
             raise ValueError(

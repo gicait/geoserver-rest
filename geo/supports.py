@@ -61,8 +61,6 @@ def is_valid_xml(xml_string: str) -> bool:
         return True
     except ET.ParseError:
         return False
-    except TypeError:
-        return False
 
 
 def is_surrounded_by_quotes(text, param):

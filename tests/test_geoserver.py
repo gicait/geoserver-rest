@@ -1,5 +1,5 @@
 import os
-from pathlib import Path
+import pathlib
 
 import requests
 import pytest
@@ -558,7 +558,7 @@ class TestUploadStyles:
         except GeoserverException:
             pass
 
-        geo.upload_style(Path(f"{HERE}/data/style.sld"), "test_upload_style")
+        geo.upload_style(pathlib.Path(f"{HERE}/data/style.sld"), "test_upload_style")
         style = geo.get_style("test_upload_style")
         assert style["style"]["name"] == "test_upload_style"
 

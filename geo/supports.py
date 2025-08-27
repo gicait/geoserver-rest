@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 from tempfile import mkstemp
 from typing import Dict
 from zipfile import ZipFile
@@ -54,7 +55,8 @@ def is_valid_xml(xml_string: str) -> bool:
     -------
     bool
     """
-
+    if isinstance(xml_string, Path):
+        return False
     try:
         # Attempt to parse the XML string
         ET.fromstring(xml_string)

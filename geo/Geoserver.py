@@ -1,14 +1,14 @@
 # inbuilt libraries
 import os
-from typing import List, Optional, Set, Union, Dict, Iterable, Any
 from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Set, Union
 
 # third-party libraries
 import requests
 from xmltodict import parse, unparse
 
 # custom functions
-from .supports import prepare_zip_file, is_valid_xml, is_surrounded_by_quotes
+from .supports import is_surrounded_by_quotes, is_valid_xml, prepare_zip_file
 
 
 def _parse_request_options(request_options: Dict[str, Any]):
@@ -663,7 +663,7 @@ class Geoserver:
         file_type = file_type.lower()
         if file_type == "netcdf":
             # files such as netcdf contain multiple layers, which means a single coverage name cannot be specified.
-            url = "{0}/rest/workspaces/{1}/coveragestores/{2}/{3}.{4}".format(
+            url = "{}/rest/workspaces/{}/coveragestores/{}/{}.{}".format(
                 self.service_url, workspace, layer_name, method, file_type
             )
         else:
@@ -1067,18 +1067,14 @@ class Geoserver:
                     """
             )
 
-        layers_xml: str = (
-            f"<publishables>{''.join(['{}'] * len(layers)).format(*layers_xml_list)}</publishables>"
-        )
+        layers_xml: str = f"<publishables>{''.join(['{}'] * len(layers)).format(*layers_xml_list)}</publishables>"
         skeleton += layers_xml
 
         if len(keywords) >= 1:
             keyword_xml_list: List[str] = [
                 f"<keyword>{keyword}</keyword>" for keyword in keywords
             ]
-            keywords_xml: str = (
-                f"<keywords>{''.join(['{}'] * len(keywords)).format(*keyword_xml_list)}</keywords>"
-            )
+            keywords_xml: str = f"<keywords>{''.join(['{}'] * len(keywords)).format(*keyword_xml_list)}</keywords>"
             skeleton += keywords_xml
 
         data = f"""
@@ -1198,9 +1194,7 @@ class Geoserver:
             keyword_xml_list: List[str] = [
                 f"<keyword>{keyword}</keyword>" for keyword in keywords
             ]
-            keywords_xml: str = (
-                f"<keywords>{''.join(['{}'] * len(keyword_xml_list)).format(*keyword_xml_list)}</keywords>"
-            )
+            keywords_xml: str = f"<keywords>{''.join(['{}'] * len(keyword_xml_list)).format(*keyword_xml_list)}</keywords>"
             skeleton += keywords_xml
 
         data = f"""
@@ -2688,7 +2682,7 @@ class Geoserver:
         srid: Optional[int] = 4326,
         workspace: Optional[str] = None,
     ) -> int:
-        """
+        r"""
         Publishes an SQL query as a layer, optionally with parameters.
 
         Parameters
@@ -2858,8 +2852,10 @@ class Geoserver:
         r = self._requests("get", url)
         if r.status_code == 200:
             r_dict = r.json()
-            features = [i["name"] for i in r_dict["featureTypes"]["featureType"]]
-            return features
+            feature_types = r_dict.get("featureTypes")
+            if not feature_types:
+                return []
+            return [i["name"] for i in feature_types["featureType"]]
         else:
             raise GeoserverException(r.status_code, r.content)
 

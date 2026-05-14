@@ -2858,8 +2858,10 @@ class Geoserver:
         r = self._requests("get", url)
         if r.status_code == 200:
             r_dict = r.json()
-            features = [i["name"] for i in r_dict["featureTypes"]["featureType"]]
-            return features
+            feature_types = r_dict.get("featureTypes")
+            if not feature_types:
+                return []
+            return [i["name"] for i in feature_types["featureType"]]
         else:
             raise GeoserverException(r.status_code, r.content)
 

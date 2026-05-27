@@ -2730,7 +2730,7 @@ class Geoserver:
         An integer-based parameter must have a default value
 
         You should be VERY careful with the `regexp_validator`, as it can open you to SQL injection attacks. If you do
-        not supply one for a parameter, it will use the geoserver default `^[\w\d\s]+$`.
+        not supply one for a parameter, it will use the geoserver default `^[\\w\\d\\s]+$`.
 
         The `parameters` iterable must contain dictionaries with this structure:
 

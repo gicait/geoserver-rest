@@ -551,6 +551,17 @@ class TestUploadStyles:
         style = geo.get_style("test_upload_style")
         assert style["style"]["name"] == "test_upload_style"
 
+    def test_upload_style_from_Pathlike_file(self):
+
+        try:
+            geo.delete_style("test_upload_style")
+        except GeoserverException:
+            pass
+
+        geo.upload_style(pathlib.Path(f"{HERE}/data/style.sld"), "test_upload_style")
+        style = geo.get_style("test_upload_style")
+        assert style["style"]["name"] == "test_upload_style"
+
     def test_upload_style_from_malformed_file_fails(self):
 
         try:
